@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="StandardGroups" default="test" basedir=".">
+	<taskdef resource="net/sf/antcontrib/antlib.xml" >
+		<classpath>
+			<pathelement location="lib/ant-contrib.jar" />
+		</classpath>
+	</taskdef>
+	
+	<property name="jarfile" value="${basedir}/dist/StandardGroups.jar"/>
+	
+	<target name ="build" description="Build jar file">
+		<delete file="${jarfile}"/>
+		<jar destfile="${jarfile}">
+			<fileset dir="bin" includes="**/*.class"/>
+			<fileset dir="." includes="plugin.yml"/>
+		</jar>
+	</target>
+	
+	<loadfile property="serverfile" srcfile="servers.txt"/>
+	<target name="deploy" depends="build" description="Deploy plugin to production servers">
+	    <for param="path" list="${serverfile}" delimiter="${line.separator}">
+			<sequential>
+				<exec executable="scp">
+					<arg value="${jarfile}"/>
+					<arg value="@{path}:craftbukkit/plugins/StandardGroups.jar"/>
+				</exec>
+			</sequential>
+		</for>
+	</target>
+    
+	<target name="test" depends="build" description="Copy plugin to test environment">
+		<copy file="${jarfile}" todir="../craftbukkit/plugins/"/>
+	</target>
+</project>
+

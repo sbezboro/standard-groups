@@ -1,0 +1,14 @@
+name: StandardGroups
+main: com.sbezboro.standardgroups.StandardGroups
+version: 0.1.0
+depend: [StandardPlugin]
+
+commands:
+    g:
+        description: Base command
+        permission: standardplugin.g
+        permission-message: You don't have permission
+
+permissions:
+    standardgroups.g:
+        default: true
