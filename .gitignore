@@ -1,6 +1,8 @@
 *.class
-
-# Package Files #
-*.jar
-*.war
-*.ear
+.DS_Store
+.classpath
+.project
+*.un~
+bin/
+dist/
+servers.txt
