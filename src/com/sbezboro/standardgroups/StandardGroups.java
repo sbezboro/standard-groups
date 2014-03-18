@@ -7,8 +7,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sbezboro.standardgroups.commands.GroupCommand;
+import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPlugin;
+import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.ICommand;
 
 
@@ -16,6 +20,9 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	private static StandardGroups instance;
 	
 	private StandardPlugin basePlugin;
+	
+	private GroupStorage groupStorage;
+	private GroupManager groupManager;
 	
 	public StandardGroups() {
 		instance = this;
@@ -36,10 +43,12 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		
 		basePlugin = StandardPlugin.getPlugin();
 		basePlugin.registerSubPlugin(this);
+		
+		groupStorage = new GroupStorage(basePlugin);
+		groupManager = new GroupManager(basePlugin, groupStorage);
 
 		reloadPlugin();
 
-		registerCommands();
 		registerEvents();
 	}
 
@@ -54,16 +63,20 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		reloadConfig();
 	}
 
-	private void registerCommands() {
+	@Override
+	public List<ICommand> getCommands() {
 		List<ICommand> commands = new ArrayList<ICommand>();
-
-		for (ICommand command : commands) {
-			command.register();
-		}
+		commands.add(new GroupCommand(basePlugin, this));
+		return commands;
 	}
 
 	private void registerEvents() {
 		PluginManager pluginManager = getServer().getPluginManager();
+		
+	}
+	
+	public GroupManager getGroupManager() {
+		return groupManager;
 	}
 	
 	@Override

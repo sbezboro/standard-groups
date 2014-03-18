@@ -4,11 +4,12 @@ version: 0.1.0
 depend: [StandardPlugin]
 
 commands:
-    g:
+    groups:
         description: Base command
-        permission: standardplugin.g
+        permission: standardgroups.groups
         permission-message: You don't have permission
+        aliases: [g]
 
 permissions:
-    standardgroups.g:
+    standardgroups.groups:
         default: true
