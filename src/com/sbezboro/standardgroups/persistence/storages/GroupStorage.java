@@ -1,6 +1,7 @@
 package com.sbezboro.standardgroups.persistence.storages;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.sbezboro.standardgroups.model.Group;
@@ -15,7 +16,7 @@ public class GroupStorage extends MultiFileStorage<Group> {
 	}
 	
 	public Group createGroup(String name, StandardPlayer leader) {
-		Group group = new Group(this, name);
+		Group group = new Group(this, name, new Date().getTime());
 		group.addMember(leader);
 		
 		cacheObject(name, group);

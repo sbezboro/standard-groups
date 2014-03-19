@@ -3,26 +3,52 @@ package com.sbezboro.standardgroups.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Location;
+
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.PersistedListProperty;
 import com.sbezboro.standardplugin.persistence.PersistedObject;
+import com.sbezboro.standardplugin.persistence.PersistedProperty;
 import com.sbezboro.standardplugin.persistence.storages.FileStorage;
 
 public class Group extends PersistedObject {
 	public PersistedListProperty<String> members;
-	public PersistedListProperty<String> claims;
 	public PersistedListProperty<String> invites;
+	public PersistedListProperty<Claim> claims;
+	
+	public PersistedProperty<Long> established;
+	public PersistedProperty<Integer> maxClaims;
 
 	public Group(FileStorage storage, String name) {
 		super(storage, name);
+		
+		initialize();
+	}
+	
+	public Group(FileStorage storage, String name, long established) {
+		super(storage, name);
+		
+		initialize();
+		
+		this.established.setValue(established);
+		this.maxClaims.setValue(10);
+	}
+	
+	public void initialize() {
+		for (Claim claim : claims) {
+			claim.setGroup(this);
+		}
 	}
 
 	@Override
 	public void createProperties() {
 		members = createList(String.class, "members");
-		claims = createList(String.class, "claims");
 		invites = createList(String.class, "invites");
+		claims = createList(Claim.class, "claims");
+		
+		established = createProperty(Long.class, "established");
+		maxClaims = createProperty(Integer.class, "max-claims");
 	}
 	
 	public String getName() {
@@ -59,6 +85,25 @@ public class Group extends PersistedObject {
 		return list;
 	}
 	
+	public List<Claim> getClaims() {
+		return claims.getList();
+	}
+
+	public Claim claim(StandardPlayer player, Location location) {
+		Claim claim = new Claim(player, location, this);
+		claims.add(claim);
+		
+		this.save();
+		
+		return claim;
+	}
+	
+	public void unclaim(Claim claim) {
+		claims.remove(claim);
+		
+		this.save();
+	}
+	
 	public boolean isInvited(String username) {
 		return invites.contains(username);
 	}
@@ -73,6 +118,14 @@ public class Group extends PersistedObject {
 		invites.remove(username);
 		
 		this.save();
+	}
+
+	public int getMaxClaims() {
+		return maxClaims.getValue();
+	}
+
+	public void setMaxClaims(int maxClaims) {
+		this.maxClaims.setValue(maxClaims);;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.bukkit.ChatColor;
 
+import com.sbezboro.standardgroups.model.Claim;
 import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -15,6 +16,8 @@ public class GroupManager extends BaseManager {
 	private GroupStorage storage;
 	
 	private Map<String, Group> usernameToGroupMap;
+	private Map<String, Claim> locationToClaimMap;
+	private Map<String, Group> locationToGroupMap;
 
 	public GroupManager(StandardPlugin plugin, GroupStorage storage) {
 		super(plugin);
@@ -23,10 +26,17 @@ public class GroupManager extends BaseManager {
 		this.storage.loadObjects();
 		
 		usernameToGroupMap = new HashMap<String, Group>();
+		locationToClaimMap = new HashMap<String, Claim>();
+		locationToGroupMap = new HashMap<String, Group>();
 		
 		for (Group group : storage.getGroups()) {
 			for (String username : group.getMembers()) {
 				usernameToGroupMap.put(username, group);
+			}
+			
+			for (Claim claim : group.getClaims()) {
+				locationToGroupMap.put(claim.getLocationKey(), group);
+				locationToClaimMap.put(claim.getLocationKey(), claim);
 			}
 		}
 	}
@@ -95,10 +105,8 @@ public class GroupManager extends BaseManager {
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
 				player.sendMessage(ChatColor.YELLOW + "You have invited " + invitedPlayer.getDisplayName(false) + " to join your group.");
-			} else {
-				if (other.isOnline()) {
-					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited " + invitedPlayer.getDisplayName(false) + " to join your group.");
-				}
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited " + invitedPlayer.getDisplayName(false) + " to join your group.");
 			}
 		}
 		
@@ -167,6 +175,74 @@ public class GroupManager extends BaseManager {
 			storage.destroyGroup(group);
 			
 			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");
+		}
+	}
+
+	public void claim(StandardPlayer player) {
+		Group group = usernameToGroupMap.get(player.getName());
+		
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can claim land.");
+			return;
+		}
+		
+		Group testGroup = locationToGroupMap.get(Claim.getLocationKey(player.getLocation()));
+		
+		if (testGroup == group) {
+			player.sendMessage("You already own this land.");
+			return;
+		}
+		
+		if (testGroup != null) {
+			player.sendMessage("This land is already claimed.");
+			return;
+		}
+		
+		if (group.getClaims().size() >= group.getMaxClaims()) {
+			player.sendMessage("Your group cannot claim any more land at the moment.");
+			return;
+		}
+		
+		Claim claim = group.claim(player, player.getLocation());
+		
+		locationToGroupMap.put(claim.getLocationKey(), group);
+		locationToClaimMap.put(claim.getLocationKey(), claim);
+		
+		for (StandardPlayer other : group.getPlayers()) {
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "Land claimed.");
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has claimed land at " + claim.getX() + ", " + claim.getZ() + ".");
+			}
+		}
+	}
+
+	public void unclaim(StandardPlayer player) {
+		Group group = usernameToGroupMap.get(player.getName());
+		
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can unclaim land.");
+			return;
+		}
+
+		Claim claim = locationToClaimMap.get(Claim.getLocationKey(player.getLocation()));
+		
+		if (claim == null || claim.getGroup() != group) {
+			player.sendMessage("You don't own this land.");
+			return;
+		}
+		
+		group.unclaim(claim);
+		
+		locationToGroupMap.remove(claim.getLocationKey());
+		locationToClaimMap.remove(claim.getLocationKey());
+		
+		for (StandardPlayer other : group.getPlayers()) {
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "Land unclaimed.");
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has unclaimed land at " + claim.getX() + ", " + claim.getZ() + ".");
+			}
 		}
 	}
 

@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -30,12 +31,18 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 			return handleCreate(sender, subCommandArgs);
 		} else if (subCommand.equalsIgnoreCase("destroy")) {
 			return handleDestroy(sender);
-		} else if (subCommand.equals("invite")) {
+		} else if (subCommand.equalsIgnoreCase("invite")) {
 			return handleInvite(sender, subCommandArgs);
-		} else if (subCommand.equals("join")) {
+		} else if (subCommand.equalsIgnoreCase("join")) {
 			return handleJoin(sender, subCommandArgs);
-		} else if (subCommand.equals("leave")) {
+		} else if (subCommand.equalsIgnoreCase("leave")) {
 			return handleLeave(sender);
+		} else if (subCommand.equalsIgnoreCase("claim")) {
+			return handleClaim(sender);
+		} else if (subCommand.equalsIgnoreCase("unclaim")) {
+			return handleUnclaim(sender);
+		} else if (subCommand.equalsIgnoreCase("help")) {
+			return handleHelp(sender);
 		}
 
 		showUsageInfo(sender);
@@ -49,7 +56,7 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 
 	@Override
 	public void showUsageInfo(CommandSender sender) {
-
+		sender.sendMessage("Unknown command. Type " + ChatColor.AQUA + "/g help");
 	}
 	
 	private boolean handleCreate(CommandSender sender, String[] args) {
@@ -108,6 +115,37 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		groupManager.leaveGroup(player);
+		
+		return true;
+	}
+	
+	private boolean handleClaim(CommandSender sender) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		groupManager.claim(player);
+		
+		return true;
+	}
+	
+	private boolean handleUnclaim(CommandSender sender) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		groupManager.unclaim(player);
+		
+		return true;
+	}
+	
+	private boolean handleHelp(CommandSender sender) {
+		sender.sendMessage("Groups help:");
+		sender.sendMessage("/g create <name> - create a group");
+		sender.sendMessage("/g destroy - destroy a group you own");
+		sender.sendMessage("/g invite <player> - invite a player to your group");
+		sender.sendMessage("/g join <name> - attemp to join a group");
+		sender.sendMessage("/g leave - leave a group you are in");
+		sender.sendMessage("/g claim - claim land for your group");
+		sender.sendMessage("/g unclaim - unclaim land from your group");
 		
 		return true;
 	}
