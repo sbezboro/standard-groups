@@ -8,6 +8,9 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sbezboro.standardgroups.commands.GroupCommand;
+import com.sbezboro.standardgroups.listeners.BlockBreakListener;
+import com.sbezboro.standardgroups.listeners.BlockPlaceEvent;
+import com.sbezboro.standardgroups.listeners.PlayerInteractListener;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -72,7 +75,9 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 
 	private void registerEvents() {
 		PluginManager pluginManager = getServer().getPluginManager();
-		
+		pluginManager.registerEvents(new BlockBreakListener(basePlugin, this), this);
+		pluginManager.registerEvents(new BlockPlaceEvent(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
 	}
 	
 	public GroupManager getGroupManager() {

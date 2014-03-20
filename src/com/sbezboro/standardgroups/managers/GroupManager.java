@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 
 import com.sbezboro.standardgroups.model.Claim;
 import com.sbezboro.standardgroups.model.Group;
@@ -41,8 +42,24 @@ public class GroupManager extends BaseManager {
 		}
 	}
 	
+	public Group getGroupByLocation(Location location) {
+		return locationToGroupMap.get(Claim.getLocationKey(location));
+	}
+	
+	public Claim getClaimByLocation(Location location) {
+		return locationToClaimMap.get(Claim.getLocationKey(location));
+	}
+	
+	public Group getPlayerGroup(StandardPlayer player) {
+		return usernameToGroupMap.get(player.getName());
+	}
+	
+	public boolean playerInGroup(StandardPlayer player, Group group) {
+		return getPlayerGroup(player) == group;
+	}
+	
 	public void createGroup(StandardPlayer player, String groupName) {
-		if (usernameToGroupMap.containsKey(player.getName())) {
+		if (getPlayerGroup(player) != null) {
 			player.sendMessage("You must leave your existing group first before creating a new one.");
 			return;
 		}
@@ -59,7 +76,7 @@ public class GroupManager extends BaseManager {
 	}
 	
 	public void destroyGroup(StandardPlayer player) {
-		Group group = usernameToGroupMap.get(player.getName());
+		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
 			player.sendMessage("You can't destroy a group if you aren't in one.");
@@ -76,7 +93,7 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void invitePlayer(StandardPlayer player, String invitedUsername) {
-		Group group = usernameToGroupMap.get(player.getName());
+		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
 			player.sendMessage("You must be in a group before you can invite players.");
@@ -114,7 +131,7 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void joinGroup(StandardPlayer player, String groupName) {
-		if (usernameToGroupMap.containsKey(player.getName())) {
+		if (getPlayerGroup(player) != null) {
 			player.sendMessage("You must leave your existing group first before joining a different one.");
 			return;
 		}
@@ -152,7 +169,7 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void leaveGroup(StandardPlayer player) {
-		Group group = usernameToGroupMap.get(player.getName());
+		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
 			player.sendMessage("You can't leave a group if you aren't in one.");
@@ -179,14 +196,14 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void claim(StandardPlayer player) {
-		Group group = usernameToGroupMap.get(player.getName());
+		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
 			player.sendMessage("You must be in a group before you can claim land.");
 			return;
 		}
 		
-		Group testGroup = locationToGroupMap.get(Claim.getLocationKey(player.getLocation()));
+		Group testGroup = getGroupByLocation(player.getLocation());
 		
 		if (testGroup == group) {
 			player.sendMessage("You already own this land.");
@@ -218,14 +235,14 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void unclaim(StandardPlayer player) {
-		Group group = usernameToGroupMap.get(player.getName());
+		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
 			player.sendMessage("You must be in a group before you can unclaim land.");
 			return;
 		}
 
-		Claim claim = locationToClaimMap.get(Claim.getLocationKey(player.getLocation()));
+		Claim claim = getClaimByLocation(player.getLocation());
 		
 		if (claim == null || claim.getGroup() != group) {
 			player.sendMessage("You don't own this land.");
