@@ -13,3 +13,5 @@ commands:
 permissions:
     standardgroups.groups:
         default: true
+    standardgroups.groups.admin:
+        default: op

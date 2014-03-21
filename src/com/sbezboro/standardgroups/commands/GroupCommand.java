@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
@@ -32,7 +33,7 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		} else if (subCommand.equalsIgnoreCase("create")) {
 			return handleCreate(sender, subCommandArgs);
 		} else if (subCommand.equalsIgnoreCase("destroy")) {
-			return handleDestroy(sender);
+			return handleDestroy(sender, subCommandArgs);
 		} else if (subCommand.equalsIgnoreCase("invite")) {
 			return handleInvite(sender, subCommandArgs);
 		} else if (subCommand.equalsIgnoreCase("join")) {
@@ -89,11 +90,26 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		return true;
 	}
 	
-	private boolean handleDestroy(CommandSender sender) {
+	private boolean handleDestroy(CommandSender sender, String[] args) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		groupManager.destroyGroup(player);
+
+		String name = null;
+		
+		if (args.length == 0) {
+			if (player == null) {
+				showPlayerOnlyMessage(sender);
+				return false;
+			}
+		} else if (args.length == 1) {
+			name = args[0];
+		} else {
+			showUsageInfo(sender);
+			return false;
+		}
+		
+		groupManager.destroyGroup(player, name);
 		
 		return true;
 	}

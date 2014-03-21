@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
@@ -93,21 +94,56 @@ public class GroupManager extends BaseManager {
 		StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has created a new group called " + groupName + ".");
 	}
 	
-	public void destroyGroup(StandardPlayer player) {
-		Group group = getPlayerGroup(player);
+	public void destroyGroup(StandardPlayer player, String groupName) {
+		Group group;
 		
-		if (group == null) {
-			player.sendMessage("You can't destroy a group if you aren't in one.");
-			return;
+		// No group name means destroying own group
+		if (groupName == null) {
+			group = getPlayerGroup(player);
+			
+			if (group == null) {
+				player.sendMessage("You can't destroy a group if you aren't in one.");
+				return;
+			}
+		// Trying to destroy another group by name
+		} else {
+			// Check if console or admin player
+			if (player == null || player.hasPermission("standardgroups.groups.admin")) {
+				group = storage.getGroupByName(groupName);
+				
+				if (group == null) {
+					String message = "That group doesn't exist.";
+					
+					if (player == null) {
+						Bukkit.getConsoleSender().sendMessage(message);
+					} else {
+						player.sendMessage(message);
+					}
+					
+					return;
+				}
+			} else {
+				player.sendMessage(StandardGroups.getPlugin().getServer().getPluginCommand("groups").getPermissionMessage());
+				return;
+			}
 		}
 
 		for (String username : group.getMembers()) {
 			usernameToGroupMap.remove(username);
 		}
 		
+		for (Claim claim : group.getClaims()) {
+			locationToGroupMap.remove(claim.getLocationKey());
+			locationToClaimMap.remove(claim.getLocationKey());
+		}
+		
 		storage.destroyGroup(group);
 		
-		StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");
+		if (player == null) {
+			StandardPlugin.broadcast(ChatColor.YELLOW + "A server admin has destroyed the group " + group.getName() + ".");
+		} else {
+			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");
+		}
 	}
 
 	public void invitePlayer(StandardPlayer player, String invitedUsername) {
