@@ -16,7 +16,6 @@ import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPlugin;
-import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.ICommand;
 
 
@@ -24,6 +23,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	private static StandardGroups instance;
 	
 	private StandardPlugin basePlugin;
+
+	private StandardConfig config;
 	
 	private GroupStorage groupStorage;
 	private GroupManager groupManager;
@@ -45,8 +46,12 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	public void onEnable() {
 		super.onEnable();
 		
+		getConfig().options().copyDefaults(true);
+		
 		basePlugin = StandardPlugin.getPlugin();
 		basePlugin.registerSubPlugin(this);
+		
+		config = new StandardConfig(basePlugin);
 		
 		groupStorage = new GroupStorage(basePlugin);
 		groupManager = new GroupManager(basePlugin, groupStorage);
@@ -63,7 +68,10 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		Bukkit.getScheduler().cancelTasks(this);
 	}
 
+	@Override
 	public void reloadPlugin() {
+		config.reload();
+		
 		reloadConfig();
 	}
 
@@ -80,6 +88,14 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new BlockPlaceEvent(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
+	}
+	
+	public int getGroupNameMinLength() {
+		return config.getGroupNameMinLength();
+	}
+	
+	public int getGroupNameMaxLength() {
+		return config.getGroupNameMaxLength();
 	}
 	
 	public GroupManager getGroupManager() {

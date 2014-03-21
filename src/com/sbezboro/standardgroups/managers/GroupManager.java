@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
+import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.model.Claim;
 import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
@@ -75,6 +76,14 @@ public class GroupManager extends BaseManager {
 		
 		if (!groupNamePat.matcher(groupName).matches()) {
 			player.sendMessage(groupNamePatExplanation);
+			return;
+		}
+		
+		int minLength = StandardGroups.getPlugin().getGroupNameMinLength();
+		int maxLength = StandardGroups.getPlugin().getGroupNameMaxLength();
+		
+		if (groupName.length() < minLength || groupName.length() > maxLength) {
+			player.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
 			return;
 		}
 		
@@ -292,6 +301,14 @@ public class GroupManager extends BaseManager {
 		
 		if (!groupNamePat.matcher(name).matches()) {
 			player.sendMessage(groupNamePatExplanation);
+			return;
+		}
+		
+		int minLength = StandardGroups.getPlugin().getGroupNameMinLength();
+		int maxLength = StandardGroups.getPlugin().getGroupNameMaxLength();
+		
+		if (name.length() < minLength || name.length() > maxLength) {
+			player.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
 			return;
 		}
 
