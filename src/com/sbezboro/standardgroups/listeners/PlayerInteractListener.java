@@ -28,6 +28,7 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		add(Material.TRAP_DOOR);
 		add(Material.IRON_TRAP_DOOR);
 		add(material.ENCHANTMENT_TABLE);
+		add(material.TRAPPED_CHEST);
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
 		add(Material.FURNACE);
