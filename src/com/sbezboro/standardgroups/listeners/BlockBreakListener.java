@@ -14,6 +14,7 @@ import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
 public class BlockBreakListener extends SubPluginEventListener<StandardGroups> implements Listener {
+	
 	public BlockBreakListener(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin);
 	}

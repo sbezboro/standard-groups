@@ -21,9 +21,6 @@ import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
 public class PlayerInteractListener extends SubPluginEventListener<StandardGroups> implements Listener {
-	public PlayerInteractListener(StandardPlugin plugin, StandardGroups subPlugin) {
-		super(plugin, subPlugin);
-	}
 	
 	@SuppressWarnings("serial")
 	private static final HashSet<Material> PROTECTED_BLOCKS = new HashSet<Material>() {{
@@ -37,6 +34,10 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		add(Material.DISPENSER);
 		add(Material.DROPPER);
 	}};
+	
+	public PlayerInteractListener(StandardPlugin plugin, StandardGroups subPlugin) {
+		super(plugin, subPlugin);
+	}
 
 	@EventHandler
 	public void onPlayerInteract(final PlayerInteractEvent event) {

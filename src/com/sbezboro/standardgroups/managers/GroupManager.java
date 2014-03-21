@@ -2,6 +2,7 @@ package com.sbezboro.standardgroups.managers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,6 +15,9 @@ import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
 public class GroupManager extends BaseManager {
+	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
+	private final String groupNamePatExplanation = "Group names can only contain letters and underscores.";
+	
 	private GroupStorage storage;
 	
 	private Map<String, Group> usernameToGroupMap;
@@ -66,6 +70,11 @@ public class GroupManager extends BaseManager {
 		
 		if (storage.getGroupByName(groupName) != null) {
 			player.sendMessage("That group name is already taken");
+			return;
+		}
+		
+		if (!groupNamePat.matcher(groupName).matches()) {
+			player.sendMessage(groupNamePatExplanation);
 			return;
 		}
 		
@@ -259,6 +268,40 @@ public class GroupManager extends BaseManager {
 				player.sendMessage(ChatColor.YELLOW + "Land unclaimed.");
 			} else if (other.isOnline()) {
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has unclaimed land at " + claim.getX() + ", " + claim.getZ() + ".");
+			}
+		}
+	}
+
+	public void rename(StandardPlayer player, String name) {
+		Group group = getPlayerGroup(player);
+		
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can rename one.");
+			return;
+		}
+		
+		if (name.equals(group.getName())) {
+			player.sendMessage("Your group is already named that.");
+			return;
+		}
+		
+		if (storage.getGroupByName(name) != null) {
+			player.sendMessage("That group name is already taken");
+			return;
+		}
+		
+		if (!groupNamePat.matcher(name).matches()) {
+			player.sendMessage(groupNamePatExplanation);
+			return;
+		}
+
+		group.rename(name);
+		
+		for (StandardPlayer other : group.getPlayers()) {
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "Group renamed.");
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has renamed the group to " + name + ".");
 			}
 		}
 	}

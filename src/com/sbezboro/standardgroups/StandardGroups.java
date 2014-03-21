@@ -11,6 +11,7 @@ import com.sbezboro.standardgroups.commands.GroupCommand;
 import com.sbezboro.standardgroups.listeners.BlockBreakListener;
 import com.sbezboro.standardgroups.listeners.BlockPlaceEvent;
 import com.sbezboro.standardgroups.listeners.PlayerInteractListener;
+import com.sbezboro.standardgroups.listeners.PlayerMoveListener;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -78,6 +79,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new BlockBreakListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceEvent(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
 	}
 	
 	public GroupManager getGroupManager() {

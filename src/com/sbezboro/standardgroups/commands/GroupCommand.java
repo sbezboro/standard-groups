@@ -19,7 +19,7 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 	@Override
 	public boolean handle(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length == 0) {
-			showUsageInfo(sender);
+			handleHelp(sender);
 			return false;
 		}
 
@@ -27,7 +27,9 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		String[] subCommandArgs = new String[args.length - 1];
 		System.arraycopy(args, 1, subCommandArgs, 0, args.length - 1);
 		
-		if (subCommand.equalsIgnoreCase("create")) {
+		if (subCommand.equalsIgnoreCase("help")) {
+			return handleHelp(sender);
+		} else if (subCommand.equalsIgnoreCase("create")) {
 			return handleCreate(sender, subCommandArgs);
 		} else if (subCommand.equalsIgnoreCase("destroy")) {
 			return handleDestroy(sender);
@@ -41,8 +43,8 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 			return handleClaim(sender);
 		} else if (subCommand.equalsIgnoreCase("unclaim")) {
 			return handleUnclaim(sender);
-		} else if (subCommand.equalsIgnoreCase("help")) {
-			return handleHelp(sender);
+		} else if (subCommand.equalsIgnoreCase("rename")) {
+			return handleRename(sender, subCommandArgs);
 		}
 
 		showUsageInfo(sender);
@@ -57,6 +59,20 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 	@Override
 	public void showUsageInfo(CommandSender sender) {
 		sender.sendMessage("Unknown command. Type " + ChatColor.AQUA + "/g help");
+	}
+	
+	private boolean handleHelp(CommandSender sender) {
+		sender.sendMessage(ChatColor.AQUA + "Groups help:");
+		sender.sendMessage("/g create <name> - create a group");
+		sender.sendMessage("/g destroy - destroy a group you own");
+		sender.sendMessage("/g invite <player> - invite a player to your group");
+		sender.sendMessage("/g join <name> - attemp to join a group");
+		sender.sendMessage("/g leave - leave a group you are in");
+		sender.sendMessage("/g claim - claim land for your group");
+		sender.sendMessage("/g unclaim - unclaim land from your group");
+		sender.sendMessage("/g rename <name> - rename your group");
+		
+		return true;
 	}
 	
 	private boolean handleCreate(CommandSender sender, String[] args) {
@@ -137,15 +153,16 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		return true;
 	}
 	
-	private boolean handleHelp(CommandSender sender) {
-		sender.sendMessage("Groups help:");
-		sender.sendMessage("/g create <name> - create a group");
-		sender.sendMessage("/g destroy - destroy a group you own");
-		sender.sendMessage("/g invite <player> - invite a player to your group");
-		sender.sendMessage("/g join <name> - attemp to join a group");
-		sender.sendMessage("/g leave - leave a group you are in");
-		sender.sendMessage("/g claim - claim land for your group");
-		sender.sendMessage("/g unclaim - unclaim land from your group");
+	private boolean handleRename(CommandSender sender, String[] args) {
+		if (args.length != 1) {
+			sender.sendMessage("You must specify a name to rename your group to.");
+			return false;
+		}
+		
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		groupManager.rename(player, args[0]);
 		
 		return true;
 	}

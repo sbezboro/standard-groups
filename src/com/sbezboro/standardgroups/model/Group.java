@@ -119,6 +119,10 @@ public class Group extends PersistedObject {
 		
 		this.save();
 	}
+	
+	public void rename(String name) {
+		setIdentifier(name);
+	}
 
 	public int getMaxClaims() {
 		return maxClaims.getValue();
