@@ -398,7 +398,7 @@ public class GroupManager extends BaseManager {
 		    delim = ", ";
 		}
 		
-		player.sendMessage("Group info: " + group.getName());
+		player.sendMessage("Group: " + group.getName());
 		player.sendMessage("==============================");
 		player.sendMessage("Established: " + MiscUtil.friendlyTimestamp(group.getEstablished()));
 		player.sendMessage("Land: " + group.getClaims().size());

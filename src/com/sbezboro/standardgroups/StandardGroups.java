@@ -3,15 +3,12 @@ package com.sbezboro.standardgroups;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sbezboro.standardgroups.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sbezboro.standardgroups.commands.GroupCommand;
-import com.sbezboro.standardgroups.listeners.BlockBreakListener;
-import com.sbezboro.standardgroups.listeners.BlockPlaceEvent;
-import com.sbezboro.standardgroups.listeners.PlayerInteractListener;
-import com.sbezboro.standardgroups.listeners.PlayerMoveListener;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -88,6 +85,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new BlockPlaceEvent(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
+		pluginManager.registerEvents(new HangingBreakListener(basePlugin, this), this);
+		pluginManager.registerEvents(new HangingPlaceListener(basePlugin, this), this);
 	}
 	
 	public int getGroupNameMinLength() {
