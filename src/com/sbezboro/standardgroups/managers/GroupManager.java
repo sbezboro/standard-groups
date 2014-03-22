@@ -243,6 +243,11 @@ public class GroupManager extends BaseManager {
 			
 			player.sendMessage(ChatColor.YELLOW + "You have left the group " + group.getName() + ".");
 		} else {
+			for (Claim claim : group.getClaims()) {
+				locationToGroupMap.remove(claim.getLocationKey());
+				locationToClaimMap.remove(claim.getLocationKey());
+			}
+			
 			storage.destroyGroup(group);
 			
 			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");

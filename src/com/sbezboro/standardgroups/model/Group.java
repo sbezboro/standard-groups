@@ -22,20 +22,19 @@ public class Group extends PersistedObject {
 
 	public Group(FileStorage storage, String name) {
 		super(storage, name);
-		
-		initialize();
 	}
 	
 	public Group(FileStorage storage, String name, long established) {
 		super(storage, name);
 		
-		initialize();
-		
 		this.established.setValue(established);
 		this.maxClaims.setValue(10);
 	}
 	
-	public void initialize() {
+	@Override
+	public void loadProperties() {
+		super.loadProperties();
+		
 		for (Claim claim : claims) {
 			claim.setGroup(this);
 		}
