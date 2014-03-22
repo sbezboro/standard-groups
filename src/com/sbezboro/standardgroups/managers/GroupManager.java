@@ -15,6 +15,7 @@ import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import com.sbezboro.standardplugin.util.MiscUtil;
 
 public class GroupManager extends BaseManager {
 	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
@@ -362,6 +363,47 @@ public class GroupManager extends BaseManager {
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has renamed the group to " + name + ".");
 			}
 		}
+	}
+
+	public void groupInfo(StandardPlayer player, String groupName) {
+		Group group;
+		
+		if (groupName == null) {
+			group = getPlayerGroup(player);
+			
+			if (group == null) {
+				player.sendMessage("You must be in a group before you can use that command.");
+				return;
+			}
+		} else {
+			group = storage.getGroupByName(groupName);
+			
+			if (group == null) {
+				String message = "That group doesn't exist.";
+				
+				if (player == null) {
+					Bukkit.getConsoleSender().sendMessage(message);
+				} else {
+					player.sendMessage(message);
+				}
+				
+				return;
+			}
+		}
+		
+		String members = "";
+		String delim = "";
+		for (StandardPlayer member : group.getPlayers()) {
+			members += delim + member.getDisplayName() + ChatColor.RESET;
+		    delim = ", ";
+		}
+		
+		player.sendMessage("Group info: " + group.getName());
+		player.sendMessage("==============================");
+		player.sendMessage("Established: " + MiscUtil.friendlyTimestamp(group.getEstablished()));
+		player.sendMessage("Land: " + group.getClaims().size());
+		player.sendMessage("Land limit: " + group.getMaxClaims());
+		player.sendMessage("Members: " + members);
 	}
 
 }

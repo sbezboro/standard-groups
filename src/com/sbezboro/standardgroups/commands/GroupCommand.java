@@ -28,6 +28,7 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		addSubCommand(new LeaveCommand(plugin, this));
 		addSubCommand(new RenameCommand(plugin, this));
 		addSubCommand(new UnclaimCommand(plugin, this));
+		addSubCommand(new InfoCommand(plugin, this));
 		addSubCommand(new HelpCommand(plugin, this, subCommands.values()));
 	}
 

@@ -119,6 +119,10 @@ public class Group extends PersistedObject {
 		this.save();
 	}
 	
+	public long getEstablished() {
+		return established.getValue();
+	}
+	
 	public void rename(String name) {
 		setIdentifier(name);
 	}
