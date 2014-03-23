@@ -1,8 +1,11 @@
 package com.sbezboro.standardgroups.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.Location;
 
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -13,22 +16,33 @@ import com.sbezboro.standardplugin.persistence.PersistedProperty;
 import com.sbezboro.standardplugin.persistence.storages.FileStorage;
 
 public class Group extends PersistedObject {
-	public PersistedListProperty<String> members;
-	public PersistedListProperty<String> invites;
-	public PersistedListProperty<Claim> claims;
-	
-	public PersistedProperty<Long> established;
-	public PersistedProperty<Integer> maxClaims;
+	private PersistedListProperty<String> members;
+	private PersistedListProperty<String> invites;
+	private PersistedListProperty<Claim> claims;
+	private PersistedListProperty<Lock> locks;
+
+	private PersistedProperty<Long> established;
+	private PersistedProperty<Integer> maxClaims;
+
+	private Map<String, Lock> locationToLockMap;
 
 	public Group(FileStorage storage, String name) {
 		super(storage, name);
+
+		initialize();
 	}
 	
 	public Group(FileStorage storage, String name, long established) {
 		super(storage, name);
-		
+
 		this.established.setValue(established);
 		this.maxClaims.setValue(10);
+
+		initialize();
+	}
+
+	public void initialize() {
+		this.locationToLockMap = new HashMap<String, Lock>();
 	}
 	
 	@Override
@@ -38,6 +52,12 @@ public class Group extends PersistedObject {
 		for (Claim claim : claims) {
 			claim.setGroup(this);
 		}
+
+		for (Lock lock : locks) {
+			lock.setGroup(this);
+
+			locationToLockMap.put(MiscUtil.getLocationKey(lock.getLocation()), lock);
+		}
 	}
 
 	@Override
@@ -45,6 +65,7 @@ public class Group extends PersistedObject {
 		members = createList(String.class, "members");
 		invites = createList(String.class, "invites");
 		claims = createList(Claim.class, "claims");
+		locks = createList(Lock.class, "locks");
 		
 		established = createProperty(Long.class, "established");
 		maxClaims = createProperty(Integer.class, "max-claims");
@@ -102,6 +123,37 @@ public class Group extends PersistedObject {
 		
 		this.save();
 	}
+
+	public List<Lock>getLocks() {
+		return locks.getList();
+	}
+
+	public Lock getLock(Location location) {
+		return locationToLockMap.get(MiscUtil.getLocationKey(location));
+	}
+
+	public Lock lock(StandardPlayer player, Location location) {
+		Lock lock = new Lock(player, location, this);
+		locks.add(lock);
+
+		locationToLockMap.put(MiscUtil.getLocationKey(location), lock);
+
+		this.save();
+
+		return lock;
+	}
+
+	public void unlock(StandardPlayer player, Lock lock) {
+		lock.getMembers().remove(player.getName());
+
+		if (lock.getMembers().isEmpty()) {
+			locks.remove(lock);
+
+			locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
+		}
+
+		this.save();
+	}
 	
 	public boolean isInvited(String username) {
 		return invites.contains(username);
@@ -134,5 +186,4 @@ public class Group extends PersistedObject {
 	public void setMaxClaims(int maxClaims) {
 		this.maxClaims.setValue(maxClaims);;
 	}
-
 }

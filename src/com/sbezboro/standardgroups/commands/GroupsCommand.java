@@ -3,6 +3,7 @@ package com.sbezboro.standardgroups.commands;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -11,11 +12,11 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 
-public class GroupCommand extends SubPluginCommand<StandardGroups> {
+public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 	
 	private Map<String, SubCommand> subCommands;
 	
-	public GroupCommand(StandardPlugin plugin, StandardGroups subPlugin) {
+	public GroupsCommand(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin, "groups");
 		
 		subCommands = new HashMap<String, SubCommand>();
@@ -29,6 +30,8 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 		addSubCommand(new RenameCommand(plugin, this));
 		addSubCommand(new UnclaimCommand(plugin, this));
 		addSubCommand(new InfoCommand(plugin, this));
+		addSubCommand(new LockCommand(plugin, this));
+		addSubCommand(new UnlockCommand(plugin, this));
 		addSubCommand(new HelpCommand(plugin, this, subCommands.values()));
 	}
 
@@ -60,6 +63,7 @@ public class GroupCommand extends SubPluginCommand<StandardGroups> {
 
 	@Override
 	public void showUsageInfo(CommandSender sender) {
+		sender.sendMessage("Unknown command. Type " + ChatColor.AQUA + "/g help");
 	}
 	
 	private void addSubCommand(SubCommand subCommand) {

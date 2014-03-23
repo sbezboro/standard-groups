@@ -1,9 +1,11 @@
 package com.sbezboro.standardgroups.managers;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.sbezboro.standardgroups.model.Lock;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,8 +18,47 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.util.MiscUtil;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 
 public class GroupManager extends BaseManager {
+
+	@SuppressWarnings("serial")
+	private static final HashSet<Material> PROTECTED_BLOCKS = new HashSet<Material>() {{
+		add(Material.CHEST);
+		add(Material.WOODEN_DOOR);
+		add(Material.FENCE_GATE);
+		add(Material.IRON_DOOR);
+		add(Material.TRAP_DOOR);
+		add(Material.ENDER_CHEST);
+		add(Material.HOPPER);
+		add(Material.FURNACE);
+		add(Material.DISPENSER);
+		add(Material.DROPPER);
+		add(Material.ENCHANTMENT_TABLE);
+		add(Material.TRAPPED_CHEST);
+		add(Material.JUKEBOX);
+		add(Material.BREWING_STAND);
+		add(Material.ANVIL);
+		add(Material.DRAGON_EGG);
+		add(Material.NOTE_BLOCK);
+		add(Material.CAULDRON);
+		add(Material.REDSTONE_COMPARATOR);
+		add(Material.REDSTONE_COMPARATOR_OFF);
+		add(Material.REDSTONE_COMPARATOR_ON);
+		add(Material.DIODE);
+		add(Material.DIODE_BLOCK_OFF);
+		add(Material.DIODE_BLOCK_ON);
+	}};
+
+	@SuppressWarnings("serial")
+	private static final HashSet<EntityType> PROTECTED_ENTITIES = new HashSet<EntityType>() {{
+		add(EntityType.ITEM_FRAME);
+	}};
+
 	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
 	private final String groupNamePatExplanation = "Group names can only contain letters and underscores.";
 	
@@ -64,6 +105,24 @@ public class GroupManager extends BaseManager {
 	public boolean playerInGroup(StandardPlayer player, Group group) {
 		return getPlayerGroup(player) == group;
 	}
+
+	public Group matchGroup(String name) {
+		for (Group group : storage.getGroups()) {
+			if (group.getName().toLowerCase().startsWith(name.toLowerCase())) {
+				return group;
+			}
+		}
+
+		return null;
+	}
+
+	public static boolean isBlockTypeProtected(Block block) {
+		return PROTECTED_BLOCKS.contains(block.getType());
+	}
+
+	public static boolean isEntityTypeProtected(Entity entity) {
+		return PROTECTED_ENTITIES.contains(entity.getType());
+	}
 	
 	public void createGroup(StandardPlayer player, String groupName) {
 		if (getPlayerGroup(player) != null) {
@@ -95,8 +154,10 @@ public class GroupManager extends BaseManager {
 		StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has created a new group called " + groupName + ".");
 	}
 	
-	public void destroyGroup(StandardPlayer player, String groupName) {
+	public void destroyGroup(CommandSender sender, String groupName) {
 		Group group;
+
+		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
 		// No group name means destroying own group
 		if (groupName == null) {
@@ -110,17 +171,10 @@ public class GroupManager extends BaseManager {
 		} else {
 			// Check if console or admin player
 			if (player == null || player.hasPermission("standardgroups.groups.admin")) {
-				group = storage.getGroupByName(groupName);
+				group = matchGroup(groupName);
 				
 				if (group == null) {
-					String message = "That group doesn't exist.";
-					
-					if (player == null) {
-						Bukkit.getConsoleSender().sendMessage(message);
-					} else {
-						player.sendMessage(message);
-					}
-					
+					sender.sendMessage("That group doesn't exist.");
 					return;
 				}
 			} else {
@@ -182,7 +236,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 		
-		invitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited you to join their group " + group.getName() + ".");
+		invitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited you to join their group " + group.getName() + ". To join, type /g join " + group.getName());
 	}
 
 	public void joinGroup(StandardPlayer player, String groupName) {
@@ -191,7 +245,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		Group group = storage.getGroupByName(groupName);
+		Group group = matchGroup(groupName);
 		
 		if (group == null) {
 			player.sendMessage("That group does not exist.");
@@ -376,7 +430,7 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		} else {
-			group = storage.getGroupByName(groupName);
+			group = matchGroup(groupName);
 			
 			if (group == null) {
 				String message = "That group doesn't exist.";
@@ -406,4 +460,73 @@ public class GroupManager extends BaseManager {
 		player.sendMessage("Members: " + members);
 	}
 
+	public void lock(StandardPlayer player, Block block) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can lock things.");
+			return;
+		}
+
+		if (!PROTECTED_BLOCKS.contains(block.getType())) {
+			player.sendMessage("You can't lock this block.");
+			return;
+		}
+
+		Location location = block.getLocation();
+
+		Claim claim = locationToClaimMap.get(Claim.getLocationKey(location));
+
+		if (claim == null) {
+			player.sendMessage("You can only lock things in your group's territory.");
+			return;
+		}
+
+		if (group.getLock(location) != null) {
+			player.sendMessage("A lock already exists on this block.");
+			return;
+		}
+
+		group.lock(player, location);
+
+		player.sendMessage(ChatColor.YELLOW + "You have locked this block for yourself.");
+	}
+
+	public void unlock(StandardPlayer player, Block block) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can unlock things.");
+			return;
+		}
+
+		Location location = block.getLocation();
+
+		Claim claim = locationToClaimMap.get(Claim.getLocationKey(location));
+
+		if (claim == null) {
+			player.sendMessage("You can only unlock things in your group's territory.");
+			return;
+		}
+
+		Lock lock = group.getLock(location);
+
+		if (lock == null) {
+			player.sendMessage("No lock exists on this block.");
+			return;
+		}
+
+		if (!lock.getMembers().contains(player.getName())) {
+			player.sendMessage("The lock on this block does not belong to you.");
+			return;
+		}
+
+		group.unlock(player, lock);
+
+		if (lock.getMembers().isEmpty()) {
+			player.sendMessage(ChatColor.YELLOW + "You have released the lock on this block.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "You have revoked access to this block for yourself.");
+		}
+	}
 }

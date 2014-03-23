@@ -21,8 +21,8 @@ public class Claim extends PersistableImpl implements Persistable {
 	}
 	
 	public Claim(StandardPlayer player, Location location, Group group) {
-		this.x = location.getChunk().getX();
-		this.z = location.getChunk().getZ();
+		this.x = location.getBlockX() >> 4;
+		this.z = location.getBlockZ() >> 4;
 		this.world = location.getWorld().getName();
 		this.player = player.getName();
 		this.group = group;
@@ -53,7 +53,7 @@ public class Claim extends PersistableImpl implements Persistable {
 	}
 	
 	public static String getLocationKey(Location location) {
-		return location.getWorld().getName() + ";" + location.getChunk().getX() + ";" + location.getChunk().getZ();
+		return location.getWorld().getName() + ";" + (location.getBlockX() >> 4) + ";" + (location.getBlockZ() >> 4);
 	}
 
 	public int getX() {

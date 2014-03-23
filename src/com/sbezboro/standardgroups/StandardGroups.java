@@ -3,12 +3,12 @@ package com.sbezboro.standardgroups;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sbezboro.standardgroups.commands.GroupsCommand;
 import com.sbezboro.standardgroups.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.sbezboro.standardgroups.commands.GroupCommand;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -75,7 +75,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	@Override
 	public List<ICommand> getCommands() {
 		List<ICommand> commands = new ArrayList<ICommand>();
-		commands.add(new GroupCommand(basePlugin, this));
+		commands.add(new GroupsCommand(basePlugin, this));
 		return commands;
 	}
 
