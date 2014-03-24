@@ -39,6 +39,6 @@ public class LockCommand extends SubCommand {
 	public void showHelp(CommandSender sender) {
 		sender.sendMessage("/g lock - lock the block being looked at");
 		sender.sendMessage("/g lock add <player> - give a player access to a block");
-		sender.sendMessage("/g lock remove <player> - revoke access to a block");
+		sender.sendMessage("/g lock remove <player> - remove a player access to a block");
 	}
 }
