@@ -82,6 +82,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	private void registerEvents() {
 		PluginManager pluginManager = getServer().getPluginManager();
 		pluginManager.registerEvents(new BlockBreakListener(basePlugin, this), this);
+		pluginManager.registerEvents(new BlockPistonExtendListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceEvent(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
