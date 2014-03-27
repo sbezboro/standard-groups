@@ -46,9 +46,7 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 		System.arraycopy(args, 1, subCommandArgs, 0, args.length - 1);
 		
 		SubCommand subCommand = subCommands.get(args[0]);
-		if (subCommand == null) {
-			showUsageInfo(sender);
-		} else {
+		if (subCommand != null) {
 			return subCommand.handle(sender, subCommandArgs);
 		}
 
