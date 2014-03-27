@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -32,7 +33,7 @@ public class JoinCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g join <name> - attemp to join a group");
+		sender.sendMessage(ChatColor.YELLOW + "/g join <name>" + ChatColor.RESET + " - attemp to join a group");
 	}
 	
 }

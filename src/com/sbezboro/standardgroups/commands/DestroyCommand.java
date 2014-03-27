@@ -5,6 +5,7 @@ import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
@@ -39,6 +40,6 @@ public class DestroyCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g destroy - destroy a group you own");
+		sender.sendMessage(ChatColor.YELLOW + "/g destroy" + ChatColor.RESET + " - destroy a group you own");
 	}
 }

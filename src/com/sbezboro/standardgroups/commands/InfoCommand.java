@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -42,6 +43,6 @@ public class InfoCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g info [name] - show group info");
+		sender.sendMessage(ChatColor.YELLOW + "/g info [name]" + ChatColor.RESET + " - show group info");
 	}
 }

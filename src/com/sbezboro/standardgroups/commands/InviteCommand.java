@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -32,7 +33,7 @@ public class InviteCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g invite <player> - invite a player to your group");
+		sender.sendMessage(ChatColor.YELLOW + "/g invite <player>" + ChatColor.RESET + " - invite a player to your group");
 	}
 	
 }

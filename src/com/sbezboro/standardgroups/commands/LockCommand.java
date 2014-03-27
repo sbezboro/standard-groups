@@ -6,6 +6,7 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
@@ -21,24 +22,61 @@ public class LockCommand extends SubCommand {
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 
-		if (args.length == 0) {
-			Block block = player.getTargetBlock(3);
+		Block block = player.getTargetBlock(3);
 
+		if (args.length == 0) {
 			if (block == null) {
 				sender.sendMessage("No block in range");
 				return true;
 			}
 
 			groupManager.lock(player, block);
+
+			return true;
+		} else if (args.length == 2) {
+			if (args[0].equalsIgnoreCase("add")) {
+				if (block == null) {
+					sender.sendMessage("No block in range");
+					return true;
+				}
+
+				StandardPlayer otherPlayer = plugin.matchPlayer(args[1]);
+
+				if (otherPlayer == null) {
+					sender.sendMessage("That player doesn't exist");
+					return true;
+				}
+
+				groupManager.addLockMember(player, block, otherPlayer);
+
+				return true;
+			} else if (args[0].equalsIgnoreCase("remove")) {
+				if (block == null) {
+					sender.sendMessage("No block in range");
+					return true;
+				}
+
+				StandardPlayer otherPlayer = plugin.matchPlayer(args[1]);
+
+				if (otherPlayer == null) {
+					sender.sendMessage("That player doesn't exist");
+					return true;
+				}
+
+				groupManager.removeLockMember(player, block, otherPlayer);
+
+				return true;
+			}
 		}
-		
-		return true;
+
+		showHelp(sender);
+		return false;
 	}
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g lock - lock the block being looked at");
-		sender.sendMessage("/g lock add <player> - give a player access to a block");
-		sender.sendMessage("/g lock remove <player> - revoke access to a block");
+		sender.sendMessage(ChatColor.YELLOW + "/g lock" + ChatColor.RESET + " - lock the block being looked at");
+		sender.sendMessage(ChatColor.YELLOW + "/g lock add <player>" + ChatColor.RESET + " - give a player access to an existing lock");
+		sender.sendMessage(ChatColor.YELLOW + "/g lock remove <player>" + ChatColor.RESET + " - revoke a player's access to an existing lock");
 	}
 }

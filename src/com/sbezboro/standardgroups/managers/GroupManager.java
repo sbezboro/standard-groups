@@ -577,4 +577,78 @@ public class GroupManager extends BaseManager {
 
 		player.sendMessage(ChatColor.YELLOW + "You have released the lock on this block.");
 	}
+
+	public void addLockMember(StandardPlayer player, Block block, StandardPlayer otherPlayer) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can add a member to a lock.");
+			return;
+		}
+
+		if (group != getPlayerGroup(otherPlayer)) {
+			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		Location location = block.getLocation();
+
+		Lock lock = group.getLock(location);
+
+		if (lock == null) {
+			player.sendMessage("No lock exists on this block.");
+			return;
+		}
+
+		if (!lock.isOwner(player)) {
+			player.sendMessage("You are not the owner of this lock.");
+			return;
+		}
+
+		if (lock.hasAccess(otherPlayer)) {
+			player.sendMessage("That player already has access.");
+			return;
+		}
+
+		group.addLockMember(lock, otherPlayer);
+
+		player.sendMessage(ChatColor.YELLOW + "You have given " + otherPlayer.getDisplayName(false) + " access to this lock.");
+	}
+
+	public void removeLockMember(StandardPlayer player, Block block, StandardPlayer otherPlayer) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you revoke access to locks.");
+			return;
+		}
+
+		if (group != getPlayerGroup(otherPlayer)) {
+			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		Location location = block.getLocation();
+
+		Lock lock = group.getLock(location);
+
+		if (lock == null) {
+			player.sendMessage("No lock exists on this block.");
+			return;
+		}
+
+		if (!lock.isOwner(player)) {
+			player.sendMessage("You are not the owner of this lock.");
+			return;
+		}
+
+		if (!lock.hasAccess(otherPlayer)) {
+			player.sendMessage("That player already doesn't have access.");
+			return;
+		}
+
+		group.removeLockMember(lock, otherPlayer);
+
+		player.sendMessage(ChatColor.YELLOW + "You have revoked access to this lock from " + otherPlayer.getDisplayName(false) + ".");
+	}
 }

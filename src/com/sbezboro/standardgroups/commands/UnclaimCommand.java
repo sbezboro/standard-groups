@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -27,7 +28,7 @@ public class UnclaimCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g unclaim - unclaim land from your group");
+		sender.sendMessage(ChatColor.YELLOW + "/g unclaim" + ChatColor.RESET + " - unclaim land from your group");
 	}
 	
 }

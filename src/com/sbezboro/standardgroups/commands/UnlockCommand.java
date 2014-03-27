@@ -6,6 +6,7 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
@@ -35,6 +36,6 @@ public class UnlockCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g unlock - unlock the block being looked at");
+		sender.sendMessage(ChatColor.YELLOW + "/g unlock" + ChatColor.RESET + " - unlock the block being looked at");
 	}
 }

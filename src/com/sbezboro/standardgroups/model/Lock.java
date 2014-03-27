@@ -84,4 +84,12 @@ public class Lock extends PersistableImpl implements Persistable {
 		return members.contains(player.getName());
 	}
 
+	public void addMember(StandardPlayer player) {
+		members.add(player.getName());
+	}
+
+	public void removeMember(StandardPlayer otherPlayer) {
+		members.remove(otherPlayer.getName());
+	}
+
 }

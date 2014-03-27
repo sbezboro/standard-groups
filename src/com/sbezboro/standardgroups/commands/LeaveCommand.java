@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -27,7 +28,7 @@ public class LeaveCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g leave - leave a group you are in");
+		sender.sendMessage(ChatColor.YELLOW + "/g leave" + ChatColor.RESET + " - leave a group you are in");
 	}
 	
 }

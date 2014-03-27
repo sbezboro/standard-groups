@@ -195,4 +195,16 @@ public class Group extends PersistedObject {
 	public void setMaxClaims(int maxClaims) {
 		this.maxClaims.setValue(maxClaims);;
 	}
+
+	public void addLockMember(Lock lock, StandardPlayer otherPlayer) {
+		lock.addMember(otherPlayer);
+
+		this.save();
+	}
+
+	public void removeLockMember(Lock lock, StandardPlayer otherPlayer) {
+		lock.removeMember(otherPlayer);
+
+		this.save();
+	}
 }

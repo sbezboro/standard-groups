@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -32,7 +33,7 @@ public class RenameCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g rename <name> - rename your group");
+		sender.sendMessage(ChatColor.YELLOW + "/g rename <name>" + ChatColor.RESET + " - rename your group");
 	}
 	
 }

@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.commands;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -27,7 +28,7 @@ public class ClaimCommand extends SubCommand {
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage("/g claim - claim land for your group");
+		sender.sendMessage(ChatColor.YELLOW + "/g claim" + ChatColor.RESET + " - claim land for your group");
 	}
 	
 }
