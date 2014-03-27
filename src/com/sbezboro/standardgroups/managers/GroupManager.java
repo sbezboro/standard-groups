@@ -20,6 +20,7 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -123,6 +124,51 @@ public class GroupManager extends BaseManager {
 	public static boolean isEntityTypeProtected(Entity entity) {
 		return PROTECTED_ENTITIES.contains(entity.getType());
 	}
+
+	public boolean isGroupsAdmin(StandardPlayer player) {
+		return player.hasPermission("standardgroups.groups.admin");
+	}
+
+	public Lock getLockAffectedByBlock(Group group, Location location) {
+		Block targetBlock = location.getBlock();
+		Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
+		Block belowBlock = targetBlock.getRelative(BlockFace.DOWN);
+
+		Lock lock = group.getLock(location);
+
+		// Check for surrounding block locks that may be affected by the target block:
+		// 1. Blocks above and below for potential doors
+		// 2. Blocks adjacent for potential double chests
+		if (lock == null) {
+			Block testBlock = null;
+
+			if (aboveBlock.getType() == Material.WOODEN_DOOR) {
+				testBlock = aboveBlock;
+			} else if (belowBlock.getType() == Material.WOODEN_DOOR) {
+				testBlock = belowBlock;
+			} else if (targetBlock.getType() == Material.CHEST) {
+				Block[] testBlocks = new Block[] {
+						targetBlock.getRelative(BlockFace.NORTH),
+						targetBlock.getRelative(BlockFace.EAST),
+						targetBlock.getRelative(BlockFace.SOUTH),
+						targetBlock.getRelative(BlockFace.WEST)
+				};
+
+				for (Block block : testBlocks) {
+					if (block.getType() == Material.CHEST) {
+						testBlock = block;
+						continue;
+					}
+				}
+			}
+
+			if (testBlock != null) {
+				lock = group.getLock(testBlock.getLocation());
+			}
+		}
+
+		return lock;
+	}
 	
 	public void createGroup(StandardPlayer player, String groupName) {
 		if (getPlayerGroup(player) != null) {
@@ -167,10 +213,15 @@ public class GroupManager extends BaseManager {
 				player.sendMessage("You can't destroy a group if you aren't in one.");
 				return;
 			}
+
+			if (!group.isLeader(player)) {
+				player.sendMessage("You can only destroy a group if you are the leader.");
+				return;
+			}
 		// Trying to destroy another group by name
 		} else {
 			// Check if console or admin player
-			if (player == null || player.hasPermission("standardgroups.groups.admin")) {
+			if (player == null || isGroupsAdmin(player)) {
 				group = matchGroup(groupName);
 				
 				if (group == null) {
@@ -216,12 +267,12 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 		
-		if (group.isInvited(invitedPlayer.getName())) {
+		if (group.isInvited(invitedPlayer)) {
 			player.sendMessage("That player has already been invited to your group.");
 			return;
 		}
 		
-		if (group.isMember(invitedPlayer.getName())) {
+		if (group.isMember(invitedPlayer)) {
 			player.sendMessage("That player is already a member of your group.");
 			return;
 		}
@@ -252,7 +303,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 		
-		if (!group.isInvited(player.getName())) {
+		if (!group.isInvited(player)) {
 			for (StandardPlayer other : group.getPlayers()) {
 				if (other.isOnline()) {
 					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " wants to join your group. Invite them by typing /g invite " + player.getDisplayName(false));
@@ -516,17 +567,13 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		if (!lock.getMembers().contains(player.getName())) {
-			player.sendMessage("The lock on this block does not belong to you.");
+		if (!lock.isOwner(player)) {
+			player.sendMessage("You are not the owner of this lock.");
 			return;
 		}
 
-		group.unlock(player, lock);
+		group.unlock(lock);
 
-		if (lock.getMembers().isEmpty()) {
-			player.sendMessage(ChatColor.YELLOW + "You have released the lock on this block.");
-		} else {
-			player.sendMessage(ChatColor.YELLOW + "You have revoked access to this block for yourself.");
-		}
+		player.sendMessage(ChatColor.YELLOW + "You have released the lock on this block.");
 	}
 }

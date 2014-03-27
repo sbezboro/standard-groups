@@ -3,6 +3,7 @@ package com.sbezboro.standardgroups.listeners;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import com.sbezboro.standardgroups.StandardGroups;
@@ -18,7 +19,7 @@ public class BlockPlaceEvent extends SubPluginEventListener<StandardGroups> impl
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onBlockPlace(final org.bukkit.event.block.BlockPlaceEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 		

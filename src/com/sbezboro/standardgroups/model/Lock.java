@@ -1,6 +1,5 @@
 package com.sbezboro.standardgroups.model;
 
-import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.persistables.Persistable;
 import com.sbezboro.standardplugin.persistence.persistables.PersistableImpl;
@@ -14,6 +13,7 @@ import java.util.Map;
 
 public class Lock extends PersistableImpl implements Persistable {
 	private PersistableLocation location;
+	private String owner;
 	private List<String> members;
 	private LockType type;
 
@@ -30,6 +30,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		this.location = new PersistableLocation(location);
 		this.group = group;
 
+		this.owner = player.getName();
 		this.members = new ArrayList<String>();
 		this.members.add(player.getName());
 
@@ -42,6 +43,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		location = new PersistableLocation();
 		location.loadFromPersistance((Map<String, Object>) map.get("location"));
 
+		owner = (String) map.get("owner");
 		members = (List<String>) map.get("members");
 		type = LockType.valueOf((String) map.get("type"));
 	}
@@ -51,6 +53,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		Map<String, Object> map = new HashMap<String, Object>();
 		
 		map.put("location", location.mapRepresentation());
+		map.put("owner", owner);
 		map.put("members", members);
 		map.put("type", type.toString());
 		
@@ -71,6 +74,14 @@ public class Lock extends PersistableImpl implements Persistable {
 
 	public List<String> getMembers() {
 		return members;
+	}
+
+	public boolean isOwner(StandardPlayer player) {
+		return owner.equals(player.getName());
+	}
+
+	public boolean hasAccess(StandardPlayer player) {
+		return members.contains(player.getName());
 	}
 
 }

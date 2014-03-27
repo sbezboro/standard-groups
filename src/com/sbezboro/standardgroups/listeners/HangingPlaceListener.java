@@ -9,6 +9,7 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
@@ -19,7 +20,7 @@ public class HangingPlaceListener extends SubPluginEventListener<StandardGroups>
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onHangingBreak(HangingPlaceEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 

@@ -3,6 +3,7 @@ package com.sbezboro.standardgroups.listeners;
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Group;
+import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
@@ -13,6 +14,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -26,7 +28,7 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPlayerInteract(final PlayerInteractEvent event) {
 		Block clickedBlock = event.getClickedBlock();
 		ItemStack itemStack = event.getItem();
@@ -37,23 +39,23 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 					(itemStack != null && itemStack.getType() == Material.INK_SACK)) {
 				StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 
-				checkLocation(player, clickedBlock.getLocation(), event);
+				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
 		}
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onPlayerEntityInteract(final PlayerInteractEntityEvent event) {
 		Entity entity = event.getRightClicked();
 
 		if (GroupManager.isEntityTypeProtected(entity)) {
 			StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 
-			checkLocation(player, entity.getLocation(), event);
+			checkPlayerAccess(player, entity.getLocation(), event);
 		}
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onEntityDamage(final EntityDamageByEntityEvent event) {
 		Entity entity = event.getEntity();
 
@@ -61,18 +63,31 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 			StandardPlayer player = plugin.getStandardPlayer(event.getDamager());
 
 			if (player != null) {
-				checkLocation(player, entity.getLocation(), event);
+				checkPlayerAccess(player, entity.getLocation(), event);
 			}
 		}
 	}
 
-	private void checkLocation(StandardPlayer player, Location location, Cancellable event) {
+	private void checkPlayerAccess(StandardPlayer player, Location location, Cancellable event) {
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
-			if (!groupManager.playerInGroup(player, group)) {
+			if (groupManager.playerInGroup(player, group)) {
+				Lock lock = groupManager.getLockAffectedByBlock(group, location);
+
+				if (lock != null) {
+					if (lock.isOwner(player)) {
+						player.sendMessage(ChatColor.YELLOW + "Using locked block that you own");
+					} else if (lock.hasAccess(player)) {
+						player.sendMessage(ChatColor.YELLOW + "Using locked block that you have access to");
+					} else {
+						event.setCancelled(true);
+						player.sendMessage(ChatColor.RED + "This block is locked and you do not have access to it.");
+					}
+				}
+			} else {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "Cannot use this in the territory of " + group.getName());
 			}

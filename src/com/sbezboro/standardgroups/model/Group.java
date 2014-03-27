@@ -23,6 +23,7 @@ public class Group extends PersistedObject {
 
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Integer> maxClaims;
+	private PersistedProperty<String> leader;
 
 	private Map<String, Lock> locationToLockMap;
 
@@ -32,11 +33,13 @@ public class Group extends PersistedObject {
 		initialize();
 	}
 	
-	public Group(FileStorage storage, String name, long established) {
+	public Group(FileStorage storage, String name, long established, StandardPlayer leader) {
 		super(storage, name);
 
 		this.established.setValue(established);
 		this.maxClaims.setValue(10);
+		this.leader.setValue(leader.getName());
+		this.members.add(leader.getName());
 
 		initialize();
 	}
@@ -69,6 +72,7 @@ public class Group extends PersistedObject {
 		
 		established = createProperty(Long.class, "established");
 		maxClaims = createProperty(Integer.class, "max-claims");
+		leader = createProperty(String.class, "leader");
 	}
 	
 	public String getName() {
@@ -86,9 +90,13 @@ public class Group extends PersistedObject {
 		
 		this.save();
 	}
+
+	public boolean isLeader(StandardPlayer player) {
+		return leader.getValue().equals(player.getName());
+	}
 	
-	public boolean isMember(String username) {
-		return members.contains(username);
+	public boolean isMember(StandardPlayer player) {
+		return members.contains(player.getName());
 	}
 	
 	public List<String> getMembers() {
@@ -143,20 +151,21 @@ public class Group extends PersistedObject {
 		return lock;
 	}
 
-	public void unlock(StandardPlayer player, Lock lock) {
-		lock.getMembers().remove(player.getName());
+	public void unlock(Lock lock) {
+		locks.remove(lock);
 
-		if (lock.getMembers().isEmpty()) {
-			locks.remove(lock);
-
-			locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
-		}
+		locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
 
 		this.save();
 	}
+
+	public void clearLocks() {
+		this.locationToLockMap.clear();
+		this.locks.clear();
+	}
 	
-	public boolean isInvited(String username) {
-		return invites.contains(username);
+	public boolean isInvited(StandardPlayer player) {
+		return invites.contains(player.getName());
 	}
 	
 	public void invite(String username) {
