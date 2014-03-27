@@ -53,6 +53,7 @@ public class GroupManager extends BaseManager {
 		add(Material.DIODE);
 		add(Material.DIODE_BLOCK_OFF);
 		add(Material.DIODE_BLOCK_ON);
+		add(Material.BEACON);
 	}};
 
 	@SuppressWarnings("serial")
