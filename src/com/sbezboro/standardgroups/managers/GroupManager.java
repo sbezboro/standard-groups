@@ -509,12 +509,11 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void groupInfo(CommandSender sender, String groupName) {
-		Group group;
-
+	public void groupInfo(CommandSender sender, String usernameOrGroup) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
+		Group group;
 		
-		if (groupName == null) {
+		if (usernameOrGroup == null) {
 			group = getPlayerGroup(player);
 			
 			if (group == null) {
@@ -522,11 +521,21 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		} else {
-			group = matchGroup(groupName);
+			group = matchGroup(usernameOrGroup);
 			
 			if (group == null) {
-				sender.sendMessage("That group doesn't exist.");
-				return;
+				StandardPlayer other = plugin.matchPlayer(usernameOrGroup);
+				if (other == null) {
+					sender.sendMessage("No group or player by that name.");
+					return;
+				} else {
+					group = getPlayerGroup(other);
+
+					if (group == null) {
+						sender.sendMessage("The player " + other.getDisplayName(false) + " is not in a group.");
+						return;
+					}
+				}
 			}
 		}
 		
