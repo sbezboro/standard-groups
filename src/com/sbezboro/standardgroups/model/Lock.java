@@ -1,5 +1,6 @@
 package com.sbezboro.standardgroups.model;
 
+import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.persistables.Persistable;
 import com.sbezboro.standardplugin.persistence.persistables.PersistableImpl;
@@ -72,8 +73,18 @@ public class Lock extends PersistableImpl implements Persistable {
 		this.group = group;
 	}
 
-	public List<String> getMembers() {
-		return members;
+	public List<StandardPlayer> getMembers() {
+		ArrayList<StandardPlayer> list = new ArrayList<StandardPlayer>();
+		for (String username : members) {
+			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayer(username);
+			list.add(player);
+		}
+
+		return list;
+	}
+
+	public StandardPlayer getOwner() {
+		return StandardPlugin.getPlugin().getStandardPlayer(owner);
 	}
 
 	public boolean isOwner(StandardPlayer player) {

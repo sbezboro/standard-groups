@@ -287,8 +287,46 @@ public class GroupManager extends BaseManager {
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited " + invitedPlayer.getDisplayName(false) + " to join your group.");
 			}
 		}
-		
-		invitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited you to join their group " + group.getName() + ". To join, type /g join " + group.getName());
+
+		if (invitedPlayer.isOnline()) {
+			invitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has invited you to join their group " + group.getName() + ". To join, type /g join " + group.getName());
+		}
+	}
+
+	public void kickPlayer(StandardPlayer player, String kickedUsername) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You can't kick members from a group if you aren't in one.");
+			return;
+		}
+
+		StandardPlayer kickedPlayer = plugin.matchPlayer(kickedUsername);
+
+		if (kickedPlayer == null) {
+			player.sendMessage("That player doesn't exist.");
+			return;
+		}
+
+		if (!group.isMember(kickedPlayer)) {
+			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		group.removeMember(kickedPlayer);
+		usernameToGroupMap.remove(kickedPlayer.getName());
+
+		for (StandardPlayer other : group.getPlayers()) {
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "You have kicked " + kickedPlayer.getDisplayName(false) + " from your group.");
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has kicked " + kickedPlayer.getDisplayName(false) + " from your group.");
+			}
+		}
+
+		if (kickedPlayer.isOnline()) {
+			kickedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has kicked you from the group " + group.getName() + "!");
+		}
 	}
 
 	public void joinGroup(StandardPlayer player, String groupName) {
@@ -471,8 +509,10 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void groupInfo(StandardPlayer player, String groupName) {
+	public void groupInfo(CommandSender sender, String groupName) {
 		Group group;
+
+		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
 		if (groupName == null) {
 			group = getPlayerGroup(player);
@@ -485,14 +525,7 @@ public class GroupManager extends BaseManager {
 			group = matchGroup(groupName);
 			
 			if (group == null) {
-				String message = "That group doesn't exist.";
-				
-				if (player == null) {
-					Bukkit.getConsoleSender().sendMessage(message);
-				} else {
-					player.sendMessage(message);
-				}
-				
+				sender.sendMessage("That group doesn't exist.");
 				return;
 			}
 		}
@@ -504,12 +537,12 @@ public class GroupManager extends BaseManager {
 		    delim = ", ";
 		}
 		
-		player.sendMessage("Group: " + group.getName());
-		player.sendMessage("==============================");
-		player.sendMessage("Established: " + MiscUtil.friendlyTimestamp(group.getEstablished()));
-		player.sendMessage("Land: " + group.getClaims().size());
-		player.sendMessage("Land limit: " + group.getMaxClaims());
-		player.sendMessage("Members: " + members);
+		sender.sendMessage("Group: " + group.getName());
+		sender.sendMessage("==============================");
+		sender.sendMessage("Established: " + MiscUtil.friendlyTimestamp(group.getEstablished()));
+		sender.sendMessage("Land: " + group.getClaims().size());
+		sender.sendMessage("Land limit: " + group.getMaxClaims());
+		sender.sendMessage("Members: " + members);
 	}
 
 	public void lock(StandardPlayer player, Block block) {
@@ -650,5 +683,45 @@ public class GroupManager extends BaseManager {
 		group.removeLockMember(lock, otherPlayer);
 
 		player.sendMessage(ChatColor.YELLOW + "You have revoked access to this lock from " + otherPlayer.getDisplayName(false) + ".");
+	}
+
+	public void lockInfo(StandardPlayer player, Block block) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you revoke access to locks.");
+			return;
+		}
+
+		Location location = block.getLocation();
+
+		Lock lock = group.getLock(location);
+
+		if (lock == null) {
+			player.sendMessage("No lock exists on this block.");
+			return;
+		}
+
+		if (!lock.hasAccess(player)) {
+			player.sendMessage("You do not have access to this lock.");
+			return;
+		}
+
+		String members = "";
+		String delim = "";
+		for (StandardPlayer member : lock.getMembers()) {
+			if (member != lock.getOwner()) {
+				members += delim + member.getDisplayName() + ChatColor.RESET;
+				delim = ", ";
+			}
+		}
+
+		player.sendMessage("Lock info:");
+		player.sendMessage("==============================");
+		player.sendMessage("Owner: " + lock.getOwner().getDisplayName());
+
+		if (!members.isEmpty()) {
+			player.sendMessage("Members: " + members);
+		}
 	}
 }

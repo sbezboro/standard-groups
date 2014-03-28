@@ -1,39 +1,38 @@
 package com.sbezboro.standardgroups.commands;
 
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 
-public class JoinCommand extends SubCommand {
+public class KickCommand extends SubCommand {
 
-	public JoinCommand(StandardPlugin plugin, BaseCommand command) {
-		super(plugin, command, "join");
+	public KickCommand(StandardPlugin plugin, BaseCommand command) {
+		super(plugin, command, "kick");
 	}
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
 		if (args.length != 1) {
-			sender.sendMessage("You must specify which group name you would like to join.");
+			sender.sendMessage("You must specify a player to kick.");
 			return false;
 		}
 		
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		groupManager.joinGroup(player, args[0]);
+		groupManager.kickPlayer(player, args[0]);
 		
 		return true;
 	}
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g join <name>" + ChatColor.RESET + " - attempt to join a group");
+		sender.sendMessage(ChatColor.YELLOW + "/g kick <player>" + ChatColor.RESET + " - kick a player from your group");
 	}
 	
 }

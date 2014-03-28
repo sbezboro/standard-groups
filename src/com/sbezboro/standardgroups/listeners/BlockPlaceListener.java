@@ -13,9 +13,9 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
-public class BlockPlaceEvent extends SubPluginEventListener<StandardGroups> implements Listener {
+public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> implements Listener {
 
-	public BlockPlaceEvent(StandardPlugin plugin, StandardGroups subPlugin) {
+	public BlockPlaceListener(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin);
 	}
 

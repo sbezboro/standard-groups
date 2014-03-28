@@ -33,6 +33,17 @@ public class LockCommand extends SubCommand {
 			groupManager.lock(player, block);
 
 			return true;
+		} else if (args.length == 1) {
+			if (args[0].equalsIgnoreCase("info")) {
+				if (block == null) {
+					sender.sendMessage("No block in range");
+					return true;
+				}
+
+				groupManager.lockInfo(player, block);
+
+				return true;
+			}
 		} else if (args.length == 2) {
 			if (args[0].equalsIgnoreCase("add")) {
 				if (block == null) {
@@ -78,5 +89,6 @@ public class LockCommand extends SubCommand {
 		sender.sendMessage(ChatColor.YELLOW + "/g lock" + ChatColor.RESET + " - lock the block being looked at");
 		sender.sendMessage(ChatColor.YELLOW + "/g lock add <player>" + ChatColor.RESET + " - give a player access to an existing lock");
 		sender.sendMessage(ChatColor.YELLOW + "/g lock remove <player>" + ChatColor.RESET + " - revoke a player's access to an existing lock");
+		sender.sendMessage(ChatColor.YELLOW + "/g lock info" + ChatColor.RESET + " - show info about the lock being looked at");
 	}
 }
