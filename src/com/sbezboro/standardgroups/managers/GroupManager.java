@@ -32,7 +32,6 @@ public class GroupManager extends BaseManager {
 		add(Material.CHEST);
 		add(Material.WOODEN_DOOR);
 		add(Material.FENCE_GATE);
-		add(Material.IRON_DOOR);
 		add(Material.TRAP_DOOR);
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
@@ -54,6 +53,7 @@ public class GroupManager extends BaseManager {
 		add(Material.DIODE_BLOCK_OFF);
 		add(Material.DIODE_BLOCK_ON);
 		add(Material.BEACON);
+		add(Material.BED_BLOCK);
 	}};
 
 	@SuppressWarnings("serial")
@@ -130,23 +130,37 @@ public class GroupManager extends BaseManager {
 		return player.hasPermission("standardgroups.groups.admin");
 	}
 
+	public Lock getLockAffectedByBlock(Location location) {
+		Group group = getGroupByLocation(location);
+		return getLockAffectedByBlock(group, location);
+	}
+
 	public Lock getLockAffectedByBlock(Group group, Location location) {
+		if (group == null) {
+			return null;
+		}
+
 		Block targetBlock = location.getBlock();
+
 		Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
 		Block belowBlock = targetBlock.getRelative(BlockFace.DOWN);
 
-		Lock lock = group.getLock(location);
+		// Always get the bottom block for doors
+		if (targetBlock.getType() == Material.WOODEN_DOOR &&
+				belowBlock.getType() == Material.WOODEN_DOOR) {
+			targetBlock = belowBlock;
+		}
+
+		Lock lock = group.getLock(targetBlock.getLocation());
 
 		// Check for surrounding block locks that may be affected by the target block:
-		// 1. Blocks above and below for potential doors
+		// 1. Block above for potential doors
 		// 2. Blocks adjacent for potential double chests
 		if (lock == null) {
 			Block testBlock = null;
 
 			if (aboveBlock.getType() == Material.WOODEN_DOOR) {
 				testBlock = aboveBlock;
-			} else if (belowBlock.getType() == Material.WOODEN_DOOR) {
-				testBlock = belowBlock;
 			} else if (targetBlock.getType() == Material.CHEST) {
 				Block[] testBlocks = new Block[] {
 						targetBlock.getRelative(BlockFace.NORTH),
@@ -569,14 +583,16 @@ public class GroupManager extends BaseManager {
 
 		Location location = block.getLocation();
 
-		Claim claim = locationToClaimMap.get(Claim.getLocationKey(location));
+		Group testGroup = getGroupByLocation(location);
 
-		if (claim == null) {
+		if (testGroup != group) {
 			player.sendMessage("You can only lock things in your group's territory.");
 			return;
 		}
 
-		if (group.getLock(location) != null) {
+		Lock lock = getLockAffectedByBlock(group, location);
+
+		if (lock != null) {
 			player.sendMessage("A lock already exists on this block.");
 			return;
 		}
@@ -596,14 +612,14 @@ public class GroupManager extends BaseManager {
 
 		Location location = block.getLocation();
 
-		Claim claim = locationToClaimMap.get(Claim.getLocationKey(location));
+		Group testGroup = getGroupByLocation(location);
 
-		if (claim == null) {
+		if (testGroup != group) {
 			player.sendMessage("You can only unlock things in your group's territory.");
 			return;
 		}
 
-		Lock lock = group.getLock(location);
+		Lock lock = getLockAffectedByBlock(group, location);
 
 		if (lock == null) {
 			player.sendMessage("No lock exists on this block.");

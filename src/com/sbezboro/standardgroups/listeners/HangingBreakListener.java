@@ -21,7 +21,7 @@ public class HangingBreakListener extends SubPluginEventListener<StandardGroups>
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(ignoreCancelled = true)
 	public void onHangingBreak(HangingBreakByEntityEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getRemover());
 

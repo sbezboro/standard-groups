@@ -19,7 +19,7 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		Entity damagerEntity = event.getDamager();
 		StandardPlayer damager = plugin.getStandardPlayer(damagerEntity);

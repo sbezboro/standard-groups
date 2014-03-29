@@ -28,7 +28,7 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onPlayerInteract(final PlayerInteractEvent event) {
 		Block clickedBlock = event.getClickedBlock();
 		ItemStack itemStack = event.getItem();
@@ -41,10 +41,18 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
+		} else if (event.getAction() == Action.PHYSICAL) {
+			Block block = event.getClickedBlock();
+
+			if (block != null && block.getType() == Material.SOIL) {
+				StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
+
+				checkPlayerAccess(player, clickedBlock.getLocation(), event);
+			}
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onPlayerEntityInteract(final PlayerInteractEntityEvent event) {
 		Entity entity = event.getRightClicked();
 
@@ -55,7 +63,7 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onEntityDamage(final EntityDamageByEntityEvent event) {
 		Entity entity = event.getEntity();
 

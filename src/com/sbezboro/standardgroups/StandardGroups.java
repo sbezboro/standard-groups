@@ -83,12 +83,16 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		PluginManager pluginManager = getServer().getPluginManager();
 		pluginManager.registerEvents(new BlockBreakListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPistonExtendListener(basePlugin, this), this);
+		pluginManager.registerEvents(new BlockPistonRetractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceListener(basePlugin, this), this);
-		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
-		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
-		pluginManager.registerEvents(new PlayerDamageListener(basePlugin, this), this);
 		pluginManager.registerEvents(new HangingBreakListener(basePlugin, this), this);
 		pluginManager.registerEvents(new HangingPlaceListener(basePlugin, this), this);
+		pluginManager.registerEvents(new InventoryMoveListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerBucketEmptyListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerBucketFillListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerDamageListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
 	}
 	
 	public int getGroupNameMinLength() {

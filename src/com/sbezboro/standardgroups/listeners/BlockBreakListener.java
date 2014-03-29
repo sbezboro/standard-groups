@@ -20,7 +20,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 		super(plugin, subPlugin);
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 		
