@@ -549,9 +549,8 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		}
-		
-		Claim claim = group.claim(player, player.getLocation());
-		locationToGroupMap.put(claim.getLocationKey(), group);
+
+		Claim claim;
 
 		if (width > 1) {
 			Location location;
@@ -582,6 +581,9 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		}
+
+		claim = group.claim(player, player.getLocation());
+		locationToGroupMap.put(claim.getLocationKey(), group);
 		
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
@@ -681,7 +683,7 @@ public class GroupManager extends BaseManager {
 		} else {
 			group = matchGroup(usernameOrGroup);
 
-			if (group.isSafearea()) {
+			if (group != null && group.isSafearea()) {
 				group = null;
 			}
 			

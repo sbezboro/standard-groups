@@ -2,6 +2,7 @@ package com.sbezboro.standardgroups.listeners;
 
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
@@ -38,8 +39,9 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 			// Player victim
 			if (victim != null) {
 				GroupManager groupManager = subPlugin.getGroupManager();
+				Group group = groupManager.getGroupByLocation(victim.getLocation());
 
-				if (groupManager.getGroupByLocation(victim.getLocation()).isSafearea()) {
+				if (group != null && group.isSafearea()) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
 					event.setCancelled(true);
 				} else if (groupManager.getPlayerGroup(damager) == groupManager.getPlayerGroup(victim)) {

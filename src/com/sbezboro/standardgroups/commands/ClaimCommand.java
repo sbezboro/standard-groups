@@ -40,7 +40,7 @@ public class ClaimCommand extends SubCommand {
 				sender.sendMessage("Enter a valid width");
 				return false;
 			}
-		} else {
+		} else if (args.length > 2) {
 			command.showUsageInfo(sender);
 			return false;
 		}
