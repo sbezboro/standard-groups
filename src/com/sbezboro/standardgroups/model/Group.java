@@ -25,6 +25,7 @@ public class Group extends PersistedObject {
 	private PersistedProperty<Integer> maxClaims;
 	private PersistedProperty<String> leader;
 
+	private Map<String, Claim> locationToClaimMap;
 	private Map<String, Lock> locationToLockMap;
 
 	public Group(FileStorage storage, String name) {
@@ -46,6 +47,7 @@ public class Group extends PersistedObject {
 
 	public void initialize() {
 		this.locationToLockMap = new HashMap<String, Lock>();
+		this.locationToClaimMap = new HashMap<String, Claim>();
 	}
 	
 	@Override
@@ -54,6 +56,8 @@ public class Group extends PersistedObject {
 		
 		for (Claim claim : claims) {
 			claim.setGroup(this);
+
+			locationToClaimMap.put(claim.getLocationKey(), claim);
 		}
 
 		for (Lock lock : locks) {
@@ -120,6 +124,8 @@ public class Group extends PersistedObject {
 	public Claim claim(StandardPlayer player, Location location) {
 		Claim claim = new Claim(player, location, this);
 		claims.add(claim);
+
+		locationToClaimMap.put(claim.getLocationKey(), claim);
 		
 		this.save();
 		
@@ -127,9 +133,23 @@ public class Group extends PersistedObject {
 	}
 	
 	public void unclaim(Claim claim) {
+		for (Lock lock : new ArrayList<Lock>(getLocks())) {
+			if (locationToClaimMap.get(Claim.getLocationKey(lock.getLocation())) == claim) {
+				locks.remove(lock);
+
+				locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
+			}
+		}
+
 		claims.remove(claim);
+
+		locationToClaimMap.remove(claim.getLocationKey());
 		
 		this.save();
+	}
+
+	public Claim getClaim(Location location) {
+		return locationToClaimMap.get(Claim.getLocationKey(location));
 	}
 
 	public List<Lock>getLocks() {

@@ -15,6 +15,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 
+import java.util.List;
+
 public class BlockPistonRetractListener extends SubPluginEventListener<StandardGroups> implements Listener {
 	public BlockPistonRetractListener(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin);
@@ -31,9 +33,9 @@ public class BlockPistonRetractListener extends SubPluginEventListener<StandardG
 		Block block = toLocation.getBlock().getRelative(direction);
 		Location fromLocation = block.getLocation();
 
-		Lock lock = groupManager.getLockAffectedByBlock(fromLocation);
+		List<Lock> locks = groupManager.getLocksAffectedByBlock(block.getLocation());
 
-		if (lock != null) {
+		if (!locks.isEmpty()) {
 			event.setCancelled(true);
 		}
 

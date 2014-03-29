@@ -22,6 +22,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
+
 public class PlayerInteractListener extends SubPluginEventListener<StandardGroups> implements Listener {
 	
 	public PlayerInteractListener(StandardPlugin plugin, StandardGroups subPlugin) {
@@ -83,9 +85,11 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 
 		if (group != null) {
 			if (groupManager.playerInGroup(player, group)) {
-				Lock lock = groupManager.getLockAffectedByBlock(group, location);
+				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
 
-				if (lock != null) {
+				if (!locks.isEmpty()) {
+					Lock lock = locks.get(0);
+
 					if (lock.isOwner(player)) {
 						player.sendMessage(ChatColor.YELLOW + "Using locked block that you own");
 					} else if (lock.hasAccess(player)) {

@@ -11,6 +11,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 
+import java.util.List;
+
 public class BlockPistonExtendListener extends SubPluginEventListener<StandardGroups> implements Listener {
 	public BlockPistonExtendListener(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin);
@@ -21,9 +23,9 @@ public class BlockPistonExtendListener extends SubPluginEventListener<StandardGr
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		for (Block block : event.getBlocks()) {
-			Lock lock = groupManager.getLockAffectedByBlock(block.getLocation());
+			List<Lock> locks = groupManager.getLocksAffectedByBlock(block.getLocation());
 
-			if (lock != null) {
+			if (!locks.isEmpty()) {
 				event.setCancelled(true);
 				break;
 			}

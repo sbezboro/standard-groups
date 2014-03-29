@@ -13,6 +13,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.inventory.InventoryHolder;
 
+import java.util.List;
+
 public class InventoryMoveListener  extends SubPluginEventListener<StandardGroups> implements Listener {
 	public InventoryMoveListener(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin);
@@ -36,9 +38,9 @@ public class InventoryMoveListener  extends SubPluginEventListener<StandardGroup
 		if (holder instanceof BlockState) {
 			Block block = ((BlockState) holder).getBlock();
 			if (GroupManager.isBlockTypeProtected(block)) {
-				Lock lock = groupManager.getLockAffectedByBlock(block.getLocation());
+				List<Lock> locks = groupManager.getLocksAffectedByBlock(block.getLocation());
 
-				if (lock != null) {
+				if (!locks.isEmpty()) {
 					return true;
 				}
 			}

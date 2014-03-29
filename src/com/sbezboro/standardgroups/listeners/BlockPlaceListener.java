@@ -3,9 +3,11 @@ package com.sbezboro.standardgroups.listeners;
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Group;
+import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -29,7 +31,14 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
-			if (!groupManager.playerInGroup(player, group)) {
+			if (groupManager.playerInGroup(player, group)) {
+				// Sanity check
+				Lock lock = group.getLock(location);
+				if (lock != null) {
+					subPlugin.getLogger().severe("REMOVING STALE LOCK! " + MiscUtil.locationFormat(location));
+					group.unlock(lock);
+				}
+			} else {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
 			}

@@ -1,8 +1,6 @@
 package com.sbezboro.standardgroups.managers;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sbezboro.standardgroups.model.Lock;
@@ -24,6 +22,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.material.Bed;
+import org.bukkit.material.TrapDoor;
 
 public class GroupManager extends BaseManager {
 
@@ -67,7 +67,6 @@ public class GroupManager extends BaseManager {
 	private GroupStorage storage;
 	
 	private Map<String, Group> usernameToGroupMap;
-	private Map<String, Claim> locationToClaimMap;
 	private Map<String, Group> locationToGroupMap;
 
 	public GroupManager(StandardPlugin plugin, GroupStorage storage) {
@@ -77,7 +76,6 @@ public class GroupManager extends BaseManager {
 		this.storage.loadObjects();
 		
 		usernameToGroupMap = new HashMap<String, Group>();
-		locationToClaimMap = new HashMap<String, Claim>();
 		locationToGroupMap = new HashMap<String, Group>();
 		
 		for (Group group : storage.getGroups()) {
@@ -87,17 +85,12 @@ public class GroupManager extends BaseManager {
 			
 			for (Claim claim : group.getClaims()) {
 				locationToGroupMap.put(claim.getLocationKey(), group);
-				locationToClaimMap.put(claim.getLocationKey(), claim);
 			}
 		}
 	}
 	
 	public Group getGroupByLocation(Location location) {
 		return locationToGroupMap.get(Claim.getLocationKey(location));
-	}
-	
-	public Claim getClaimByLocation(Location location) {
-		return locationToClaimMap.get(Claim.getLocationKey(location));
 	}
 	
 	public Group getPlayerGroup(StandardPlayer player) {
@@ -130,14 +123,26 @@ public class GroupManager extends BaseManager {
 		return player.hasPermission("standardgroups.groups.admin");
 	}
 
-	public Lock getLockAffectedByBlock(Location location) {
-		Group group = getGroupByLocation(location);
-		return getLockAffectedByBlock(group, location);
+	private Block[] getAdjacentBlocks(Block block) {
+		return new Block[] {
+				block.getRelative(BlockFace.NORTH),
+				block.getRelative(BlockFace.EAST),
+				block.getRelative(BlockFace.SOUTH),
+				block.getRelative(BlockFace.WEST)
+		};
 	}
 
-	public Lock getLockAffectedByBlock(Group group, Location location) {
+	public List<Lock> getLocksAffectedByBlock(Location location) {
+		Group group = getGroupByLocation(location);
+		return getLocksAffectedByBlock(group, location);
+	}
+
+	public List<Lock> getLocksAffectedByBlock(Group group, Location location) {
+		ArrayList<Block> affectedBlocks = new ArrayList<Block>();
+		ArrayList<Lock> affectedLocks = new ArrayList<Lock>();
+
 		if (group == null) {
-			return null;
+			return affectedLocks;
 		}
 
 		Block targetBlock = location.getBlock();
@@ -145,44 +150,88 @@ public class GroupManager extends BaseManager {
 		Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
 		Block belowBlock = targetBlock.getRelative(BlockFace.DOWN);
 
-		// Always get the bottom block for doors
-		if (targetBlock.getType() == Material.WOODEN_DOOR &&
-				belowBlock.getType() == Material.WOODEN_DOOR) {
-			targetBlock = belowBlock;
-		}
-
 		Lock lock = group.getLock(targetBlock.getLocation());
 
 		// Check for surrounding block locks that may be affected by the target block:
-		// 1. Block above for potential doors
+		// 1. Blocks above for potential doors
 		// 2. Blocks adjacent for potential double chests
+		// 3. Blocks adjacent for potential beds
+		// 4. Blocks adjacent for potential trap doors
+		// 5. Block above for potential dragon egg
 		if (lock == null) {
-			Block testBlock = null;
+			Block[] adjacentBlocks = getAdjacentBlocks(targetBlock);
 
-			if (aboveBlock.getType() == Material.WOODEN_DOOR) {
-				testBlock = aboveBlock;
+			if (targetBlock.getType() == Material.WOODEN_DOOR) {
+				if (aboveBlock.getType() == Material.WOODEN_DOOR) {
+					affectedBlocks.add(aboveBlock);
+				} else if (belowBlock.getType() == Material.WOODEN_DOOR) {
+					affectedBlocks.add(belowBlock);
+				}
 			} else if (targetBlock.getType() == Material.CHEST) {
-				Block[] testBlocks = new Block[] {
-						targetBlock.getRelative(BlockFace.NORTH),
-						targetBlock.getRelative(BlockFace.EAST),
-						targetBlock.getRelative(BlockFace.SOUTH),
-						targetBlock.getRelative(BlockFace.WEST)
-				};
-
-				for (Block block : testBlocks) {
+				for (Block block : adjacentBlocks) {
 					if (block.getType() == Material.CHEST) {
-						testBlock = block;
-						continue;
+						affectedBlocks.add(block);
 					}
+				}
+			} else if (targetBlock.getType() == Material.BED_BLOCK) {
+				Bed bed = (Bed) targetBlock.getState().getData();
+
+				if (bed.isHeadOfBed()) {
+					affectedBlocks.add(targetBlock.getRelative(bed.getFacing().getOppositeFace()));
+				} else {
+					affectedBlocks.add(targetBlock.getRelative(bed.getFacing()));
+				}
+			} else {
+				for (Block block : adjacentBlocks) {
+					if (block.getType() == Material.TRAP_DOOR) {
+						TrapDoor trapDoor = (TrapDoor) block.getState().getData();
+
+						if (trapDoor.getAttachedFace() == block.getFace(targetBlock)) {
+							Bukkit.broadcastMessage("" + block.getLocation());
+							affectedBlocks.add(block);
+						}
+					}
+				}
+
+				if (aboveBlock.getType() == Material.WOODEN_DOOR) {
+					affectedBlocks.add(aboveBlock);
+					affectedBlocks.add(aboveBlock.getRelative(BlockFace.UP));
+				} else if (aboveBlock.getType() == Material.DRAGON_EGG) {
+					affectedBlocks.add(aboveBlock);
 				}
 			}
 
-			if (testBlock != null) {
-				lock = group.getLock(testBlock.getLocation());
+			for (Block block : affectedBlocks) {
+				Lock otherLock = group.getLock(block.getLocation());
+				if (otherLock != null) {
+					affectedLocks.add(otherLock);
+				}
+			}
+		} else {
+			affectedLocks.add(lock);
+		}
+
+		return affectedLocks;
+	}
+
+	public boolean isOwnerOfAllLocks(StandardPlayer player, List<Lock> locks) {
+		for (Lock lock : locks) {
+			if (!lock.isOwner(player)) {
+				return false;
 			}
 		}
 
-		return lock;
+		return true;
+	}
+
+	public boolean hasAccessToAllLocks(StandardPlayer player, List<Lock> locks) {
+		for (Lock lock : locks) {
+			if (!lock.hasAccess(player)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 	
 	public void createGroup(StandardPlayer player, String groupName) {
@@ -255,7 +304,6 @@ public class GroupManager extends BaseManager {
 		
 		for (Claim claim : group.getClaims()) {
 			locationToGroupMap.remove(claim.getLocationKey());
-			locationToClaimMap.remove(claim.getLocationKey());
 		}
 		
 		storage.destroyGroup(group);
@@ -404,7 +452,6 @@ public class GroupManager extends BaseManager {
 		} else {
 			for (Claim claim : group.getClaims()) {
 				locationToGroupMap.remove(claim.getLocationKey());
-				locationToClaimMap.remove(claim.getLocationKey());
 			}
 			
 			storage.destroyGroup(group);
@@ -441,7 +488,6 @@ public class GroupManager extends BaseManager {
 		Claim claim = group.claim(player, player.getLocation());
 		
 		locationToGroupMap.put(claim.getLocationKey(), group);
-		locationToClaimMap.put(claim.getLocationKey(), claim);
 		
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
@@ -460,17 +506,16 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		Claim claim = getClaimByLocation(player.getLocation());
-		
-		if (claim == null || claim.getGroup() != group) {
+		if (getGroupByLocation(player.getLocation()) != group) {
 			player.sendMessage("You don't own this land.");
 			return;
 		}
+
+		Claim claim = group.getClaim(player.getLocation());
 		
 		group.unclaim(claim);
 		
 		locationToGroupMap.remove(claim.getLocationKey());
-		locationToClaimMap.remove(claim.getLocationKey());
 		
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
@@ -577,7 +622,7 @@ public class GroupManager extends BaseManager {
 		}
 
 		if (!PROTECTED_BLOCKS.contains(block.getType())) {
-			player.sendMessage("You can't lock this block.");
+			player.sendMessage("This block isn't lockable.");
 			return;
 		}
 
@@ -590,9 +635,9 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		Lock lock = getLockAffectedByBlock(group, location);
+		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
-		if (lock != null) {
+		if (!locks.isEmpty()) {
 			player.sendMessage("A lock already exists on this block.");
 			return;
 		}
@@ -619,12 +664,19 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		Lock lock = getLockAffectedByBlock(group, location);
+		if (!PROTECTED_BLOCKS.contains(block.getType())) {
+			player.sendMessage("This block isn't lockable.");
+			return;
+		}
 
-		if (lock == null) {
+		List<Lock> locks = getLocksAffectedByBlock(group, location);
+
+		if (locks.isEmpty()) {
 			player.sendMessage("No lock exists on this block.");
 			return;
 		}
+
+		Lock lock = locks.get(0);
 
 		if (!lock.isOwner(player)) {
 			player.sendMessage("You are not the owner of this lock.");

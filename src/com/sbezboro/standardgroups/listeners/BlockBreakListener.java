@@ -14,6 +14,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import java.util.List;
+
 public class BlockBreakListener extends SubPluginEventListener<StandardGroups> implements Listener {
 	
 	public BlockBreakListener(StandardPlugin plugin, StandardGroups subPlugin) {
@@ -32,18 +34,27 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 		
 		if (group != null) {
 			if (groupManager.playerInGroup(player, group)) {
-				Lock lock = groupManager.getLockAffectedByBlock(group, location);
+				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
 
-				if (lock != null) {
-					if (lock.isOwner(player)) {
-						player.sendMessage(ChatColor.YELLOW + "Your lock on that block has been broken.");
-						group.unlock(lock);
-					} else if (lock.hasAccess(player)) {
-						event.setCancelled(true);
-						player.sendMessage(ChatColor.RED + "There is a lock on this block that you don't own.");
+				if (!locks.isEmpty()) {
+					if (groupManager.isOwnerOfAllLocks(player, locks)) {
+						if (locks.size() == 1) {
+							player.sendMessage(ChatColor.YELLOW + "Your lock on that block has been broken.");
+						} else {
+							player.sendMessage(ChatColor.YELLOW + "The locks associated with that block have been broken.");
+						}
+
+						for (Lock lock : locks) {
+							group.unlock(lock);
+						}
 					} else {
+						if (locks.size() == 1) {
+							player.sendMessage(ChatColor.YELLOW + "There is a lock on this block that you don't own.");
+						} else {
+							player.sendMessage(ChatColor.YELLOW + "You don't own all the locks associated with that block.");
+						}
+
 						event.setCancelled(true);
-						player.sendMessage(ChatColor.RED + "This block is locked and you can not break it.");
 					}
 				}
 			} else {
