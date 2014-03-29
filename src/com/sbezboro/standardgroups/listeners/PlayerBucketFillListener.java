@@ -33,7 +33,7 @@ public class PlayerBucketFillListener extends SubPluginEventListener<StandardGro
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
-			if (!groupManager.playerInGroup(player, group)) {
+			if (!groupManager.playerInGroup(player, group) && !groupManager.isGroupsAdmin(player)) {
 				player.sendMessage(ChatColor.RED + "Cannot fill bucket in the territory of " + group.getName());
 				event.setCancelled(true);
 			}

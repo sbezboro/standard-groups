@@ -42,7 +42,6 @@ public class GroupManager extends BaseManager {
 		add(Material.TRAPPED_CHEST);
 		add(Material.JUKEBOX);
 		add(Material.BREWING_STAND);
-		add(Material.ANVIL);
 		add(Material.DRAGON_EGG);
 		add(Material.NOTE_BLOCK);
 		add(Material.CAULDRON);
@@ -187,7 +186,6 @@ public class GroupManager extends BaseManager {
 						TrapDoor trapDoor = (TrapDoor) block.getState().getData();
 
 						if (trapDoor.getAttachedFace() == block.getFace(targetBlock)) {
-							Bukkit.broadcastMessage("" + block.getLocation());
 							affectedBlocks.add(block);
 						}
 					}
@@ -197,8 +195,6 @@ public class GroupManager extends BaseManager {
 					affectedBlocks.add(aboveBlock);
 					affectedBlocks.add(aboveBlock.getRelative(BlockFace.UP));
 				} else if (aboveBlock.getType() == Material.DRAGON_EGG) {
-					affectedBlocks.add(aboveBlock);
-				} else if (aboveBlock.getType() == Material.ANVIL) {
 					affectedBlocks.add(aboveBlock);
 				}
 			}

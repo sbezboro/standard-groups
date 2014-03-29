@@ -38,7 +38,7 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 					subPlugin.getLogger().severe("REMOVING STALE LOCK! " + MiscUtil.locationFormat(location));
 					group.unlock(lock);
 				}
-			} else {
+			} else if (!groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
 			}

@@ -99,7 +99,7 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 						player.sendMessage(ChatColor.RED + "This block is locked and you do not have access to it.");
 					}
 				}
-			} else {
+			} else if (!groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "Cannot use this in the territory of " + group.getName());
 			}

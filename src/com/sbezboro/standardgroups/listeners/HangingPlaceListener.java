@@ -31,7 +31,7 @@ public class HangingPlaceListener extends SubPluginEventListener<StandardGroups>
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
-			if (!groupManager.playerInGroup(player, group)) {
+			if (!groupManager.playerInGroup(player, group) && !groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
 				player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
 			}

@@ -32,7 +32,7 @@ public class PlayerBucketEmptyListener extends SubPluginEventListener<StandardGr
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
-			if (!groupManager.playerInGroup(player, group)) {
+			if (!groupManager.playerInGroup(player, group) && !groupManager.isGroupsAdmin(player)) {
 				player.sendMessage(ChatColor.RED + "Cannot empty bucket in the territory of " + group.getName());
 				event.setCancelled(true);
 			}
