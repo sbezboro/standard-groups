@@ -198,6 +198,8 @@ public class GroupManager extends BaseManager {
 					affectedBlocks.add(aboveBlock.getRelative(BlockFace.UP));
 				} else if (aboveBlock.getType() == Material.DRAGON_EGG) {
 					affectedBlocks.add(aboveBlock);
+				} else if (aboveBlock.getType() == Material.ANVIL) {
+					affectedBlocks.add(aboveBlock);
 				}
 			}
 
@@ -329,6 +331,11 @@ public class GroupManager extends BaseManager {
 			player.sendMessage("That player doesn't exist.");
 			return;
 		}
+
+		if (!group.isModerator(player) && !group.isLeader(player)) {
+			player.sendMessage("Only the group leader or a moderator can invite players.");
+			return;
+		}
 		
 		if (group.isInvited(invitedPlayer)) {
 			player.sendMessage("That player has already been invited to your group.");
@@ -365,6 +372,11 @@ public class GroupManager extends BaseManager {
 
 		StandardPlayer kickedPlayer = plugin.matchPlayer(kickedUsername);
 
+		if (!group.isModerator(player) && !group.isLeader(player)) {
+			player.sendMessage("You must be either the group leader or a moderator to be able to kick members.");
+			return;
+		}
+
 		if (kickedPlayer == null) {
 			player.sendMessage("That player doesn't exist.");
 			return;
@@ -372,6 +384,21 @@ public class GroupManager extends BaseManager {
 
 		if (!group.isMember(kickedPlayer)) {
 			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		if (player == kickedPlayer) {
+			player.sendMessage("You cannot kick yourself.");
+			return;
+		}
+
+		if (group.isLeader(kickedPlayer)) {
+			player.sendMessage("You cannot kick the group leader.");
+			return;
+		}
+
+		if (group.isModerator(player) && group.isModerator(kickedPlayer)) {
+			player.sendMessage("Only the group leader can kick a moderator.");
 			return;
 		}
 
@@ -604,13 +631,12 @@ public class GroupManager extends BaseManager {
 			members += delim + member.getDisplayName() + ChatColor.RESET;
 		    delim = ", ";
 		}
-		
-		sender.sendMessage("Group: " + group.getName());
-		sender.sendMessage("==============================");
-		sender.sendMessage("Established: " + MiscUtil.friendlyTimestamp(group.getEstablished()));
-		sender.sendMessage("Land: " + group.getClaims().size());
-		sender.sendMessage("Land limit: " + group.getMaxClaims());
-		sender.sendMessage("Members: " + members);
+
+		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
+		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
+		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
+		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims());
+		sender.sendMessage(ChatColor.YELLOW + "Members: " + ChatColor.RESET + members);
 	}
 
 	public void lock(StandardPlayer player, Block block) {
@@ -703,12 +729,14 @@ public class GroupManager extends BaseManager {
 
 		Location location = block.getLocation();
 
-		Lock lock = group.getLock(location);
+		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
-		if (lock == null) {
+		if (locks.isEmpty()) {
 			player.sendMessage("No lock exists on this block.");
 			return;
 		}
+
+		Lock lock = locks.get(0);
 
 		if (!lock.isOwner(player)) {
 			player.sendMessage("You are not the owner of this lock.");
@@ -740,12 +768,14 @@ public class GroupManager extends BaseManager {
 
 		Location location = block.getLocation();
 
-		Lock lock = group.getLock(location);
+		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
-		if (lock == null) {
+		if (locks.isEmpty()) {
 			player.sendMessage("No lock exists on this block.");
 			return;
 		}
+
+		Lock lock = locks.get(0);
 
 		if (!lock.isOwner(player)) {
 			player.sendMessage("You are not the owner of this lock.");
@@ -772,12 +802,14 @@ public class GroupManager extends BaseManager {
 
 		Location location = block.getLocation();
 
-		Lock lock = group.getLock(location);
+		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
-		if (lock == null) {
+		if (locks.isEmpty()) {
 			player.sendMessage("No lock exists on this block.");
 			return;
 		}
+
+		Lock lock = locks.get(0);
 
 		if (!lock.hasAccess(player)) {
 			player.sendMessage("You do not have access to this lock.");
@@ -793,12 +825,126 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		player.sendMessage("Lock info:");
-		player.sendMessage("==============================");
-		player.sendMessage("Owner: " + lock.getOwner().getDisplayName());
+		player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Lock Info" + ChatColor.GOLD + " ==============");
+		player.sendMessage(ChatColor.YELLOW + "Location: " + ChatColor.RESET + MiscUtil.locationFormat(lock.getLocation()));
+		player.sendMessage(ChatColor.YELLOW + "Owner: " + ChatColor.RESET + lock.getOwner().getDisplayName());
 
 		if (!members.isEmpty()) {
-			player.sendMessage("Members: " + members);
+			player.sendMessage(ChatColor.YELLOW + "Members: " + ChatColor.RESET + members);
+		}
+	}
+
+	public void groupList(CommandSender sender) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+
+		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Active Groups" + ChatColor.GOLD + " ==============");
+
+		List<Group> list = storage.getGroups();
+		Collections.sort(list);
+
+		for (Group group : list) {
+			int online = group.getOnlineCount();
+
+			sender.sendMessage(group.getNameWithRelation(player) + " - " + ChatColor.WHITE + online + " online, " +  group.getMembers().size() + " total members");
+		}
+	}
+
+	public void addModerator(StandardPlayer player, String username) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You can't set moderators for a group if you aren't in one.");
+			return;
+		}
+
+		if (!group.isLeader(player)) {
+			player.sendMessage("You can only designate moderators for your group if you are the leader.");
+			return;
+		}
+
+		StandardPlayer moderatorPlayer = plugin.matchPlayer(username);
+
+		if (moderatorPlayer == null) {
+			player.sendMessage("That player doesn't exist.");
+			return;
+		}
+
+		if (player == moderatorPlayer) {
+			player.sendMessage("You can't set yourself as a moderator.");
+			return;
+		}
+
+		if (!group.isMember(moderatorPlayer)) {
+			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		if (group.isModerator(moderatorPlayer)) {
+			player.sendMessage("That player is already a moderator.");
+			return;
+		}
+
+		group.addModerator(moderatorPlayer);
+
+		for (StandardPlayer other : group.getPlayers()) {
+			if (!other.isOnline()) {
+				continue;
+			}
+
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "You have set " + moderatorPlayer.getDisplayName(false) + " as a group moderator.");
+			} else if (other == moderatorPlayer) {
+				moderatorPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has set you as a group moderator.");
+			} else {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has set " + moderatorPlayer.getDisplayName(false) + " as a group moderator.");
+			}
+		}
+	}
+
+	public void removeModerator(StandardPlayer player, String username) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You can't remove moderators from a group if you aren't in one.");
+			return;
+		}
+
+		if (!group.isLeader(player)) {
+			player.sendMessage("Only the group leader can remove moderators from the group.");
+			return;
+		}
+
+		StandardPlayer moderatorPlayer = plugin.matchPlayer(username);
+
+		if (moderatorPlayer == null) {
+			player.sendMessage("That player doesn't exist.");
+			return;
+		}
+
+		if (!group.isMember(moderatorPlayer)) {
+			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		if (!group.isModerator(moderatorPlayer)) {
+			player.sendMessage("That player isn't a moderator.");
+			return;
+		}
+
+		group.removeModerator(moderatorPlayer);
+
+		for (StandardPlayer other : group.getPlayers()) {
+			if (!other.isOnline()) {
+				continue;
+			}
+
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "You have removed " + moderatorPlayer.getDisplayName(false) + " as a group moderator.");
+			} else if (other == moderatorPlayer) {
+				moderatorPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has removed you as a group moderator.");
+			} else {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has removed " + moderatorPlayer.getDisplayName(false) + " as a group moderator.");
+			}
 		}
 	}
 }

@@ -33,6 +33,9 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 		addSubCommand(new LockCommand(plugin, this));
 		addSubCommand(new UnlockCommand(plugin, this));
 		addSubCommand(new KickCommand(plugin, this));
+		addSubCommand(new ListCommand(plugin, this));
+		addSubCommand(new ModeratorCommand(plugin, this));
+		addSubCommand(new UnmodCommand(plugin, this));
 		addSubCommand(new HelpCommand(plugin, this, subCommands.values()));
 	}
 

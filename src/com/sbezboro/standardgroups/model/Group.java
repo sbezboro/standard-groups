@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sbezboro.standardplugin.util.MiscUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 import com.sbezboro.standardplugin.StandardPlugin;
@@ -15,8 +16,9 @@ import com.sbezboro.standardplugin.persistence.PersistedObject;
 import com.sbezboro.standardplugin.persistence.PersistedProperty;
 import com.sbezboro.standardplugin.persistence.storages.FileStorage;
 
-public class Group extends PersistedObject {
+public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedListProperty<String> members;
+	private PersistedListProperty<String> moderators;
 	private PersistedListProperty<String> invites;
 	private PersistedListProperty<Claim> claims;
 	private PersistedListProperty<Lock> locks;
@@ -70,6 +72,7 @@ public class Group extends PersistedObject {
 	@Override
 	public void createProperties() {
 		members = createList(String.class, "members");
+		moderators = createList(String.class, "moderators");
 		invites = createList(String.class, "invites");
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
@@ -82,6 +85,10 @@ public class Group extends PersistedObject {
 	public String getName() {
 		return getIdentifier();
 	}
+
+	public String getNameWithRelation(StandardPlayer player) {
+		return (player != null && isMember(player) ? ChatColor.GREEN : ChatColor.YELLOW) + getIdentifier();
+	}
 	
 	public void addMember(StandardPlayer player) {
 		members.add(player.getName());
@@ -91,12 +98,20 @@ public class Group extends PersistedObject {
 	
 	public void removeMember(StandardPlayer player) {
 		members.remove(player.getName());
+
+		if (isModerator(player)) {
+			moderators.remove(player.getName());
+		}
 		
 		this.save();
 	}
 
 	public boolean isLeader(StandardPlayer player) {
 		return leader.getValue().equals(player.getName());
+	}
+
+	public boolean isModerator(StandardPlayer player) {
+		return moderators.contains(player.getName());
 	}
 	
 	public boolean isMember(StandardPlayer player) {
@@ -105,6 +120,18 @@ public class Group extends PersistedObject {
 	
 	public List<String> getMembers() {
 		return members.getList();
+	}
+
+	public int getOnlineCount() {
+		int online = 0;
+
+		for (StandardPlayer player : getPlayers()) {
+			if (player.isOnline()) {
+				online++;
+			}
+		}
+
+		return online;
 	}
 	
 	public List<StandardPlayer> getPlayers() {
@@ -199,6 +226,18 @@ public class Group extends PersistedObject {
 		
 		this.save();
 	}
+
+	public void addModerator(StandardPlayer player) {
+		moderators.add(player.getName());
+
+		this.save();
+	}
+
+	public void removeModerator(StandardPlayer player) {
+		moderators.remove(player.getName());
+
+		this.save();
+	}
 	
 	public long getEstablished() {
 		return established.getValue();
@@ -226,5 +265,14 @@ public class Group extends PersistedObject {
 		lock.removeMember(otherPlayer);
 
 		this.save();
+	}
+
+	@Override
+	public int compareTo(Group other) {
+		if (getMembers().size() == other.getMembers().size()) {
+			return getName().compareTo(other.getName());
+		} else {
+			return other.getMembers().size() - getMembers().size();
+		}
 	}
 }
