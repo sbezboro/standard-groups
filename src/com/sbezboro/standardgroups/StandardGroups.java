@@ -89,6 +89,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new HangingBreakListener(basePlugin, this), this);
 		pluginManager.registerEvents(new HangingPlaceListener(basePlugin, this), this);
 		pluginManager.registerEvents(new InventoryMoveListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerChatListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerBucketEmptyListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerBucketFillListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);

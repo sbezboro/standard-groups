@@ -122,6 +122,10 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return members.getList();
 	}
 
+	public List<String> getModerators() {
+		return moderators.getList();
+	}
+
 	public int getOnlineCount() {
 		int online = 0;
 
@@ -235,6 +239,12 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	public void removeModerator(StandardPlayer player) {
 		moderators.remove(player.getName());
+
+		this.save();
+	}
+
+	public void setLeader(StandardPlayer player) {
+		leader.setValue(player.getName());
 
 		this.save();
 	}

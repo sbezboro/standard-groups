@@ -414,17 +414,27 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void joinGroup(StandardPlayer player, String groupName) {
+	public void joinGroup(StandardPlayer player, String usernameOrGroup) {
 		if (getPlayerGroup(player) != null) {
 			player.sendMessage("You must leave your existing group first before joining a different one.");
 			return;
 		}
 
-		Group group = matchGroup(groupName);
-		
+		Group group = matchGroup(usernameOrGroup);
+
 		if (group == null) {
-			player.sendMessage("That group does not exist.");
-			return;
+			StandardPlayer other = plugin.matchPlayer(usernameOrGroup);
+			if (other == null) {
+				player.sendMessage("No group or player by that name.");
+				return;
+			} else {
+				group = getPlayerGroup(other);
+
+				if (group == null) {
+					player.sendMessage("The player " + other.getDisplayName(false) + " is not in a group.");
+					return;
+				}
+			}
 		}
 		
 		if (!group.isInvited(player)) {
@@ -459,9 +469,30 @@ public class GroupManager extends BaseManager {
 			player.sendMessage("You can't leave a group if you aren't in one.");
 			return;
 		}
+
+		if (group.isLeader(player) && group.getMembers().size() > 1) {
+			StandardPlayer newLeader;
+
+			if (!group.getModerators().isEmpty()) {
+				newLeader = plugin.getStandardPlayer(group.getModerators().get(0));
+			} else {
+				List<StandardPlayer> players = group.getPlayers();
+
+				if (players.get(0) == player) {
+					newLeader = players.get(1);
+				} else {
+					newLeader = players.get(0);
+				}
+			}
+
+			group.setLeader(newLeader);
+
+			if (newLeader.isOnline()) {
+				newLeader.sendMessage(ChatColor.YELLOW + "You have been designated as the new group leader.");
+			}
+		}
 		
 		usernameToGroupMap.remove(player.getName());
-		
 		group.removeMember(player);
 		
 		if (group.getMembers().size() > 0) {
