@@ -19,9 +19,33 @@ public class ClaimCommand extends SubCommand {
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
+
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		groupManager.claim(player);
+
+		String name = null;
+		int width = 1;
+
+		if (args.length == 1) {
+			name = args[0];
+		} else if (args.length == 2) {
+			name = args[0];
+			try {
+				width = Integer.parseInt(args[1]);
+			} catch (NumberFormatException e) {
+				sender.sendMessage("Enter a valid width");
+				return false;
+			}
+		} else {
+			command.showUsageInfo(sender);
+			return false;
+		}
+
+		groupManager.claim(player, name, width);
 		
 		return true;
 	}

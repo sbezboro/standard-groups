@@ -87,6 +87,10 @@ public class GroupManager extends BaseManager {
 			}
 		}
 	}
+
+	public Group getSafearea() {
+		return storage.getGroupByName(Group.SAFE_AREA);
+	}
 	
 	public Group getGroupByLocation(Location location) {
 		return locationToGroupMap.get(Claim.getLocationKey(location));
@@ -514,34 +518,70 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void claim(StandardPlayer player) {
-		Group group = getPlayerGroup(player);
-		
-		if (group == null) {
-			player.sendMessage("You must be in a group before you can claim land.");
-			return;
-		}
-		
-		Group testGroup = getGroupByLocation(player.getLocation());
-		
-		if (testGroup == group) {
-			player.sendMessage("You already own this land.");
-			return;
-		}
-		
-		if (testGroup != null) {
-			player.sendMessage("This land is already claimed.");
-			return;
-		}
-		
-		if (group.getClaims().size() >= group.getMaxClaims()) {
-			player.sendMessage("Your group cannot claim any more land at the moment.");
-			return;
+	public void claim(StandardPlayer player, String groupName, int width) {
+		Group group;
+
+		// No group name means claiming for own group
+		if (groupName == null) {
+			group = getPlayerGroup(player);
+
+			if (group == null) {
+				player.sendMessage("You must be in a group before you can claim land.");
+				return;
+			}
+
+			if (!group.isModerator(player) && !group.isLeader(player)) {
+				player.sendMessage("Only the group leader or a moderator can claim land.");
+				return;
+			}
+		// Trying to claim for another group
+		} else {
+			// Check if admin player
+			if (isGroupsAdmin(player)) {
+				group = matchGroup(groupName);
+
+				if (group == null) {
+					player.sendMessage("That group doesn't exist.");
+					return;
+				}
+			} else {
+				player.sendMessage(StandardGroups.getPlugin().getServer().getPluginCommand("groups").getPermissionMessage());
+				return;
+			}
 		}
 		
 		Claim claim = group.claim(player, player.getLocation());
-		
 		locationToGroupMap.put(claim.getLocationKey(), group);
+
+		if (width > 1) {
+			Location location;
+
+			for (int i = -width; i < width; ++i) {
+				for (int j = -width; j < width; ++j) {
+					location = player.getLocation().add(16 * i, 0, 16 * j);
+
+					claim = group.claim(player, location);
+					locationToGroupMap.put(claim.getLocationKey(), group);
+				}
+			}
+		} else {
+			Group testGroup = getGroupByLocation(player.getLocation());
+
+			if (testGroup == group) {
+				player.sendMessage("You already own this land.");
+				return;
+			}
+
+			if (testGroup != null) {
+				player.sendMessage("This land is already claimed.");
+				return;
+			}
+
+			if (group.getClaims().size() >= group.getMaxClaims()) {
+				player.sendMessage("Your group cannot claim any more land at the moment.");
+				return;
+			}
+		}
 		
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
@@ -557,6 +597,11 @@ public class GroupManager extends BaseManager {
 		
 		if (group == null) {
 			player.sendMessage("You must be in a group before you can unclaim land.");
+			return;
+		}
+
+		if (!group.isModerator(player) && !group.isLeader(player)) {
+			player.sendMessage("Only the group leader or a moderator can unclaim land.");
 			return;
 		}
 
@@ -635,6 +680,10 @@ public class GroupManager extends BaseManager {
 			}
 		} else {
 			group = matchGroup(usernameOrGroup);
+
+			if (group.isSafearea()) {
+				group = null;
+			}
 			
 			if (group == null) {
 				StandardPlayer other = plugin.matchPlayer(usernameOrGroup);

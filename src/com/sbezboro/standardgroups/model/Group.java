@@ -17,6 +17,8 @@ import com.sbezboro.standardplugin.persistence.PersistedProperty;
 import com.sbezboro.standardplugin.persistence.storages.FileStorage;
 
 public class Group extends PersistedObject implements Comparable<Group> {
+	public static final String SAFE_AREA = "safearea";
+
 	private PersistedListProperty<String> members;
 	private PersistedListProperty<String> moderators;
 	private PersistedListProperty<String> invites;
@@ -88,6 +90,10 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	public String getNameWithRelation(StandardPlayer player) {
 		return (player != null && isMember(player) ? ChatColor.GREEN : ChatColor.YELLOW) + getIdentifier();
+	}
+
+	public boolean isSafearea() {
+		return getName().equals(Group.SAFE_AREA);
 	}
 	
 	public void addMember(StandardPlayer player) {
@@ -258,6 +264,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public int getMaxClaims() {
+		if (isSafearea()) {
+			return 999999;
+		}
 		return maxClaims.getValue();
 	}
 

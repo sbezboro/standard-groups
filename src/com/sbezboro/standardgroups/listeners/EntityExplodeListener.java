@@ -32,8 +32,15 @@ public class EntityExplodeListener extends SubPluginEventListener<StandardGroups
 		for (Block block : new ArrayList<Block>(event.blockList())) {
 			Group group = groupManager.getGroupByLocation(block.getLocation());
 
-			if (group != null && GroupManager.isBlockTypeProtected(block)) {
-				event.blockList().remove(block);
+			if (group != null) {
+				if (group.isSafearea()) {
+					event.setCancelled(true);
+					return;
+				}
+				
+				if (GroupManager.isBlockTypeProtected(block)) {
+					event.blockList().remove(block);
+				}
 			}
 		}
 	}
