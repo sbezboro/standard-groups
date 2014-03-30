@@ -85,7 +85,10 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new BlockPistonExtendListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPistonRetractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceListener(basePlugin, this), this);
+		pluginManager.registerEvents(new CreatureSpawnListener(basePlugin, this), this);
+		pluginManager.registerEvents(new EntityDamageListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityExplodeListener(basePlugin, this), this);
+		pluginManager.registerEvents(new EntityTargetListener(basePlugin, this), this);
 		pluginManager.registerEvents(new HangingBreakListener(basePlugin, this), this);
 		pluginManager.registerEvents(new HangingPlaceListener(basePlugin, this), this);
 		pluginManager.registerEvents(new InventoryMoveListener(basePlugin, this), this);
