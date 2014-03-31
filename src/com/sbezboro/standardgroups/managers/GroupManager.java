@@ -80,11 +80,26 @@ public class GroupManager extends BaseManager {
 		
 		for (Group group : storage.getGroups()) {
 			for (String username : group.getMembers()) {
+				if (usernameToGroupMap.containsKey(username)) {
+					plugin.getLogger().severe("Duplicate member for " + group.getName() + " - " + username);
+				}
+
 				usernameToGroupMap.put(username, group);
 			}
+
+			ArrayList<Claim> claimsToRemove = new ArrayList<Claim>();
 			
 			for (Claim claim : group.getClaims()) {
+				if (locationToGroupMap.containsKey(claim.getLocationKey())) {
+					plugin.getLogger().severe("Duplicate claim for " + group.getName() + " - " + claim.getX() + ", " + claim.getZ());
+					claimsToRemove.add(claim);
+				}
+
 				locationToGroupMap.put(claim.getLocationKey(), group);
+			}
+
+			for (Claim claim : claimsToRemove) {
+				group.getClaims().remove(claim);
 			}
 		}
 	}
