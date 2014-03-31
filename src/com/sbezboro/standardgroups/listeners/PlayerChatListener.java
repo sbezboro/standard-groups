@@ -37,15 +37,8 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 
 		event.setCancelled(true);
 
-		if (group == null) {
-			format = format.replace("[GROUP]", "");
-		} else if (group.isLeader(player)) {
-			format = format.replace("[GROUP]", "[L] " + ChatColor.RESET);
-		} else if (group.isModerator(player)) {
-			format = format.replace("[GROUP]", "[M] " + ChatColor.RESET);
-		} else {
-			format = format.replace("[GROUP]", "[G] " + ChatColor.RESET);
-		}
+		String identifier = groupManager.getGroupIdentifier(player);
+		format = format.replace("[GROUP]", identifier);
 
 		Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
 

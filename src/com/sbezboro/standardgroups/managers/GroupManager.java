@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sbezboro.standardgroups.model.Lock;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -91,6 +92,21 @@ public class GroupManager extends BaseManager {
 	public Group getSafearea() {
 		return storage.getGroupByName(Group.SAFE_AREA);
 	}
+
+	public Group getGroupByName(String name) {
+		Group group = storage.getGroupByName(name);
+		if (group != null) {
+			return group;
+		}
+
+		for (Group otherGroup : storage.getGroups()) {
+			if (otherGroup.getName().equalsIgnoreCase(name)) {
+				return otherGroup;
+			}
+		}
+
+		return null;
+	}
 	
 	public Group getGroupByLocation(Location location) {
 		return locationToGroupMap.get(Claim.getLocationKey(location));
@@ -124,6 +140,22 @@ public class GroupManager extends BaseManager {
 
 	public boolean isGroupsAdmin(StandardPlayer player) {
 		return player.hasPermission("standardgroups.groups.admin");
+	}
+
+	public String getGroupIdentifier(StandardPlayer player) {
+		Group group = getPlayerGroup(player);
+
+		if (group != null) {
+			if (group.isLeader(player)) {
+				return "[L] ";
+			}
+			if (group.isModerator(player)) {
+				return "[M] ";
+			}
+			return "[G] ";
+		}
+
+		return "";
 	}
 
 	private Block[] getAdjacentBlocks(Block block) {
@@ -242,7 +274,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 		
-		if (storage.getGroupByName(groupName) != null) {
+		if (getGroupByName(groupName) != null) {
 			player.sendMessage("That group name is already taken");
 			return;
 		}
@@ -314,6 +346,53 @@ public class GroupManager extends BaseManager {
 			StandardPlugin.broadcast(ChatColor.YELLOW + "A server admin has destroyed the group " + group.getName() + ".");
 		} else {
 			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");
+		}
+	}
+
+	public void setLeader(StandardPlayer player, String username) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can invite players.");
+			return;
+		}
+
+		if (!group.isLeader(player)) {
+			player.sendMessage("Only the group leader can designate another leader.");
+			return;
+		}
+
+		StandardPlayer leaderPlayer = plugin.matchPlayer(username);
+
+		if (leaderPlayer == null) {
+			player.sendMessage("That player doesn't exist.");
+			return;
+		}
+
+		if (!group.isMember(leaderPlayer)) {
+			player.sendMessage("That player isn't part of your group.");
+			return;
+		}
+
+		if (player == leaderPlayer) {
+			player.sendMessage("You are already the leader.");
+			return;
+		}
+
+		group.setLeader(leaderPlayer);
+
+		for (StandardPlayer other : group.getPlayers()) {
+			if (!other.isOnline()) {
+				continue;
+			}
+
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "You have given leadership to " + leaderPlayer.getDisplayName(false) + ".");
+			} else if (other == leaderPlayer) {
+				leaderPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has given you leadership of the group.");
+			} else {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has given leadership to " + leaderPlayer.getDisplayName(false) + ".");
+			}
 		}
 	}
 
@@ -518,6 +597,43 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
+	private void claim(StandardPlayer player, Group group, Location location) {
+		Group testGroup = getGroupByLocation(location);
+
+		if (testGroup == group) {
+			player.sendMessage("You already own this land.");
+			return;
+		}
+
+		if (group.getClaims().size() >= group.getMaxClaims()) {
+			player.sendMessage("Your group cannot claim any more land at the moment.");
+			return;
+		}
+
+		if (testGroup != null) {
+			// Admins can overclaim if necessary
+			if (isGroupsAdmin(player)) {
+				Claim claim = testGroup.getClaim(player.getLocation());
+				testGroup.unclaim(claim);
+				locationToGroupMap.remove(claim.getLocationKey());
+			} else {
+				player.sendMessage("This land is already claimed.");
+				return;
+			}
+		}
+
+		Claim claim = group.claim(player, player.getLocation());
+		locationToGroupMap.put(claim.getLocationKey(), group);
+
+		for (StandardPlayer other : group.getPlayers()) {
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "Land claimed.");
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has claimed land at " + claim.getX() + ", " + claim.getZ() + ".");
+			}
+		}
+	}
+
 	public void claim(StandardPlayer player, String groupName, int width) {
 		Group group;
 
@@ -550,72 +666,78 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		Claim claim;
+		Location location;
+		Location playerLocation = player.getLocation();
 
-		if (width > 1) {
-			Location location;
+		int x = 0;
+		int z = 0;
+		int dx = 0;
+		int dz = -1;
 
-			for (int i = -width; i < width; ++i) {
-				for (int j = -width; j < width; ++j) {
-					location = player.getLocation().add(16 * i, 0, 16 * j);
+		boolean hit = false;
+		int limit = 1;
+		int start = 0;
 
-					claim = group.claim(player, location);
-					locationToGroupMap.put(claim.getLocationKey(), group);
+		// Claim in a spiral
+		for (int i = 0; i < width * width; ++i) {
+			location = new Location(playerLocation.getWorld(),
+					playerLocation.getBlockX() + (x << 4),
+					playerLocation.getBlockY(),
+					playerLocation.getBlockZ() + (z << 4));
+
+			claim(player, group, location);
+
+			if (i - start == limit) {
+				start = i;
+
+				if (hit) {
+					limit++;
+					hit = false;
+				} else {
+					hit = true;
 				}
-			}
-		} else {
-			Group testGroup = getGroupByLocation(player.getLocation());
 
-			if (testGroup == group) {
-				player.sendMessage("You already own this land.");
-				return;
+				int t = dx;
+				dx = -dz;
+				dz = t;
 			}
 
-			if (testGroup != null) {
-				player.sendMessage("This land is already claimed.");
-				return;
-			}
-
-			if (group.getClaims().size() >= group.getMaxClaims()) {
-				player.sendMessage("Your group cannot claim any more land at the moment.");
-				return;
-			}
-		}
-
-		claim = group.claim(player, player.getLocation());
-		locationToGroupMap.put(claim.getLocationKey(), group);
-		
-		for (StandardPlayer other : group.getPlayers()) {
-			if (player == other) {
-				player.sendMessage(ChatColor.YELLOW + "Land claimed.");
-			} else if (other.isOnline()) {
-				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has claimed land at " + claim.getX() + ", " + claim.getZ() + ".");
-			}
+			x += dx;
+			z += dz;
 		}
 	}
 
 	public void unclaim(StandardPlayer player) {
-		Group group = getPlayerGroup(player);
-		
-		if (group == null) {
-			player.sendMessage("You must be in a group before you can unclaim land.");
-			return;
-		}
+		Group group;
 
-		if (!group.isModerator(player) && !group.isLeader(player)) {
-			player.sendMessage("Only the group leader or a moderator can unclaim land.");
-			return;
-		}
+		if (isGroupsAdmin(player)) {
+			group = getGroupByLocation(player.getLocation());
 
-		if (getGroupByLocation(player.getLocation()) != group) {
-			player.sendMessage("You don't own this land.");
-			return;
+			if (group == null) {
+				player.sendMessage("No group owns this land.");
+				return;
+			}
+		} else {
+			group = getPlayerGroup(player);
+
+			if (group == null) {
+				player.sendMessage("You must be in a group before you can unclaim land.");
+				return;
+			}
+
+			if (!group.isModerator(player) && !group.isLeader(player)) {
+				player.sendMessage("Only the group leader or a moderator can unclaim land.");
+				return;
+			}
+
+			if (getGroupByLocation(player.getLocation()) != group) {
+				player.sendMessage("You don't own this land.");
+				return;
+			}
 		}
 
 		Claim claim = group.getClaim(player.getLocation());
-		
 		group.unclaim(claim);
-		
 		locationToGroupMap.remove(claim.getLocationKey());
 		
 		for (StandardPlayer other : group.getPlayers()) {
@@ -640,7 +762,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 		
-		if (storage.getGroupByName(name) != null) {
+		if (getGroupByName(name) != null) {
 			player.sendMessage("That group name is already taken");
 			return;
 		}
@@ -702,19 +824,24 @@ public class GroupManager extends BaseManager {
 				}
 			}
 		}
-		
-		String members = "";
-		String delim = "";
+
+		ArrayList<String> onlineMembers = new ArrayList<String>();
+		ArrayList<String> offlineMembers = new ArrayList<String>();
+
 		for (StandardPlayer member : group.getPlayers()) {
-			members += delim + member.getDisplayName() + ChatColor.RESET;
-		    delim = ", ";
+			if (member.isOnline()) {
+				onlineMembers.add(getGroupIdentifier(member) + member.getDisplayName());
+			} else {
+				offlineMembers.add(getGroupIdentifier(member) + member.getDisplayName());
+			}
 		}
 
 		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
 		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
 		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
 		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims());
-		sender.sendMessage(ChatColor.YELLOW + "Members: " + ChatColor.RESET + members);
+		sender.sendMessage(ChatColor.YELLOW + "Online members: " + ChatColor.RESET + StringUtils.join(onlineMembers, ChatColor.RESET + ", "));
+		sender.sendMessage(ChatColor.YELLOW + "Offline members: " + ChatColor.RESET + StringUtils.join(offlineMembers, ChatColor.RESET + ", "));
 	}
 
 	public void lock(StandardPlayer player, Block block) {
@@ -921,6 +1048,10 @@ public class GroupManager extends BaseManager {
 		Collections.sort(list);
 
 		for (Group group : list) {
+			if (group.isSafearea()) {
+				continue;
+			}
+
 			int online = group.getOnlineCount();
 
 			sender.sendMessage(group.getNameWithRelation(player) + " - " + ChatColor.WHITE + online + " online, " +  group.getMembers().size() + " total members");
