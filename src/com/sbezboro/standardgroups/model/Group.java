@@ -24,6 +24,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedListProperty<String> invites;
 	private PersistedListProperty<Claim> claims;
 	private PersistedListProperty<Lock> locks;
+	private PersistedListProperty<String> chat;
 
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Integer> maxClaims;
@@ -78,6 +79,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		invites = createList(String.class, "invites");
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
+		chat = createList(String.class, "chat");
 		
 		established = createProperty(Long.class, "established");
 		maxClaims = createProperty(Integer.class, "max-claims");
@@ -284,6 +286,26 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		lock.removeMember(otherPlayer);
 
 		this.save();
+	}
+
+	public boolean isGroupChat(StandardPlayer player) {
+		return chat.contains(player.getName());
+	}
+
+	public boolean toggleChat(StandardPlayer player) {
+		boolean result;
+
+		if (isGroupChat(player)) {
+			chat.remove(player.getName());
+			result = false;
+		} else {
+			chat.add(player.getName());
+			result = true;
+		}
+
+		this.save();
+
+		return result;
 	}
 
 	@Override

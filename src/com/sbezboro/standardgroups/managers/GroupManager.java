@@ -101,6 +101,10 @@ public class GroupManager extends BaseManager {
 			for (Claim claim : claimsToRemove) {
 				group.getClaims().remove(claim);
 			}
+
+			if (!claimsToRemove.isEmpty()) {
+				group.save();
+			}
 		}
 	}
 
@@ -1169,6 +1173,23 @@ public class GroupManager extends BaseManager {
 			} else {
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has removed " + moderatorPlayer.getDisplayName(false) + " as a group moderator.");
 			}
+		}
+	}
+
+	public void toggleChat(StandardPlayer player) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You can't change chat modes if you aren't in a group.");
+			return;
+		}
+
+		boolean groupChat = group.toggleChat(player);
+
+		if (groupChat) {
+			player.sendMessage(ChatColor.YELLOW + "You are now in group chat.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "You are now in public chat.");
 		}
 	}
 }

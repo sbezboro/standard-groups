@@ -34,9 +34,10 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 		addSubCommand(new UnlockCommand(plugin, this));
 		addSubCommand(new KickCommand(plugin, this));
 		addSubCommand(new ListCommand(plugin, this));
-		addSubCommand(new ModeratorCommand(plugin, this));
+		addSubCommand(new ModCommand(plugin, this));
 		addSubCommand(new UnmodCommand(plugin, this));
 		addSubCommand(new LeaderCommand(plugin, this));
+		addSubCommand(new ChatCommand(plugin, this));
 		addSubCommand(new HelpCommand(plugin, this, subCommands.values()));
 	}
 
@@ -71,6 +72,9 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 	
 	private void addSubCommand(SubCommand subCommand) {
 		subCommands.put(subCommand.getCommandName(), subCommand);
+		for (String alternative : subCommand.getAlternatives()) {
+			subCommands.put(alternative, subCommand);
+		}
 	}
 
 }

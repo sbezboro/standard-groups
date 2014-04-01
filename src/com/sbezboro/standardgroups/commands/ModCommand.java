@@ -9,9 +9,9 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-public class ModeratorCommand extends SubCommand {
+public class ModCommand extends SubCommand {
 
-	public ModeratorCommand(StandardPlugin plugin, BaseCommand command) {
+	public ModCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "mod");
 	}
 

@@ -37,21 +37,34 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 
 		event.setCancelled(true);
 
-		String identifier = groupManager.getGroupIdentifier(player);
-		format = format.replace("[GROUP]", identifier);
+		if (group.isGroupChat(player)) {
+			format = ChatColor.GREEN + "(To group) " + ChatColor.AQUA + "%s" + ChatColor.RESET + ": %s";
 
-		Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
+			Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
 
-		for (StandardPlayer onlinePlayer : plugin.getOnlinePlayers()) {
-			String playerFormat = format;
+			for (StandardPlayer otherPlayer : group.getPlayers()) {
+				if (otherPlayer.isOnline()) {
 
-			if (groupManager.getPlayerGroup(onlinePlayer) == group) {
-				playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.GREEN) + "[");
-			} else {
-				playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.YELLOW) + "[");
+					otherPlayer.sendMessage(String.format(format, player.getDisplayName(), message));
+				}
 			}
+		} else {
+			String identifier = groupManager.getGroupIdentifier(player);
+			format = format.replace("[GROUP]", identifier);
 
-			onlinePlayer.sendMessage(String.format(playerFormat, player.getDisplayName(), message));
+			Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
+
+			for (StandardPlayer onlinePlayer : plugin.getOnlinePlayers()) {
+				String playerFormat = format;
+
+				if (groupManager.getPlayerGroup(onlinePlayer) == group) {
+					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.GREEN) + "[");
+				} else {
+					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.YELLOW) + "[");
+				}
+
+				onlinePlayer.sendMessage(String.format(playerFormat, player.getDisplayName(), message));
+			}
 		}
 	}
 	
