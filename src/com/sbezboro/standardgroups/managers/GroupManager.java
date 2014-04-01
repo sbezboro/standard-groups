@@ -641,7 +641,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		Claim claim = group.claim(player, player.getLocation());
+		Claim claim = group.claim(player, location);
 		locationToGroupMap.put(claim.getLocationKey(), group);
 
 		for (StandardPlayer other : group.getPlayers()) {
