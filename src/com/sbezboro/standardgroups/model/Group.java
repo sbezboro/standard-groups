@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -58,11 +59,26 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	@Override
 	public void loadProperties() {
 		super.loadProperties();
+
+		ArrayList<Claim> claimsToRemove = new ArrayList<Claim>();
 		
 		for (Claim claim : claims) {
-			claim.setGroup(this);
+			if (locationToClaimMap.containsKey(claim.getLocationKey())) {
+				StandardGroups.getPlugin().getLogger().severe("Duplicate claim for " + getName() + " - " + claim.getX() + ", " + claim.getZ());
+				claimsToRemove.add(claim);
+			} else {
+				claim.setGroup(this);
 
-			locationToClaimMap.put(claim.getLocationKey(), claim);
+				locationToClaimMap.put(claim.getLocationKey(), claim);
+			}
+		}
+
+		for (Claim claim : claimsToRemove) {
+			claims.remove(claim);
+		}
+
+		if (!claimsToRemove.isEmpty()) {
+			this.save();
 		}
 
 		for (Lock lock : locks) {

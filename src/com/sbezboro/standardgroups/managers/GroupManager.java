@@ -90,24 +90,9 @@ public class GroupManager extends BaseManager {
 
 				usernameToGroupMap.put(username, group);
 			}
-
-			ArrayList<Claim> claimsToRemove = new ArrayList<Claim>();
 			
 			for (Claim claim : group.getClaims()) {
-				if (locationToGroupMap.containsKey(claim.getLocationKey())) {
-					plugin.getLogger().severe("Duplicate claim for " + group.getName() + " - " + claim.getX() + ", " + claim.getZ());
-					claimsToRemove.add(claim);
-				}
-
 				locationToGroupMap.put(claim.getLocationKey(), group);
-			}
-
-			for (Claim claim : claimsToRemove) {
-				group.getClaims().remove(claim);
-			}
-
-			if (!claimsToRemove.isEmpty()) {
-				group.save();
 			}
 		}
 	}
@@ -655,6 +640,10 @@ public class GroupManager extends BaseManager {
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has claimed land at " + claim.getX() + ", " + claim.getZ() + ".");
 			}
 		}
+
+		if (isGroupsAdmin(player)) {
+			player.sendMessage(ChatColor.YELLOW + "Land claimed for " + group.getName());
+		}
 	}
 
 	public void claim(StandardPlayer player, String groupName, int width) {
@@ -730,11 +719,11 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void unclaim(StandardPlayer player) {
+	private void unclaim(StandardPlayer player, Location location) {
 		Group group;
 
 		if (isGroupsAdmin(player)) {
-			group = getGroupByLocation(player.getLocation());
+			group = getGroupByLocation(location);
 
 			if (group == null) {
 				player.sendMessage("No group owns this land.");
@@ -753,21 +742,71 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 
-			if (getGroupByLocation(player.getLocation()) != group) {
-				player.sendMessage("You don't own this land.");
+			if (getGroupByLocation(location) != group) {
+				if (location == player.getLocation()) {
+					player.sendMessage("You don't own this land.");
+				} else {
+					player.sendMessage("You don't own that chunk.");
+				}
+
 				return;
 			}
 		}
 
-		Claim claim = group.getClaim(player.getLocation());
+		Claim claim = group.getClaim(location);
 		group.unclaim(claim);
 		locationToGroupMap.remove(claim.getLocationKey());
-		
+
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
 				player.sendMessage(ChatColor.YELLOW + "Land unclaimed.");
 			} else if (other.isOnline()) {
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has unclaimed land at " + claim.getX() + ", " + claim.getZ() + ".");
+			}
+		}
+
+		if (isGroupsAdmin(player)) {
+			player.sendMessage(ChatColor.YELLOW + "Land unclaimed from " + group.getName());
+		}
+	}
+
+	public void unclaim(StandardPlayer player) {
+		unclaim(player, player.getLocation());
+	}
+
+	public void unclaim(StandardPlayer player, int x, int z) {
+		Location location = new Location(player.getWorld(), x << 4, 0, z << 4);
+
+		unclaim(player, location);
+	}
+
+	public void unclaimAll(StandardPlayer player) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can unclaim land.");
+			return;
+		}
+
+		if (!group.isLeader(player)) {
+			player.sendMessage("Only the group leader can unclaim all land.");
+			return;
+		}
+
+		if (group.getClaims().isEmpty()) {
+			player.sendMessage(ChatColor.YELLOW + "You don't own any land to unclaim.");
+		} else {
+			for (Claim claim : group.getClaims()) {
+				group.unclaim(claim);
+				locationToGroupMap.remove(claim.getLocationKey());
+
+				for (StandardPlayer other : group.getPlayers()) {
+					if (player == other) {
+						player.sendMessage(ChatColor.YELLOW + "All land unclaimed.");
+					} else if (other.isOnline()) {
+						other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has unclaimed all of your group's land.");
+					}
+				}
 			}
 		}
 	}
@@ -859,7 +898,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
+		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
 		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
 		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
 		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims());
@@ -933,8 +972,15 @@ public class GroupManager extends BaseManager {
 		Lock lock = locks.get(0);
 
 		if (!lock.isOwner(player)) {
-			player.sendMessage("You are not the owner of this lock.");
-			return;
+			if (group.isLeader(player)) {
+				if (getPlayerGroup(lock.getOwner()) == group) {
+					player.sendMessage("The player who owns this lock is still in your group.");
+					return;
+				}
+			} else {
+				player.sendMessage("You are not the owner of this lock.");
+				return;
+			}
 		}
 
 		group.unlock(lock);
@@ -989,11 +1035,6 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		if (group != getPlayerGroup(otherPlayer)) {
-			player.sendMessage("That player isn't part of your group.");
-			return;
-		}
-
 		Location location = block.getLocation();
 
 		List<Lock> locks = getLocksAffectedByBlock(group, location);
@@ -1005,13 +1046,18 @@ public class GroupManager extends BaseManager {
 
 		Lock lock = locks.get(0);
 
-		if (!lock.isOwner(player)) {
+		if (!lock.isOwner(player) && !group.isLeader(player)) {
 			player.sendMessage("You are not the owner of this lock.");
 			return;
 		}
 
 		if (!lock.hasAccess(otherPlayer)) {
 			player.sendMessage("That player already doesn't have access.");
+			return;
+		}
+
+		if (lock.isOwner(otherPlayer)) {
+			unlock(player, block);
 			return;
 		}
 
@@ -1024,7 +1070,7 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you revoke access to locks.");
+			player.sendMessage("You must be in a group before you can look at lock info.");
 			return;
 		}
 
@@ -1039,11 +1085,6 @@ public class GroupManager extends BaseManager {
 
 		Lock lock = locks.get(0);
 
-		if (!lock.hasAccess(player)) {
-			player.sendMessage("You do not have access to this lock.");
-			return;
-		}
-
 		String members = "";
 		String delim = "";
 		for (StandardPlayer member : lock.getMembers()) {
@@ -1053,7 +1094,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Lock Info" + ChatColor.GOLD + " ==============");
+		player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Lock Info" + ChatColor.GOLD + " ==============");
 		player.sendMessage(ChatColor.YELLOW + "Location: " + ChatColor.RESET + MiscUtil.locationFormat(lock.getLocation()));
 		player.sendMessage(ChatColor.YELLOW + "Owner: " + ChatColor.RESET + lock.getOwner().getDisplayName());
 
@@ -1065,7 +1106,7 @@ public class GroupManager extends BaseManager {
 	public void groupList(CommandSender sender) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 
-		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.AQUA + "Active Groups" + ChatColor.GOLD + " ==============");
+		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Active Groups" + ChatColor.GOLD + " ==============");
 
 		List<Group> list = storage.getGroups();
 		Collections.sort(list);
@@ -1203,9 +1244,28 @@ public class GroupManager extends BaseManager {
 		boolean enabled = mapManager.toggleMap(player);
 
 		if (enabled) {
-			player.sendMessage(ChatColor.YELLOW + "Map mode enabled.");
+			player.sendMessage(ChatColor.YELLOW + "Map enabled.");
 		} else {
-			player.sendMessage(ChatColor.YELLOW + "Map mode disabled");
+			player.sendMessage(ChatColor.YELLOW + "Map disabled");
 		}
 	}
+
+	public void showClaims(StandardPlayer player) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You can't show claims if you aren't in a group.");
+			return;
+		}
+
+		if (group.getClaims().isEmpty()) {
+			player.sendMessage(ChatColor.YELLOW + "Your group has not claimed any land yet.");
+		} else {
+			player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + group.getNameWithRelation(player) + " Claims" + ChatColor.GOLD + " ==============");
+			for (Claim claim : group.getClaims()) {
+				player.sendMessage(ChatColor.YELLOW + "(" + claim.getX() + ", " + claim.getZ() + ")");
+			}
+		}
+	}
+
 }

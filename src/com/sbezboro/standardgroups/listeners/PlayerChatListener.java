@@ -10,6 +10,7 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -24,7 +25,7 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
 	public void onEarlyPlayerChat(AsyncPlayerChatEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 
@@ -54,7 +55,9 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 
 			Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
 
-			for (StandardPlayer onlinePlayer : plugin.getOnlinePlayers()) {
+			for (Player recipient : event.getRecipients()) {
+				StandardPlayer onlinePlayer = plugin.getStandardPlayer(recipient);
+
 				String playerFormat = format;
 
 				if (groupManager.getPlayerGroup(onlinePlayer) == group) {
