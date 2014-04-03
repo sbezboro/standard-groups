@@ -2,6 +2,7 @@ package com.sbezboro.standardgroups.listeners;
 
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.managers.MapManager;
 import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
@@ -44,6 +45,15 @@ public class PlayerMoveListener extends SubPluginEventListener<StandardGroups> i
 				} else {
 					player.sendMessage(ChatColor.YELLOW + "Entering the territory of " + toGroup.getName());
 				}
+			}
+
+			// New chunk
+			if (from.getBlockX() >> 4 != to.getBlockX() >> 4 || from.getBlockZ() >> 4 != to.getBlockZ() >> 4) {
+				MapManager mapManager = subPlugin.getMapManager();
+
+				StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
+
+				mapManager.updateMap(player);
 			}
 		}
 	}

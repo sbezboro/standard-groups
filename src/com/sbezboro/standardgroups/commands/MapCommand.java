@@ -7,16 +7,13 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
+public class MapCommand extends SubCommand {
 
-public class ChatCommand extends SubCommand {
-
-	public ChatCommand(StandardPlugin plugin, BaseCommand command) {
-		super(plugin, command, "chat", new ArrayList<String>() {{
-			add("c");
-		}});
+	public MapCommand(StandardPlugin plugin, BaseCommand command) {
+		super(plugin, command, "map");
 	}
 
 	@Override
@@ -24,14 +21,14 @@ public class ChatCommand extends SubCommand {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		groupManager.toggleChat(player);
+
+		groupManager.toggleMap(player);
 		
 		return true;
 	}
 
 	@Override
 	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g c" + ChatColor.RESET + " - switch chat modes");
+		sender.sendMessage(ChatColor.YELLOW + "/g map" + ChatColor.RESET + " - show a map of the surrounding area");
 	}
-	
 }

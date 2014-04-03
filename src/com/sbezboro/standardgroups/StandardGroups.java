@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sbezboro.standardgroups.commands.GroupsCommand;
 import com.sbezboro.standardgroups.listeners.*;
+import com.sbezboro.standardgroups.managers.MapManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +26,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	
 	private GroupStorage groupStorage;
 	private GroupManager groupManager;
+
+	private MapManager mapManager;
 	
 	public StandardGroups() {
 		instance = this;
@@ -37,6 +40,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	@Override
 	public void onLoad() {
 		super.onLoad();
+
+		mapManager.unload();
 	}
 
 	@Override
@@ -51,7 +56,9 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		config = new StandardConfig(basePlugin);
 		
 		groupStorage = new GroupStorage(basePlugin);
-		groupManager = new GroupManager(basePlugin, groupStorage);
+		groupManager = new GroupManager(basePlugin, this, groupStorage);
+
+		mapManager = new MapManager(basePlugin, this);
 
 		reloadPlugin();
 
@@ -111,7 +118,11 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	public GroupManager getGroupManager() {
 		return groupManager;
 	}
-	
+
+	public MapManager getMapManager() {
+		return mapManager;
+	}
+
 	@Override
 	public String getSubPluginName() {
 		return "StandardGroups";

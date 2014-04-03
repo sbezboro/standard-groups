@@ -63,14 +63,18 @@ public class GroupManager extends BaseManager {
 
 	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
 	private final String groupNamePatExplanation = "Group names can only contain letters and underscores.";
+
+	private StandardGroups subPlugin;
 	
 	private GroupStorage storage;
 	
 	private Map<String, Group> usernameToGroupMap;
 	private Map<String, Group> locationToGroupMap;
 
-	public GroupManager(StandardPlugin plugin, GroupStorage storage) {
+	public GroupManager(StandardPlugin plugin, StandardGroups subPlugin, GroupStorage storage) {
 		super(plugin);
+
+		this.subPlugin = subPlugin;
 		
 		this.storage = storage;
 		this.storage.loadObjects();
@@ -303,8 +307,8 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 		
-		int minLength = StandardGroups.getPlugin().getGroupNameMinLength();
-		int maxLength = StandardGroups.getPlugin().getGroupNameMaxLength();
+		int minLength = subPlugin.getGroupNameMinLength();
+		int maxLength = subPlugin.getGroupNameMaxLength();
 		
 		if (groupName.length() < minLength || groupName.length() > maxLength) {
 			player.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
@@ -346,7 +350,7 @@ public class GroupManager extends BaseManager {
 					return;
 				}
 			} else {
-				player.sendMessage(StandardGroups.getPlugin().getServer().getPluginCommand("groups").getPermissionMessage());
+				player.sendMessage(subPlugin.getServer().getPluginCommand("groups").getPermissionMessage());
 				return;
 			}
 		}
@@ -680,7 +684,7 @@ public class GroupManager extends BaseManager {
 					return;
 				}
 			} else {
-				player.sendMessage(StandardGroups.getPlugin().getServer().getPluginCommand("groups").getPermissionMessage());
+				player.sendMessage(subPlugin.getServer().getPluginCommand("groups").getPermissionMessage());
 				return;
 			}
 		}
@@ -791,8 +795,8 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 		
-		int minLength = StandardGroups.getPlugin().getGroupNameMinLength();
-		int maxLength = StandardGroups.getPlugin().getGroupNameMaxLength();
+		int minLength = subPlugin.getGroupNameMinLength();
+		int maxLength = subPlugin.getGroupNameMaxLength();
 		
 		if (name.length() < minLength || name.length() > maxLength) {
 			player.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
@@ -1190,6 +1194,18 @@ public class GroupManager extends BaseManager {
 			player.sendMessage(ChatColor.YELLOW + "You are now in group chat.");
 		} else {
 			player.sendMessage(ChatColor.YELLOW + "You are now in public chat.");
+		}
+	}
+
+	public void toggleMap(StandardPlayer player) {
+		MapManager mapManager = subPlugin.getMapManager();
+
+		boolean enabled = mapManager.toggleMap(player);
+
+		if (enabled) {
+			player.sendMessage(ChatColor.YELLOW + "Map mode enabled.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "Map mode disabled");
 		}
 	}
 }
