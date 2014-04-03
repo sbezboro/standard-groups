@@ -796,16 +796,16 @@ public class GroupManager extends BaseManager {
 		if (group.getClaims().isEmpty()) {
 			player.sendMessage(ChatColor.YELLOW + "You don't own any land to unclaim.");
 		} else {
-			for (Claim claim : group.getClaims()) {
+			for (Claim claim : new ArrayList<Claim>(group.getClaims())) {
 				group.unclaim(claim);
 				locationToGroupMap.remove(claim.getLocationKey());
+			}
 
-				for (StandardPlayer other : group.getPlayers()) {
-					if (player == other) {
-						player.sendMessage(ChatColor.YELLOW + "All land unclaimed.");
-					} else if (other.isOnline()) {
-						other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has unclaimed all of your group's land.");
-					}
+			for (StandardPlayer other : group.getPlayers()) {
+				if (player == other) {
+					player.sendMessage(ChatColor.YELLOW + "All land unclaimed.");
+				} else if (other.isOnline()) {
+					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has unclaimed all of your group's land.");
 				}
 			}
 		}
