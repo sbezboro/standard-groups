@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sbezboro.standardgroups.model.Lock;
+import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -71,6 +72,8 @@ public class GroupManager extends BaseManager {
 	private Map<String, Group> usernameToGroupMap;
 	private Map<String, Group> locationToGroupMap;
 
+	private LandGrowthCheckTask landGrowthCheckTask;
+
 	public GroupManager(StandardPlugin plugin, StandardGroups subPlugin, GroupStorage storage) {
 		super(plugin);
 
@@ -81,6 +84,9 @@ public class GroupManager extends BaseManager {
 		
 		usernameToGroupMap = new HashMap<String, Group>();
 		locationToGroupMap = new HashMap<String, Group>();
+
+		landGrowthCheckTask = new LandGrowthCheckTask(plugin, subPlugin);
+		landGrowthCheckTask.runTaskTimer(subPlugin, 1200, 6000);
 		
 		for (Group group : storage.getGroups()) {
 			for (String username : group.getMembers()) {
@@ -99,6 +105,12 @@ public class GroupManager extends BaseManager {
 
 	public Group getSafearea() {
 		return storage.getGroupByName(Group.SAFE_AREA);
+	}
+
+	public List<Group> getGroups() {
+		List<Group> groups = storage.getGroups();
+		groups.remove(getSafearea());
+		return groups;
 	}
 
 	public Group getGroupByName(String name) {

@@ -114,6 +114,14 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	public int getGroupNameMaxLength() {
 		return config.getGroupNameMaxLength();
 	}
+
+	public int getGroupLandGrowth() {
+		return config.getGroupLandGrowth();
+	}
+
+	public int getGroupLandGrowthDays() {
+		return config.getGroupLandGrowthDays();
+	}
 	
 	public GroupManager getGroupManager() {
 		return groupManager;

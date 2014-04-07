@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sbezboro.standardgroups.StandardGroups;
+import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -28,6 +29,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedListProperty<String> chat;
 
 	private PersistedProperty<Long> established;
+	private PersistedProperty<Long> lastGrowth;
 	private PersistedProperty<Integer> maxClaims;
 	private PersistedProperty<String> leader;
 
@@ -55,13 +57,28 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		this.locationToLockMap = new HashMap<String, Lock>();
 		this.locationToClaimMap = new HashMap<String, Claim>();
 	}
-	
+
+	@Override
+	public void createProperties() {
+		members = createList(String.class, "members");
+		moderators = createList(String.class, "moderators");
+		invites = createList(String.class, "invites");
+		claims = createList(Claim.class, "claims");
+		locks = createList(Lock.class, "locks");
+		chat = createList(String.class, "chat");
+		
+		established = createProperty(Long.class, "established");
+		lastGrowth = createProperty(Long.class, "last-growth");
+		maxClaims = createProperty(Integer.class, "max-claims");
+		leader = createProperty(String.class, "leader");
+	}
+
 	@Override
 	public void loadProperties() {
 		super.loadProperties();
 
 		ArrayList<Claim> claimsToRemove = new ArrayList<Claim>();
-		
+
 		for (Claim claim : claims) {
 			if (locationToClaimMap.containsKey(claim.getLocationKey())) {
 				StandardGroups.getPlugin().getLogger().severe("Duplicate claim for " + getName() + " - " + claim.getX() + ", " + claim.getZ());
@@ -86,20 +103,14 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 			locationToLockMap.put(MiscUtil.getLocationKey(lock.getLocation()), lock);
 		}
-	}
 
-	@Override
-	public void createProperties() {
-		members = createList(String.class, "members");
-		moderators = createList(String.class, "moderators");
-		invites = createList(String.class, "invites");
-		claims = createList(Claim.class, "claims");
-		locks = createList(Lock.class, "locks");
-		chat = createList(String.class, "chat");
-		
-		established = createProperty(Long.class, "established");
-		maxClaims = createProperty(Integer.class, "max-claims");
-		leader = createProperty(String.class, "leader");
+		try {
+			if (lastGrowth.getValue() == 0) {
+				lastGrowth.setValue(established.getValue());
+			}
+		} catch (ClassCastException e) {
+			// ignore
+		}
 	}
 	
 	public String getName() {
@@ -276,7 +287,19 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	public long getEstablished() {
 		return established.getValue();
 	}
-	
+
+	public void setLastGrowth(long time) {
+		lastGrowth.setValue(time);
+	}
+
+	public long getLastGrowth() {
+		return lastGrowth.getValue();
+	}
+
+	public void grow() {
+		maxClaims.setValue(maxClaims.getValue() + 2);
+	}
+
 	public void rename(String name) {
 		setIdentifier(name);
 	}
@@ -302,6 +325,18 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		lock.removeMember(otherPlayer);
 
 		this.save();
+	}
+
+	public void sendGroupMessage(String message) {
+		sendGroupMessage(message, null);
+	}
+
+	public void sendGroupMessage(String message, StandardPlayer from) {
+		for (StandardPlayer member : getPlayers()) {
+			if (from != member && member.isOnline()) {
+				member.sendMessage(message);
+			}
+		}
 	}
 
 	public boolean isGroupChat(StandardPlayer player) {
@@ -332,4 +367,5 @@ public class Group extends PersistedObject implements Comparable<Group> {
 			return other.getMembers().size() - getMembers().size();
 		}
 	}
+
 }

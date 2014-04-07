@@ -11,6 +11,8 @@ public class StandardConfig {
 	
 	private int groupNameMinLength;
 	private int groupNameMaxLength;
+	private int groupLandGrowth;
+	private int groupLandGrowthDays;
 
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
@@ -21,6 +23,8 @@ public class StandardConfig {
 		
 		groupNameMinLength = config.getInt("group-name-min-length");
 		groupNameMaxLength = config.getInt("group-name-max-length");
+		groupLandGrowth = config.getInt("group-land-growth");
+		groupLandGrowthDays = config.getInt("group-land-growth-days");
 	}
 
 	public boolean isDebug() {
@@ -35,4 +39,11 @@ public class StandardConfig {
 		return groupNameMaxLength;
 	}
 
+	public int getGroupLandGrowth() {
+		return groupLandGrowth;
+	}
+
+	public int getGroupLandGrowthDays() {
+		return groupLandGrowthDays;
+	}
 }

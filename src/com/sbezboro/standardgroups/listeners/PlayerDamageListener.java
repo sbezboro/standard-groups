@@ -7,6 +7,7 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -24,14 +25,14 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 	public void onEntityDamage(EntityDamageByEntityEvent event) {
 		Entity damagerEntity = event.getDamager();
 		StandardPlayer damager = plugin.getStandardPlayer(damagerEntity);
+		StandardPlayer victim = plugin.getStandardPlayer(event.getEntity());
+
 		if (damager == null && damagerEntity instanceof Arrow) {
 			damager = plugin.getStandardPlayer(((Arrow) damagerEntity).getShooter());
 		}
 
 		// Player attacking
 		if (damager != null) {
-			StandardPlayer victim = plugin.getStandardPlayer(event.getEntity());
-
 			if (damager == victim) {
 				return;
 			}
@@ -39,15 +40,29 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 			// Player victim
 			if (victim != null) {
 				GroupManager groupManager = subPlugin.getGroupManager();
-				Group group = groupManager.getGroupByLocation(victim.getLocation());
+				Group damagerGroup = groupManager.getGroupByLocation(damager.getLocation());
+				Group victimGroup = groupManager.getGroupByLocation(victim.getLocation());
 
-				if (group != null && group.isSafearea()) {
+				if (victimGroup != null && victimGroup.isSafearea()) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
+					event.setCancelled(true);
+				} else if (damagerGroup != null && damagerGroup.isSafearea()) {
+					damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
 					event.setCancelled(true);
 				} else if (groupManager.getPlayerGroup(damager) == groupManager.getPlayerGroup(victim)) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm a fellow group member.");
 					event.setCancelled(true);
 				}
+			}
+		}
+
+		if (!event.isCancelled() && victim != null) {
+			GroupManager groupManager = subPlugin.getGroupManager();
+
+			Group group = groupManager.getGroupByLocation(victim.getLocation());
+
+			if (group != null && group.isSafearea()) {
+				event.setCancelled(true);
 			}
 		}
 	}
