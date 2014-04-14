@@ -40,6 +40,7 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 		addSubCommand(new ChatCommand(plugin, this));
 		addSubCommand(new MapCommand(plugin, this));
 		addSubCommand(new ShowCommand(plugin, this));
+		addSubCommand(new UninviteCommand(plugin, this));
 		addSubCommand(new HelpCommand(plugin, this, subCommands.values()));
 	}
 

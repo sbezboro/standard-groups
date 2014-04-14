@@ -461,6 +461,46 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
+	public void uninvitePlayer(StandardPlayer player, String uninvitedUsername) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You can't uninvite players if you aren't in a group.");
+			return;
+		}
+
+		StandardPlayer uninvitedPlayer = plugin.matchPlayer(uninvitedUsername);
+
+		if (!group.isModerator(player) && !group.isLeader(player)) {
+			player.sendMessage("You must be either the group leader or a moderator to be able to uninvite players.");
+			return;
+		}
+
+		if (uninvitedPlayer == null) {
+			player.sendMessage("That player doesn't exist.");
+			return;
+		}
+
+		if (!group.isInvited(uninvitedPlayer)) {
+			player.sendMessage("That player hasn't been invited to your group yet.");
+			return;
+		}
+
+		group.removeInvite(uninvitedPlayer.getName());
+
+		for (StandardPlayer other : group.getPlayers()) {
+			if (player == other) {
+				player.sendMessage(ChatColor.YELLOW + "You have revoked the invitation for " + uninvitedPlayer.getDisplayName(false) + ".");
+			} else if (other.isOnline()) {
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked the invitation for d " + uninvitedPlayer.getDisplayName(false) + ".");
+			}
+		}
+
+		if (uninvitedPlayer.isOnline()) {
+			uninvitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked your invitation " + group.getName() + "!");
+		}
+	}
+
 	public void kickPlayer(StandardPlayer player, String kickedUsername) {
 		Group group = getPlayerGroup(player);
 
@@ -1279,5 +1319,4 @@ public class GroupManager extends BaseManager {
 			}
 		}
 	}
-
 }

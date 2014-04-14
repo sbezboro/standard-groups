@@ -112,7 +112,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 			// ignore
 		}
 	}
-	
+
 	public String getName() {
 		return getIdentifier();
 	}

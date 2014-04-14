@@ -40,8 +40,6 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	@Override
 	public void onLoad() {
 		super.onLoad();
-
-		mapManager.unload();
 	}
 
 	@Override
@@ -70,6 +68,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		super.onDisable();
 
 		Bukkit.getScheduler().cancelTasks(this);
+
+		mapManager.unload();
 	}
 
 	@Override
