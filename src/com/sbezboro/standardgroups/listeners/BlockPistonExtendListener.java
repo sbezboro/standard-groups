@@ -2,9 +2,11 @@ package com.sbezboro.standardgroups.listeners;
 
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,6 +30,16 @@ public class BlockPistonExtendListener extends SubPluginEventListener<StandardGr
 			if (!locks.isEmpty()) {
 				event.setCancelled(true);
 				break;
+			}
+
+			Location oldLocation = block.getLocation();
+			Location newLocation = block.getRelative(event.getDirection()).getLocation();
+
+			Group oldGroup = groupManager.getGroupByLocation(oldLocation);
+			Group newGroup = groupManager.getGroupByLocation(newLocation);
+
+			if (oldGroup != newGroup && newGroup != null) {
+				event.setCancelled(true);
 			}
 		}
 	}

@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="StandardGroups">
-    <output-path>$PROJECT_DIR$/dist/</output-path>
-    <root id="archive" name="StandardGroups.jar">
-      <element id="module-output" name="standard-groups" />
-    </root>
-  </artifact>
-</component>
