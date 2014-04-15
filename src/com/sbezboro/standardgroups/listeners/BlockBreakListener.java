@@ -59,7 +59,11 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				}
 			} else if (!groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
-				player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+				if (group.isSafearea()) {
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the safearea");
+				} else {
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+				}
 			}
 		}
 	}

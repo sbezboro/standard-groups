@@ -1,20 +1,19 @@
 package com.sbezboro.standardgroups;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.sbezboro.standardgroups.commands.GroupsCommand;
 import com.sbezboro.standardgroups.listeners.*;
-import com.sbezboro.standardgroups.managers.MapManager;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.managers.MapManager;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPlugin;
 import com.sbezboro.standardplugin.commands.ICommand;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class StandardGroups extends JavaPlugin implements SubPlugin {
@@ -93,7 +92,6 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new BlockPistonRetractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceListener(basePlugin, this), this);
 		pluginManager.registerEvents(new CreatureSpawnListener(basePlugin, this), this);
-		pluginManager.registerEvents(new EntityDamageListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityExplodeListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityTargetListener(basePlugin, this), this);
 		pluginManager.registerEvents(new HangingBreakListener(basePlugin, this), this);

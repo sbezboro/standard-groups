@@ -46,17 +46,20 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 				if (victimGroup != null && victimGroup.isSafearea()) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
 					event.setCancelled(true);
+					return;
 				} else if (damagerGroup != null && damagerGroup.isSafearea()) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
 					event.setCancelled(true);
+					return;
 				} else if (groupManager.getPlayerGroup(damager) == groupManager.getPlayerGroup(victim)) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm a fellow group member.");
 					event.setCancelled(true);
+					return;
 				}
 			}
 		}
 
-		if (!event.isCancelled() && victim != null) {
+		if (victim != null) {
 			GroupManager groupManager = subPlugin.getGroupManager();
 
 			Group group = groupManager.getGroupByLocation(victim.getLocation());
