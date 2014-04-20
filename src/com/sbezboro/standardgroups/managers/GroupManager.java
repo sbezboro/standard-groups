@@ -492,12 +492,12 @@ public class GroupManager extends BaseManager {
 			if (player == other) {
 				player.sendMessage(ChatColor.YELLOW + "You have revoked the invitation for " + uninvitedPlayer.getDisplayName(false) + ".");
 			} else if (other.isOnline()) {
-				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked the invitation for d " + uninvitedPlayer.getDisplayName(false) + ".");
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked the invitation for " + uninvitedPlayer.getDisplayName(false) + ".");
 			}
 		}
 
 		if (uninvitedPlayer.isOnline()) {
-			uninvitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked your invitation " + group.getName() + "!");
+			uninvitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked your invitation to the group " + group.getName() + "!");
 		}
 	}
 
