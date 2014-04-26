@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import com.sbezboro.standardgroups.model.Lock;
+import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
 import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -73,6 +74,7 @@ public class GroupManager extends BaseManager {
 	private Map<String, Group> locationToGroupMap;
 
 	private LandGrowthCheckTask landGrowthCheckTask;
+	private GroupRemovalTask groupRemovalTask;
 
 	public GroupManager(StandardPlugin plugin, StandardGroups subPlugin, GroupStorage storage) {
 		super(plugin);
@@ -86,7 +88,10 @@ public class GroupManager extends BaseManager {
 		locationToGroupMap = new HashMap<String, Group>();
 
 		landGrowthCheckTask = new LandGrowthCheckTask(plugin, subPlugin);
-		landGrowthCheckTask.runTaskTimer(subPlugin, 1200, 6000);
+		landGrowthCheckTask.runTaskTimer(subPlugin, 1200, 12000);
+
+		groupRemovalTask = new GroupRemovalTask(plugin, subPlugin);
+		groupRemovalTask.runTaskTimer(subPlugin, 2400, 24000);
 		
 		for (Group group : storage.getGroups()) {
 			for (String username : group.getMembers()) {
@@ -315,7 +320,7 @@ public class GroupManager extends BaseManager {
 		Group group = storage.createGroup(groupName, player);
 		usernameToGroupMap.put(player.getName(), group);
 		
-		StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has created a new group called " + groupName + ".");
+		StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has created a new group.");
 	}
 	
 	public void destroyGroup(CommandSender sender, String groupName) {
@@ -365,7 +370,7 @@ public class GroupManager extends BaseManager {
 		if (player == null) {
 			StandardPlugin.broadcast(ChatColor.YELLOW + "A server admin has destroyed the group " + group.getName() + ".");
 		} else {
-			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");
+			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed their group.");
 		}
 	}
 
@@ -498,6 +503,45 @@ public class GroupManager extends BaseManager {
 
 		if (uninvitedPlayer.isOnline()) {
 			uninvitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked your invitation to the group " + group.getName() + "!");
+		}
+	}
+
+	public void autoKickPlayer(StandardPlayer kickedPlayer) {
+		Group group = getPlayerGroup(kickedPlayer);
+
+		if (group.isLeader(kickedPlayer) && group.getMembers().size() > 1) {
+			StandardPlayer newLeader;
+
+			if (!group.getModerators().isEmpty()) {
+				newLeader = plugin.getStandardPlayer(group.getModerators().get(0));
+			} else {
+				List<StandardPlayer> players = group.getPlayers();
+
+				if (players.get(0) == kickedPlayer) {
+					newLeader = players.get(1);
+				} else {
+					newLeader = players.get(0);
+				}
+			}
+
+			group.setLeader(newLeader);
+
+			if (newLeader.isOnline()) {
+				newLeader.sendMessage(ChatColor.YELLOW + "You have been designated as the new group leader.");
+			}
+		}
+
+		group.removeMember(kickedPlayer);
+		usernameToGroupMap.remove(kickedPlayer.getName());
+
+		if (group.getMembers().size() == 0) {
+			for (Claim claim : group.getClaims()) {
+				locationToGroupMap.remove(claim.getLocationKey());
+			}
+
+			storage.destroyGroup(group);
+
+			StandardPlugin.broadcast(ChatColor.YELLOW + "The group " + group.getName() + " has been destroyed automatically.");
 		}
 	}
 
