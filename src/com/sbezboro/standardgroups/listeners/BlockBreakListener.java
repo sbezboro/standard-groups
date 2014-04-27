@@ -67,5 +67,5 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 			}
 		}
 	}
-	
+
 }

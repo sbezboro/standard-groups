@@ -19,7 +19,7 @@ public class GroupRemovalTask extends BaseTask {
 
 	@Override
 	public void run() {
-		subPlugin.getLogger().info("Running LandGrowthCheckTask");
+		subPlugin.getLogger().info("Running GroupRemovalTask");
 
 		long curTime = System.currentTimeMillis();
 

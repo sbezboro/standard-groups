@@ -696,8 +696,8 @@ public class GroupManager extends BaseManager {
 			}
 			
 			storage.destroyGroup(group);
-			
-			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed the group " + group.getName() + ".");
+
+			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed their group.");
 		}
 	}
 
