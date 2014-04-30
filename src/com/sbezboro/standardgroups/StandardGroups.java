@@ -79,6 +79,11 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	}
 
 	@Override
+	public void migrate() {
+
+	}
+
+	@Override
 	public List<ICommand> getCommands() {
 		List<ICommand> commands = new ArrayList<ICommand>();
 		commands.add(new GroupsCommand(basePlugin, this));
