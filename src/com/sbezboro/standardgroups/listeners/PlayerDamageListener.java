@@ -40,23 +40,25 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 			// Player victim
 			if (victim != null) {
 				GroupManager groupManager = subPlugin.getGroupManager();
-				Group damagerGroup = groupManager.getGroupByLocation(damager.getLocation());
-				Group victimGroup = groupManager.getGroupByLocation(victim.getLocation());
+				Group damagerLocationGroup = groupManager.getGroupByLocation(damager.getLocation());
+				Group victimLocationGroup = groupManager.getGroupByLocation(victim.getLocation());
+				Group damagerGroup = groupManager.getPlayerGroup(damager);
+				Group victimGroup = groupManager.getPlayerGroup(victim);
 
-				if (victimGroup != null && victimGroup.isSafearea()) {
+				if (victimLocationGroup != null && victimLocationGroup.isSafearea()) {
 					damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
 					event.setCancelled(true);
 					return;
-				} else if (damagerGroup != null) {
-					if (damagerGroup.isSafearea()) {
-						damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
-						event.setCancelled(true);
-						return;
-					} else if (damagerGroup == victimGroup) {
-						damager.sendMessage(ChatColor.YELLOW + "You can't harm a fellow group member.");
-						event.setCancelled(true);
-						return;
-					}
+				} else if (damagerLocationGroup != null && damagerLocationGroup.isSafearea()) {
+					damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
+					event.setCancelled(true);
+					return;
+				}
+
+				if (damagerGroup != null && damagerGroup == victimGroup) {
+					damager.sendMessage(ChatColor.YELLOW + "You can't harm a fellow group member.");
+					event.setCancelled(true);
+					return;
 				}
 			}
 		}
