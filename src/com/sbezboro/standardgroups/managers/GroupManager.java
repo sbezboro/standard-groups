@@ -39,6 +39,7 @@ public class GroupManager extends BaseManager {
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
 		add(Material.FURNACE);
+		add(Material.BURNING_FURNACE);
 		add(Material.DISPENSER);
 		add(Material.DROPPER);
 		add(Material.ENCHANTMENT_TABLE);

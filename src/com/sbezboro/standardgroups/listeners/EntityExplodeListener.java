@@ -38,7 +38,7 @@ public class EntityExplodeListener extends SubPluginEventListener<StandardGroups
 					return;
 				}
 				
-				if (GroupManager.isBlockTypeProtected(block)) {
+				if (!groupManager.getLocksAffectedByBlock(block.getLocation()).isEmpty()) {
 					event.blockList().remove(block);
 				}
 			}
