@@ -85,12 +85,17 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
-			if (groupManager.playerInGroup(player, group)) {
-				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+			List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+			Lock lock = null;
 
-				if (!locks.isEmpty()) {
-					Lock lock = locks.get(0);
+			if (!locks.isEmpty()) {
+				lock = locks.get(0);
+			}
 
+			if (lock != null && lock.isPublic()) {
+				player.sendMessage(ChatColor.GREEN + "Using public block in the territory of " + group.getName());
+			} else if (groupManager.playerInGroup(player, group)) {
+				if (lock != null) {
 					if (lock.isOwner(player)) {
 						player.sendMessage(ChatColor.YELLOW + "Using locked block that you own");
 					} else if (lock.hasAccess(player)) {

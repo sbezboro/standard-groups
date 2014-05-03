@@ -1164,16 +1164,9 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void lockInfo(StandardPlayer player, Block block) {
-		Group group = getPlayerGroup(player);
-
-		if (group == null) {
-			player.sendMessage("You must be in a group before you can look at lock info.");
-			return;
-		}
-
 		Location location = block.getLocation();
 
-		List<Lock> locks = getLocksAffectedByBlock(group, location);
+		List<Lock> locks = getLocksAffectedByBlock(location);
 
 		if (locks.isEmpty()) {
 			player.sendMessage("No lock exists on this block.");
@@ -1194,9 +1187,51 @@ public class GroupManager extends BaseManager {
 		player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Lock Info" + ChatColor.GOLD + " ==============");
 		player.sendMessage(ChatColor.YELLOW + "Location: " + ChatColor.RESET + MiscUtil.locationFormat(lock.getLocation()));
 		player.sendMessage(ChatColor.YELLOW + "Owner: " + ChatColor.RESET + lock.getOwner().getDisplayName());
+		player.sendMessage(ChatColor.YELLOW + "Public: " + ChatColor.RESET + (lock.isPublic() ? "Yes" : "No"));
 
 		if (!members.isEmpty()) {
 			player.sendMessage(ChatColor.YELLOW + "Members: " + ChatColor.RESET + members);
+		}
+	}
+
+	public void togglePublicLock(StandardPlayer player, Block block) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group before you can set lock status.");
+			return;
+		}
+
+		Location location = block.getLocation();
+
+		Group testGroup = getGroupByLocation(location);
+
+		if (testGroup != group) {
+			player.sendMessage("You can only lock things in your group's territory.");
+			return;
+		}
+
+		List<Lock> locks = getLocksAffectedByBlock(group, location);
+
+		Lock lock;
+
+		if (locks.isEmpty()) {
+			lock = group.lock(player, location);
+		} else {
+			lock = locks.get(0);
+
+			if (!lock.isOwner(player)) {
+				player.sendMessage("You are not the owner of this lock.");
+				return;
+			}
+		}
+
+		boolean isPublic = group.togglePublicLock(lock);
+
+		if (isPublic) {
+			player.sendMessage(ChatColor.YELLOW + "This lock is now public, anyone can access it!");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "This lock is no longer public.");
 		}
 	}
 

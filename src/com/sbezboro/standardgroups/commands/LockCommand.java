@@ -43,6 +43,15 @@ public class LockCommand extends SubCommand {
 				groupManager.lockInfo(player, block);
 
 				return true;
+			} else if (args[0].equalsIgnoreCase("public")) {
+				if (block == null) {
+					sender.sendMessage("No block in range");
+					return true;
+				}
+
+				groupManager.togglePublicLock(player, block);
+
+				return true;
 			}
 		} else if (args.length == 2) {
 			if (args[0].equalsIgnoreCase("add")) {
@@ -89,6 +98,7 @@ public class LockCommand extends SubCommand {
 		sender.sendMessage(ChatColor.YELLOW + "/g lock" + ChatColor.RESET + " - lock the block being looked at");
 		sender.sendMessage(ChatColor.YELLOW + "/g lock add <player>" + ChatColor.RESET + " - give a player access to an existing lock");
 		sender.sendMessage(ChatColor.YELLOW + "/g lock remove <player>" + ChatColor.RESET + " - revoke a player's access to an existing lock");
+		sender.sendMessage(ChatColor.YELLOW + "/g lock public" + ChatColor.RESET + " - toggle public access to a lock");
 		sender.sendMessage(ChatColor.YELLOW + "/g lock info" + ChatColor.RESET + " - show info about the lock being looked at");
 	}
 }

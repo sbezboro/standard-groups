@@ -5,6 +5,7 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.persistables.Persistable;
 import com.sbezboro.standardplugin.persistence.persistables.PersistableImpl;
 import com.sbezboro.standardplugin.persistence.persistables.PersistableLocation;
+import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.Location;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class Lock extends PersistableImpl implements Persistable {
 	private String owner;
 	private List<String> members;
 	private LockType type;
+	private boolean publicLock;
 
 	private Group group;
 
@@ -36,6 +38,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		this.members.add(player.getName());
 
 		this.type = LockType.INDIVIDUAL;
+		this.publicLock = false;
 	}
 
 	@Override
@@ -47,6 +50,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		owner = (String) map.get("owner");
 		members = (List<String>) map.get("members");
 		type = LockType.valueOf((String) map.get("type"));
+		publicLock = MiscUtil.safeBoolean(map.get("public"));
 	}
 
 	@Override
@@ -57,6 +61,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		map.put("owner", owner);
 		map.put("members", members);
 		map.put("type", type.toString());
+		map.put("public", publicLock);
 		
 		return map;
 	}
@@ -101,6 +106,14 @@ public class Lock extends PersistableImpl implements Persistable {
 
 	public void removeMember(StandardPlayer otherPlayer) {
 		members.remove(otherPlayer.getName());
+	}
+
+	public boolean isPublic() {
+		return publicLock;
+	}
+
+	public void setPublic(boolean publicLock) {
+		this.publicLock = publicLock;
 	}
 
 }

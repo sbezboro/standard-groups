@@ -327,6 +327,18 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		this.save();
 	}
 
+	public boolean togglePublicLock(Lock lock) {
+		if (lock.isPublic()) {
+			lock.setPublic(false);
+		} else {
+			lock.setPublic(true);
+		}
+
+		this.save();
+
+		return lock.isPublic();
+	}
+
 	public void sendGroupMessage(String message) {
 		sendGroupMessage(message, null);
 	}
