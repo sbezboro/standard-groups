@@ -1390,6 +1390,11 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
+		if (!group.isModerator(player) && !group.isLeader(player)) {
+			player.sendMessage("Only the group leader or a moderator can show claims.");
+			return;
+		}
+
 		if (group.getClaims().isEmpty()) {
 			player.sendMessage(ChatColor.YELLOW + "Your group has not claimed any land yet.");
 		} else {
