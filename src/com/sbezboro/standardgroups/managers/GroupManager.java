@@ -147,13 +147,23 @@ public class GroupManager extends BaseManager {
 	}
 
 	public Group matchGroup(String name) {
+		Group match = null;
+
 		for (Group group : storage.getGroups()) {
 			if (group.getName().toLowerCase().startsWith(name.toLowerCase())) {
-				return group;
+				// Return a group with a name that directly matches the query
+				if (group.getName().equalsIgnoreCase(name)) {
+					return group;
+				}
+
+				// Otherwise find the shortest length group name that the query is a prefix to
+				if (match == null || group.getName().length() < match.getName().length()) {
+					match = group;
+				}
 			}
 		}
 
-		return null;
+		return match;
 	}
 
 	public static boolean isBlockTypeProtected(Block block) {
