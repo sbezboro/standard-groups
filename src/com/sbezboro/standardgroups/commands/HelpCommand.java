@@ -3,12 +3,11 @@ package com.sbezboro.standardgroups.commands;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
+import com.sbezboro.standardplugin.util.PaginatedOutput;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public class HelpCommand extends SubCommand {
 	
@@ -22,19 +21,28 @@ public class HelpCommand extends SubCommand {
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
-		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Groups Help" + ChatColor.GOLD + " ==============");
-
 		Set<SubCommand> commands = new TreeSet<SubCommand>(otherCommands);
+		int page;
+
+		if (args.length == 1) {
+			try {
+				page = Integer.parseInt(args[0]);
+			} catch (NumberFormatException e) {
+				page = 1;
+			}
+		} else {
+			page = 1;
+		}
+
+		PaginatedOutput paginatedOutput = new PaginatedOutput("Groups Help", page);
 
 		for (SubCommand subCommand : commands) {
-			subCommand.showHelp(sender);
+			subCommand.showHelp(paginatedOutput);
 		}
+
+		paginatedOutput.show(sender);
 		
 		return true;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender) {
 	}
 
 }

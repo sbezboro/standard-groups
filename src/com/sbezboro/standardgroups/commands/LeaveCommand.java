@@ -10,6 +10,9 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LeaveCommand extends SubCommand {
 
 	public LeaveCommand(StandardPlugin plugin, BaseCommand command) {
@@ -27,8 +30,10 @@ public class LeaveCommand extends SubCommand {
 	}
 
 	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g leave" + ChatColor.RESET + " - leave a group you are in");
+	public List<String> getHelpLines() {
+		return new ArrayList<String>() {{
+			add(ChatColor.YELLOW + "/g leave" + ChatColor.RESET + " - leave a group you are in");
+		}};
 	}
-	
+
 }

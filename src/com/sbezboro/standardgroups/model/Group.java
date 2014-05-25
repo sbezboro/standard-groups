@@ -283,9 +283,13 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		this.save();
 	}
-	
+
 	public long getEstablished() {
 		return established.getValue();
+	}
+
+	public long getNextGrowth() {
+		return getLastGrowth() + StandardGroups.getPlugin().getGroupLandGrowthDays() * 86400000;
 	}
 
 	public void setLastGrowth(long time) {

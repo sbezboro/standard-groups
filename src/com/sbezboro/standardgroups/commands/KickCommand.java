@@ -9,10 +9,15 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class KickCommand extends SubCommand {
 
 	public KickCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "kick");
+
+		addHelp(ChatColor.YELLOW + "/g kick <player>" + ChatColor.RESET + " - kick a player from your group");
 	}
 
 	@Override
@@ -30,9 +35,4 @@ public class KickCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g kick <player>" + ChatColor.RESET + " - kick a player from your group");
-	}
-	
 }

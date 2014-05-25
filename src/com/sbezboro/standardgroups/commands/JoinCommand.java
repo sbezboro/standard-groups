@@ -10,10 +10,15 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JoinCommand extends SubCommand {
 
 	public JoinCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "join");
+
+		addHelp(ChatColor.YELLOW + "/g join <name>" + ChatColor.RESET + " - attempt to join a group");
 	}
 
 	@Override
@@ -29,11 +34,6 @@ public class JoinCommand extends SubCommand {
 		groupManager.joinGroup(player, args[0]);
 		
 		return true;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g join <name>" + ChatColor.RESET + " - attempt to join a group");
 	}
 	
 }

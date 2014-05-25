@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ChatCommand extends SubCommand {
 
@@ -17,6 +18,8 @@ public class ChatCommand extends SubCommand {
 		super(plugin, command, "chat", new ArrayList<String>() {{
 			add("c");
 		}});
+
+		addHelp(ChatColor.YELLOW + "/g chat" + ChatColor.RESET + " - switch chat modes");
 	}
 
 	@Override
@@ -29,9 +32,4 @@ public class ChatCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g c" + ChatColor.RESET + " - switch chat modes");
-	}
-	
 }

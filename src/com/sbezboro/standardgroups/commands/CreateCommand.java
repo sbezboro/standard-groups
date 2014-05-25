@@ -10,10 +10,15 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CreateCommand extends SubCommand {
 
 	public CreateCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "create");
+
+		addHelp(ChatColor.YELLOW + "/g create <name>" + ChatColor.RESET + " - create a group");
 	}
 
 	@Override
@@ -29,11 +34,6 @@ public class CreateCommand extends SubCommand {
 		groupManager.createGroup(player, args[0]);
 		
 		return true;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g create <name>" + ChatColor.RESET + " - create a group");
 	}
 
 }

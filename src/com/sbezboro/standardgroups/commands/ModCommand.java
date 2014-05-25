@@ -9,10 +9,15 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ModCommand extends SubCommand {
 
 	public ModCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "mod");
+
+		addHelp(ChatColor.YELLOW + "/g mod <player>" + ChatColor.RESET + " - set a player as a moderator");
 	}
 
 	@Override
@@ -30,9 +35,4 @@ public class ModCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g mod <player>" + ChatColor.RESET + " - set a player as a moderator");
-	}
-	
 }

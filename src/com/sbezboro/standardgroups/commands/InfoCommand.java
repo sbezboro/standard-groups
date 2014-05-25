@@ -10,10 +10,15 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InfoCommand extends SubCommand {
 
 	public InfoCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "info");
+
+		addHelp(ChatColor.YELLOW + "/g info [name]" + ChatColor.RESET + " - show group info");
 	}
 
 	@Override
@@ -41,8 +46,4 @@ public class InfoCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g info [name]" + ChatColor.RESET + " - show group info");
-	}
 }

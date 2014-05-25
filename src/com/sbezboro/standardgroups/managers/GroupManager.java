@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
 import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
+import com.sbezboro.standardplugin.util.PaginatedOutput;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
@@ -196,11 +196,38 @@ public class GroupManager extends BaseManager {
 
 	private Block[] getAdjacentBlocks(Block block) {
 		return new Block[] {
-				block.getRelative(BlockFace.NORTH),
-				block.getRelative(BlockFace.EAST),
-				block.getRelative(BlockFace.SOUTH),
-				block.getRelative(BlockFace.WEST)
+			block.getRelative(BlockFace.NORTH),
+			block.getRelative(BlockFace.EAST),
+			block.getRelative(BlockFace.SOUTH),
+			block.getRelative(BlockFace.WEST)
 		};
+	}
+
+	private void removeMember(Group group, StandardPlayer player) {
+		if (group.isLeader(player) && group.getMembers().size() > 1) {
+			StandardPlayer newLeader;
+
+			if (!group.getModerators().isEmpty()) {
+				newLeader = plugin.getStandardPlayer(group.getModerators().get(0));
+			} else {
+				List<StandardPlayer> players = group.getPlayers();
+
+				if (players.get(0) == player) {
+					newLeader = players.get(1);
+				} else {
+					newLeader = players.get(0);
+				}
+			}
+
+			group.setLeader(newLeader);
+
+			if (newLeader.isOnline()) {
+				newLeader.sendMessage(ChatColor.YELLOW + "You have been designated as the new group leader.");
+			}
+		}
+
+		usernameToGroupMap.remove(player.getName());
+		group.removeMember(player);
 	}
 
 	public List<Lock> getLocksAffectedByBlock(Location location) {
@@ -520,30 +547,7 @@ public class GroupManager extends BaseManager {
 	public void autoKickPlayer(StandardPlayer kickedPlayer) {
 		Group group = getPlayerGroup(kickedPlayer);
 
-		if (group.isLeader(kickedPlayer) && group.getMembers().size() > 1) {
-			StandardPlayer newLeader;
-
-			if (!group.getModerators().isEmpty()) {
-				newLeader = plugin.getStandardPlayer(group.getModerators().get(0));
-			} else {
-				List<StandardPlayer> players = group.getPlayers();
-
-				if (players.get(0) == kickedPlayer) {
-					newLeader = players.get(1);
-				} else {
-					newLeader = players.get(0);
-				}
-			}
-
-			group.setLeader(newLeader);
-
-			if (newLeader.isOnline()) {
-				newLeader.sendMessage(ChatColor.YELLOW + "You have been designated as the new group leader.");
-			}
-		}
-
-		group.removeMember(kickedPlayer);
-		usernameToGroupMap.remove(kickedPlayer.getName());
+		removeMember(group, kickedPlayer);
 
 		if (group.getMembers().size() == 0) {
 			for (Claim claim : group.getClaims()) {
@@ -668,30 +672,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		if (group.isLeader(player) && group.getMembers().size() > 1) {
-			StandardPlayer newLeader;
-
-			if (!group.getModerators().isEmpty()) {
-				newLeader = plugin.getStandardPlayer(group.getModerators().get(0));
-			} else {
-				List<StandardPlayer> players = group.getPlayers();
-
-				if (players.get(0) == player) {
-					newLeader = players.get(1);
-				} else {
-					newLeader = players.get(0);
-				}
-			}
-
-			group.setLeader(newLeader);
-
-			if (newLeader.isOnline()) {
-				newLeader.sendMessage(ChatColor.YELLOW + "You have been designated as the new group leader.");
-			}
-		}
-		
-		usernameToGroupMap.remove(player.getName());
-		group.removeMember(player);
+		removeMember(group, player);
 		
 		if (group.getMembers().size() > 0) {
 			for (StandardPlayer other : group.getPlayers()) {
@@ -1009,6 +990,11 @@ public class GroupManager extends BaseManager {
 		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
 		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
 		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims());
+
+		if (player != null && getPlayerGroup(player) == group) {
+			sender.sendMessage(ChatColor.YELLOW + "Next land growth: " + ChatColor.RESET +  MiscUtil.friendlyTimestamp(group.getNextGrowth()));
+		}
+
 		sender.sendMessage(ChatColor.YELLOW + "Online members: " + ChatColor.RESET + StringUtils.join(onlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Offline members: " + ChatColor.RESET + StringUtils.join(offlineMembers, ChatColor.RESET + ", "));
 	}
@@ -1245,10 +1231,10 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void groupList(CommandSender sender) {
+	public void groupList(CommandSender sender, int page) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 
-		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Active Groups" + ChatColor.GOLD + " ==============");
+		PaginatedOutput paginatedOutput = new PaginatedOutput("Active Groups", page);
 
 		List<Group> list = storage.getGroups();
 		Collections.sort(list);
@@ -1260,8 +1246,10 @@ public class GroupManager extends BaseManager {
 
 			int online = group.getOnlineCount();
 
-			sender.sendMessage(group.getNameWithRelation(player) + " - " + ChatColor.WHITE + online + " online, " +  group.getMembers().size() + " total members");
+			paginatedOutput.addLine(group.getNameWithRelation(player) + " - " + ChatColor.WHITE + online + " online, " + group.getMembers().size() + " total members");
 		}
+
+		paginatedOutput.show(sender);
 	}
 
 	public void addModerator(StandardPlayer player, String username) {

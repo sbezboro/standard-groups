@@ -10,10 +10,15 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RenameCommand extends SubCommand {
 
 	public RenameCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "rename");
+
+		addHelp(ChatColor.YELLOW + "/g rename <name>" + ChatColor.RESET + " - rename your group");
 	}
 
 	@Override
@@ -31,9 +36,4 @@ public class RenameCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g rename <name>" + ChatColor.RESET + " - rename your group");
-	}
-	
 }

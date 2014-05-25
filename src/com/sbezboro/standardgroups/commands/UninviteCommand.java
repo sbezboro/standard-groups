@@ -9,10 +9,15 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UninviteCommand extends SubCommand {
 
 	public UninviteCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "uninvite");
+
+		addHelp(ChatColor.YELLOW + "/g uninvite <player>" + ChatColor.RESET + " - revoke an existing invitation");
 	}
 
 	@Override
@@ -30,9 +35,4 @@ public class UninviteCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g uninvite <player>" + ChatColor.RESET + " - revoke an existing invitation");
-	}
-	
 }

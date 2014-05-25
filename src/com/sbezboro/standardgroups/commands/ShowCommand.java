@@ -9,10 +9,15 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ShowCommand extends SubCommand {
 
 	public ShowCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "show");
+
+		addHelp(ChatColor.YELLOW + "/g show claims" + ChatColor.RESET + " - show a list of claimed chunks for your group");
 	}
 
 	@Override
@@ -34,11 +39,6 @@ public class ShowCommand extends SubCommand {
 		}
 
 		return true;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g show claims" + ChatColor.RESET + " - show a list of claimed chunks for your group");
 	}
 	
 }

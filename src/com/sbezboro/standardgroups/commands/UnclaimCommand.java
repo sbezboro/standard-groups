@@ -9,10 +9,17 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UnclaimCommand extends SubCommand {
 
 	public UnclaimCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "unclaim");
+
+		addHelp(ChatColor.YELLOW + "/g unclaim" + ChatColor.RESET + " - unclaim land from your group");
+		addHelp(ChatColor.YELLOW + "/g unclaim all" + ChatColor.RESET + " - unclaim all land from your group");
+		addHelp(ChatColor.YELLOW + "/g unclaim <x z>" + ChatColor.RESET + " - unclaim a remote chunk from your group");
 	}
 
 	@Override
@@ -51,11 +58,4 @@ public class UnclaimCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g unclaim" + ChatColor.RESET + " - unclaim land from your group");
-		sender.sendMessage(ChatColor.YELLOW + "/g unclaim all" + ChatColor.RESET + " - unclaim all land from your group");
-		sender.sendMessage(ChatColor.YELLOW + "/g unclaim <x z>" + ChatColor.RESET + " - unclaim a remote chunk from your group");
-	}
-	
 }

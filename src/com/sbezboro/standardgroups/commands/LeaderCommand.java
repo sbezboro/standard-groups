@@ -9,10 +9,15 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LeaderCommand extends SubCommand {
 
 	public LeaderCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "leader");
+
+		addHelp(ChatColor.YELLOW + "/g leader <player>" + ChatColor.RESET + " - give leadership to another group member");
 	}
 
 	@Override
@@ -28,11 +33,6 @@ public class LeaderCommand extends SubCommand {
 		groupManager.setLeader(player, args[0]);
 		
 		return true;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g leader <player>" + ChatColor.RESET + " - give leadership to another group member");
 	}
 	
 }

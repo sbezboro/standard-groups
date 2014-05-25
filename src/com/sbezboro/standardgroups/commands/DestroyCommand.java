@@ -9,10 +9,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DestroyCommand extends SubCommand {
 
 	public DestroyCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "destroy");
+
+		addHelp(ChatColor.YELLOW + "/g destroy" + ChatColor.RESET + " - destroy a group you own");
 	}
 
 	@Override
@@ -38,8 +43,4 @@ public class DestroyCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g destroy" + ChatColor.RESET + " - destroy a group you own");
-	}
 }

@@ -11,6 +11,7 @@ import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class InviteCommand extends SubCommand {
 
@@ -18,6 +19,8 @@ public class InviteCommand extends SubCommand {
 		super(plugin, command, "invite", new ArrayList<String>() {{
 			add("inv");
 		}});
+
+		addHelp(ChatColor.YELLOW + "/g invite <player>" + ChatColor.RESET + " - invite a player to your group");
 	}
 
 	@Override
@@ -35,9 +38,4 @@ public class InviteCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g invite <player>" + ChatColor.RESET + " - invite a player to your group");
-	}
-	
 }

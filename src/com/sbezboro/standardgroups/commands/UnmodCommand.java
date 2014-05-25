@@ -9,10 +9,15 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UnmodCommand extends SubCommand {
 
 	public UnmodCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "unmod");
+
+		addHelp(ChatColor.YELLOW + "/g unmod <player>" + ChatColor.RESET + " - remove moderator privileges from a player");
 	}
 
 	@Override
@@ -28,11 +33,6 @@ public class UnmodCommand extends SubCommand {
 		groupManager.removeModerator(player, args[0]);
 		
 		return true;
-	}
-
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g unmod <player>" + ChatColor.RESET + " - remove moderator privileges from a player");
 	}
 	
 }

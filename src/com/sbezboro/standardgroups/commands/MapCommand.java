@@ -10,10 +10,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MapCommand extends SubCommand {
 
 	public MapCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "map");
+
+		addHelp(ChatColor.YELLOW + "/g map" + ChatColor.RESET + " - show a map of the surrounding area");
 	}
 
 	@Override
@@ -27,8 +32,4 @@ public class MapCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g map" + ChatColor.RESET + " - show a map of the surrounding area");
-	}
 }

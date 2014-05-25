@@ -10,10 +10,15 @@ import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClaimCommand extends SubCommand {
 
 	public ClaimCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "claim");
+
+		addHelp(ChatColor.YELLOW + "/g claim" + ChatColor.RESET + " - claim land for your group");
 	}
 
 	@Override
@@ -50,9 +55,4 @@ public class ClaimCommand extends SubCommand {
 		return true;
 	}
 
-	@Override
-	public void showHelp(CommandSender sender) {
-		sender.sendMessage(ChatColor.YELLOW + "/g claim" + ChatColor.RESET + " - claim land for your group");
-	}
-	
 }
