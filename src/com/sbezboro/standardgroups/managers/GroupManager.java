@@ -991,7 +991,7 @@ public class GroupManager extends BaseManager {
 		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
 		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims());
 
-		if (player != null && getPlayerGroup(player) == group) {
+		if (player == null || getPlayerGroup(player) == group) {
 			sender.sendMessage(ChatColor.YELLOW + "Next land growth: " + ChatColor.RESET +  MiscUtil.friendlyTimestamp(group.getNextGrowth()));
 		}
 
