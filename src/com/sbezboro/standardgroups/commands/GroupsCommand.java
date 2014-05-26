@@ -47,7 +47,7 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 	@Override
 	public boolean handle(CommandSender sender, Command command, String label, String[] args) {
 		if (args.length == 0) {
-			subCommands.get("help").handle(sender, null);
+			subCommands.get("help").handle(sender, new String[] {});
 			return false;
 		}
 
