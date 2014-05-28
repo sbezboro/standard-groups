@@ -149,7 +149,7 @@ public class GroupManager extends BaseManager {
 	public Group matchGroup(String name) {
 		Group match = null;
 
-		for (Group group : storage.getGroups()) {
+		for (Group group : getGroups()) {
 			if (group.getName().toLowerCase().startsWith(name.toLowerCase())) {
 				// Return a group with a name that directly matches the query
 				if (group.getName().equalsIgnoreCase(name)) {
@@ -1236,14 +1236,10 @@ public class GroupManager extends BaseManager {
 
 		PaginatedOutput paginatedOutput = new PaginatedOutput("Active Groups", page);
 
-		List<Group> list = storage.getGroups();
+		List<Group> list = getGroups();
 		Collections.sort(list);
 
 		for (Group group : list) {
-			if (group.isSafearea()) {
-				continue;
-			}
-
 			int online = group.getOnlineCount();
 
 			paginatedOutput.addLine(group.getNameWithRelation(player) + " - " + ChatColor.WHITE + online + " online, " + group.getMembers().size() + " total members");

@@ -4,6 +4,7 @@ import com.sbezboro.standardgroups.commands.GroupsCommand;
 import com.sbezboro.standardgroups.listeners.*;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.managers.MapManager;
+import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPlugin;
@@ -13,7 +14,9 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class StandardGroups extends JavaPlugin implements SubPlugin {
@@ -76,6 +79,20 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		config.reload();
 		
 		reloadConfig();
+	}
+
+	@Override
+	public Map<String, Object> additionalServerStatus() {
+		HashMap<String, Object> result = new HashMap<String, Object>();
+		ArrayList<Map<String, Object>> groups = new ArrayList<Map<String, Object>>();
+
+		for (Group group : groupManager.getGroups()) {
+			groups.add(group.getInfo());
+		}
+
+		result.put("groups", groups);
+
+		return result;
 	}
 
 	@Override

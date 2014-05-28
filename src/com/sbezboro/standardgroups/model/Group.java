@@ -1,12 +1,11 @@
 package com.sbezboro.standardgroups.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardplugin.model.Title;
+import com.sbezboro.standardplugin.util.AnsiConverter;
 import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -28,6 +27,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedListProperty<Lock> locks;
 	private PersistedListProperty<String> chat;
 
+	private PersistedProperty<String> uid;
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Long> lastGrowth;
 	private PersistedProperty<Integer> maxClaims;
@@ -66,7 +66,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
 		chat = createList(String.class, "chat");
-		
+
+		uid = createProperty(String.class, "uid");
 		established = createProperty(Long.class, "established");
 		lastGrowth = createProperty(Long.class, "last-growth");
 		maxClaims = createProperty(Integer.class, "max-claims");
@@ -104,6 +105,10 @@ public class Group extends PersistedObject implements Comparable<Group> {
 			locationToLockMap.put(MiscUtil.getLocationKey(lock.getLocation()), lock);
 		}
 
+		if (uid.getValue() == null || uid.getValue().length() == 0) {
+			uid.setValue(UUID.randomUUID().toString().replaceAll("-", ""));
+		}
+
 		try {
 			if (lastGrowth.getValue() == 0) {
 				lastGrowth.setValue(established.getValue());
@@ -111,6 +116,10 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		} catch (ClassCastException e) {
 			// ignore
 		}
+	}
+
+	public String getUid() {
+		return uid.getValue();
 	}
 
 	public String getName() {
@@ -384,4 +393,22 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 	}
 
+	public Map<String, Object> getInfo() {
+		HashMap<String, Object> info = new HashMap<String, Object>();
+
+		info.put("uid", getUid());
+		info.put("name", getName());
+		info.put("established", getEstablished());
+		info.put("land_count", getClaims().size());
+		info.put("land_limit", getMaxClaims());
+
+		ArrayList<String> members = new ArrayList<String>();
+		for (String member : getMembers()) {
+			members.add(member);
+		}
+
+		info.put("members", members);
+
+		return info;
+	}
 }
