@@ -41,7 +41,9 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 		if (group != null && group.isGroupChat(player)) {
 			format = ChatColor.GREEN + "(To group) " + ChatColor.AQUA + "%s" + ChatColor.RESET + ": %s";
 
-			Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
+			Bukkit.getConsoleSender().sendMessage(String.format(
+					format.replace("(To group)", "(To group " + group.getName() + ")"),
+					player.getDisplayName(), message));
 
 			for (StandardPlayer otherPlayer : group.getPlayers()) {
 				if (otherPlayer.isOnline()) {

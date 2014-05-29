@@ -401,13 +401,13 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		info.put("established", getEstablished());
 		info.put("land_count", getClaims().size());
 		info.put("land_limit", getMaxClaims());
+		info.put("lock_count", getLocks().size());
 
-		ArrayList<String> members = new ArrayList<String>();
-		for (String member : getMembers()) {
-			members.add(member);
-		}
+		info.put("invites", invites.getList());
 
-		info.put("members", members);
+		info.put("leader", leader.getValue());
+		info.put("moderators", getModerators());
+		info.put("members", getMembers());
 
 		return info;
 	}
