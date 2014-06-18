@@ -18,7 +18,7 @@ public class LeaveCommand extends SubCommand {
 	public LeaveCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "leave");
 
-		addHelp(ChatColor.YELLOW + "/g leave\" + ChatColor.RESET + \" - leave a group you are in");
+		addHelp(ChatColor.YELLOW + "/g leave" + ChatColor.RESET + " - leave a group you are in");
 	}
 
 	@Override

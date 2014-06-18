@@ -37,13 +37,13 @@ public class PlayerMoveListener extends SubPluginEventListener<StandardGroups> i
 				Group playerGroup = groupManager.getPlayerGroup(player);
 				
 				if (toGroup == null) {
-					player.sendMessage(ChatColor.GREEN + "Entering unclaimed wilderness");
+					player.sendMessage(String.valueOf(ChatColor.GREEN) + ChatColor.BOLD + "Entering unclaimed wilderness");
 				} else if (toGroup.isSafearea()) {
-					player.sendMessage(ChatColor.DARK_GREEN + "Entering the safearea");
+					player.sendMessage(String.valueOf(ChatColor.DARK_GREEN) + ChatColor.BOLD + "Entering the safearea");
 				} else if (toGroup == playerGroup) {
-					player.sendMessage(ChatColor.YELLOW + "Entering the territory of your group " + ChatColor.GREEN + toGroup.getName());
+					player.sendMessage(String.valueOf(ChatColor.YELLOW) + ChatColor.BOLD + "Entering the territory of your group " + ChatColor.GREEN + ChatColor.BOLD + toGroup.getName());
 				} else {
-					player.sendMessage(ChatColor.YELLOW + "Entering the territory of " + toGroup.getName());
+					player.sendMessage(String.valueOf(ChatColor.YELLOW) + ChatColor.BOLD + "Entering the territory of " + toGroup.getName());
 				}
 			}
 
