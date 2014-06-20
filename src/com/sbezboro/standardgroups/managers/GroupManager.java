@@ -106,6 +106,14 @@ public class GroupManager extends BaseManager {
 			for (Claim claim : group.getClaims()) {
 				locationToGroupMap.put(claim.getLocationKey(), group);
 			}
+
+			if (!group.getMembers().isEmpty()) {
+				if (!group.getMembers().contains(group.getLeader())) {
+					StandardPlayer firstMember = plugin.getStandardPlayer(group.getMembers().get(0));
+					plugin.getLogger().severe("Group " + group.getName() + " has no leader! Switching leader to " + firstMember.getName());
+					group.setLeader(firstMember);
+				}
+			}
 		}
 	}
 
@@ -227,6 +235,7 @@ public class GroupManager extends BaseManager {
 		}
 
 		usernameToGroupMap.remove(player.getName());
+		group.removeModerator(player);
 		group.removeMember(player);
 	}
 
@@ -600,8 +609,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		group.removeMember(kickedPlayer);
-		usernameToGroupMap.remove(kickedPlayer.getName());
+		removeMember(group, kickedPlayer);
 
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {

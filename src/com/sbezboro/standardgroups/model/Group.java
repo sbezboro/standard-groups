@@ -151,7 +151,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public boolean isLeader(StandardPlayer player) {
-		return leader.getValue().equals(player.getName());
+		return getLeader().equals(player.getName());
 	}
 
 	public boolean isModerator(StandardPlayer player) {
@@ -160,6 +160,10 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	
 	public boolean isMember(StandardPlayer player) {
 		return members.contains(player.getName());
+	}
+
+	public String getLeader() {
+		return leader.getValue();
 	}
 	
 	public List<String> getMembers() {
