@@ -191,12 +191,12 @@ public class GroupManager extends BaseManager {
 
 		if (group != null) {
 			if (group.isLeader(player)) {
-				return "[L] ";
+				return "[L]";
 			}
 			if (group.isModerator(player)) {
-				return "[M] ";
+				return "[M]";
 			}
-			return "[G] ";
+			return "[G]";
 		}
 
 		return "";
@@ -907,26 +907,52 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void rename(StandardPlayer player, String name) {
-		Group group = getPlayerGroup(player);
-		
-		if (group == null) {
-			player.sendMessage("You must be in a group before you can rename one.");
-			return;
+	public void rename(CommandSender sender, String name, String groupName) {
+		Group group;
+
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+
+		// No group name means renaming own group
+		if (groupName == null) {
+			group = getPlayerGroup(player);
+
+			if (group == null) {
+				player.sendMessage("You must be in a group before you can rename one.");
+				return;
+			}
+
+			if (!group.isLeader(player) && !group.isModerator(player)) {
+				player.sendMessage("Only the group leader or a moderator can rename a group.");
+				return;
+			}
+		// Trying to rename another group by name
+		} else {
+			// Check if console or admin player
+			if (player == null || isGroupsAdmin(player)) {
+				group = matchGroup(groupName);
+
+				if (group == null) {
+					sender.sendMessage("That group doesn't exist.");
+					return;
+				}
+			} else {
+				player.sendMessage(subPlugin.getServer().getPluginCommand("groups").getPermissionMessage());
+				return;
+			}
 		}
 		
 		if (name.equals(group.getName())) {
-			player.sendMessage("Your group is already named that.");
+			sender.sendMessage("Your group is already named that.");
 			return;
 		}
 		
 		if (getGroupByName(name) != null) {
-			player.sendMessage("That group name is already taken");
+			sender.sendMessage("That group name is already taken");
 			return;
 		}
 		
 		if (!groupNamePat.matcher(name).matches()) {
-			player.sendMessage(groupNamePatExplanation);
+			sender.sendMessage(groupNamePatExplanation);
 			return;
 		}
 		
@@ -934,16 +960,17 @@ public class GroupManager extends BaseManager {
 		int maxLength = subPlugin.getGroupNameMaxLength();
 		
 		if (name.length() < minLength || name.length() > maxLength) {
-			player.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
+			sender.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
 			return;
 		}
 
 		group.rename(name);
-		
+
+		sender.sendMessage(ChatColor.YELLOW + "Group renamed.");
+
 		for (StandardPlayer other : group.getPlayers()) {
-			if (player == other) {
-				player.sendMessage(ChatColor.YELLOW + "Group renamed.");
-			} else if (other.isOnline()) {
+			if (player != null && player != other && other.isOnline()) {
+				// Console renames are silent
 				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has renamed the group to " + name + ".");
 			}
 		}

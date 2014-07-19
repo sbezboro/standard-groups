@@ -53,6 +53,10 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 			}
 		} else {
 			String identifier = groupManager.getGroupIdentifier(player);
+			if (group != null) {
+				identifier += "[" + group.getName() + "] ";
+			}
+
 			format = format.replace("[GROUP]", identifier);
 
 			Bukkit.getConsoleSender().sendMessage(String.format(format, player.getDisplayName(), message));
