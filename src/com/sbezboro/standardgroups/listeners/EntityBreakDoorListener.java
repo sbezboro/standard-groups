@@ -1,0 +1,32 @@
+package com.sbezboro.standardgroups.listeners;
+
+import com.sbezboro.standardgroups.StandardGroups;
+import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.model.Lock;
+import com.sbezboro.standardplugin.StandardPlugin;
+import com.sbezboro.standardplugin.SubPluginEventListener;
+import org.bukkit.Location;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityBreakDoorEvent;
+
+import java.util.List;
+
+public class EntityBreakDoorListener extends SubPluginEventListener<StandardGroups> implements Listener {
+
+	public EntityBreakDoorListener(StandardPlugin plugin, StandardGroups subPlugin) {
+		super(plugin, subPlugin);
+	}
+
+	@EventHandler(ignoreCancelled = true)
+	public void onEntityBreakDoor(EntityBreakDoorEvent event) {
+		GroupManager groupManager = subPlugin.getGroupManager();
+
+		Location location = event.getBlock().getLocation();
+		List<Lock> locks = groupManager.getLocksAffectedByBlock(location);
+
+		if (!locks.isEmpty()) {
+			event.setCancelled(true);
+		}
+	}
+}
