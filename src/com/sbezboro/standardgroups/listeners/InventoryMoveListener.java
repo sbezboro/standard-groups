@@ -5,6 +5,8 @@ import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
+import com.sbezboro.standardplugin.model.StandardPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
@@ -13,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.inventory.InventoryHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryMoveListener  extends SubPluginEventListener<StandardGroups> implements Listener {
@@ -22,13 +25,22 @@ public class InventoryMoveListener  extends SubPluginEventListener<StandardGroup
 
 	@EventHandler(ignoreCancelled = true)
 	public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-		if (isProtected(event.getSource().getHolder()) ||
-				isProtected(event.getDestination().getHolder())) {
+		Lock sourceLock = getLock(event.getSource().getHolder());
+		Lock destinationLock = getLock(event.getDestination().getHolder());
+
+		if (sourceLock != null && destinationLock != null) {
+			StandardPlayer sourceOwner = sourceLock.getOwner();
+			StandardPlayer destinationOwner = destinationLock.getOwner();
+
+			if (!sourceOwner.getName().equals(destinationOwner.getName())) {
+				event.setCancelled(true);
+			}
+		} else if (sourceLock != null || destinationLock != null) {
 			event.setCancelled(true);
 		}
 	}
 
-	private boolean isProtected(InventoryHolder holder) {
+	private Lock getLock(InventoryHolder holder) {
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		if (holder instanceof DoubleChest) {
@@ -39,13 +51,14 @@ public class InventoryMoveListener  extends SubPluginEventListener<StandardGroup
 			Block block = ((BlockState) holder).getBlock();
 			if (GroupManager.isBlockTypeProtected(block)) {
 				List<Lock> locks = groupManager.getLocksAffectedByBlock(block.getLocation());
-
-				if (!locks.isEmpty()) {
-					return true;
+				if (locks.isEmpty()) {
+					return null;
 				}
+
+				return locks.get(0);
 			}
 		}
 
-		return false;
+		return null;
 	}
 }
