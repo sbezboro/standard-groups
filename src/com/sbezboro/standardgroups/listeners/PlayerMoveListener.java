@@ -40,6 +40,9 @@ public class PlayerMoveListener extends SubPluginEventListener<StandardGroups> i
 					player.sendMessage(String.valueOf(ChatColor.GREEN) + ChatColor.BOLD + "Entering unclaimed wilderness");
 				} else if (toGroup.isSafearea()) {
 					player.sendMessage(String.valueOf(ChatColor.DARK_GREEN) + ChatColor.BOLD + "Entering the safearea");
+					if (player.isInPvp()) {
+						player.sendMessage(String.valueOf(ChatColor.RED) + ChatColor.BOLD + "You are still vulnerable to PVP");
+					}
 				} else if (toGroup == playerGroup) {
 					player.sendMessage(String.valueOf(ChatColor.YELLOW) + ChatColor.BOLD + "Entering the territory of your group " + ChatColor.GREEN + ChatColor.BOLD + toGroup.getName());
 				} else {

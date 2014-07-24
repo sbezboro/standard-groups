@@ -45,14 +45,17 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 				Group damagerGroup = groupManager.getPlayerGroup(damager);
 				Group victimGroup = groupManager.getPlayerGroup(victim);
 
-				if (victimLocationGroup != null && victimLocationGroup.isSafearea()) {
-					damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
-					event.setCancelled(true);
-					return;
-				} else if (damagerLocationGroup != null && damagerLocationGroup.isSafearea()) {
-					damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
-					event.setCancelled(true);
-					return;
+				// Players in PVP can still be hurt in the safearea
+				if (!victim.isInPvp()) {
+					if (victimLocationGroup != null && victimLocationGroup.isSafearea()) {
+						damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
+						event.setCancelled(true);
+						return;
+					} else if (damagerLocationGroup != null && damagerLocationGroup.isSafearea()) {
+						damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
+						event.setCancelled(true);
+						return;
+					}
 				}
 
 				if (damagerGroup != null && damagerGroup == victimGroup) {
@@ -61,9 +64,7 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 					return;
 				}
 			}
-		}
-
-		if (victim != null) {
+		} else if (victim != null) {
 			GroupManager groupManager = subPlugin.getGroupManager();
 
 			Group group = groupManager.getGroupByLocation(victim.getLocation());
