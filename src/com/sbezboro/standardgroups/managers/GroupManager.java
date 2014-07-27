@@ -202,15 +202,6 @@ public class GroupManager extends BaseManager {
 		return "";
 	}
 
-	private Block[] getAdjacentBlocks(Block block) {
-		return new Block[] {
-			block.getRelative(BlockFace.NORTH),
-			block.getRelative(BlockFace.EAST),
-			block.getRelative(BlockFace.SOUTH),
-			block.getRelative(BlockFace.WEST)
-		};
-	}
-
 	private void removeMember(Group group, StandardPlayer player) {
 		if (group.isLeader(player) && group.getMembers().size() > 1) {
 			StandardPlayer newLeader;
@@ -239,6 +230,15 @@ public class GroupManager extends BaseManager {
 		group.removeMember(player);
 	}
 
+	private Block[] getAdjacentBlocks(Block block) {
+		return new Block[] {
+				block.getRelative(BlockFace.NORTH),
+				block.getRelative(BlockFace.EAST),
+				block.getRelative(BlockFace.SOUTH),
+				block.getRelative(BlockFace.WEST)
+		};
+	}
+
 	public List<Lock> getLocksAffectedByBlock(Location location) {
 		Group group = getGroupByLocation(location);
 		return getLocksAffectedByBlock(group, location);
@@ -254,9 +254,6 @@ public class GroupManager extends BaseManager {
 
 		Block targetBlock = location.getBlock();
 
-		Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
-		Block belowBlock = targetBlock.getRelative(BlockFace.DOWN);
-
 		Lock lock = group.getLock(targetBlock.getLocation());
 
 		// Check for surrounding block locks that may be affected by the target block:
@@ -266,16 +263,17 @@ public class GroupManager extends BaseManager {
 		// 4. Blocks adjacent for potential trap doors
 		// 5. Block above for potential dragon egg
 		if (lock == null) {
-			Block[] adjacentBlocks = getAdjacentBlocks(targetBlock);
-
 			if (targetBlock.getType() == Material.WOODEN_DOOR) {
+				Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
+				Block belowBlock = targetBlock.getRelative(BlockFace.DOWN);
+
 				if (aboveBlock.getType() == Material.WOODEN_DOOR) {
 					affectedBlocks.add(aboveBlock);
 				} else if (belowBlock.getType() == Material.WOODEN_DOOR) {
 					affectedBlocks.add(belowBlock);
 				}
 			} else if (targetBlock.getType() == Material.CHEST) {
-				for (Block block : adjacentBlocks) {
+				for (Block block : getAdjacentBlocks(targetBlock)) {
 					if (block.getType() == Material.CHEST) {
 						affectedBlocks.add(block);
 					}
@@ -289,7 +287,7 @@ public class GroupManager extends BaseManager {
 					affectedBlocks.add(targetBlock.getRelative(bed.getFacing()));
 				}
 			} else {
-				for (Block block : adjacentBlocks) {
+				for (Block block : getAdjacentBlocks(targetBlock)) {
 					if (block.getType() == Material.TRAP_DOOR) {
 						TrapDoor trapDoor = (TrapDoor) block.getState().getData();
 
@@ -299,6 +297,7 @@ public class GroupManager extends BaseManager {
 					}
 				}
 
+				Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
 				if (aboveBlock.getType() == Material.WOODEN_DOOR) {
 					affectedBlocks.add(aboveBlock);
 					affectedBlocks.add(aboveBlock.getRelative(BlockFace.UP));
