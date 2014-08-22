@@ -29,10 +29,10 @@ public class InventoryMoveListener  extends SubPluginEventListener<StandardGroup
 		Lock destinationLock = getLock(event.getDestination().getHolder());
 
 		if (sourceLock != null && destinationLock != null) {
-			StandardPlayer sourceOwner = sourceLock.getOwner();
-			StandardPlayer destinationOwner = destinationLock.getOwner();
+			String sourceOwner = sourceLock.getOwnerName();
+			String destinationOwner = destinationLock.getOwnerName();
 
-			if (!sourceOwner.getName().equals(destinationOwner.getName())) {
+			if (!sourceOwner.equalsIgnoreCase(destinationOwner)) {
 				event.setCancelled(true);
 			}
 		} else if (sourceLock != null || destinationLock != null) {

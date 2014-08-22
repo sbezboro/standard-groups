@@ -151,7 +151,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public boolean isLeader(StandardPlayer player) {
-		return getLeader().equals(player.getName());
+		return getLeader().equalsIgnoreCase(player.getName());
 	}
 
 	public boolean isModerator(StandardPlayer player) {

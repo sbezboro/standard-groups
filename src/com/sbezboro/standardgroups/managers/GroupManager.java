@@ -286,7 +286,7 @@ public class GroupManager extends BaseManager {
 				} else {
 					affectedBlocks.add(targetBlock.getRelative(bed.getFacing()));
 				}
-			} else {
+			} else if (!PROTECTED_BLOCKS.contains(targetBlock.getType())) {
 				for (Block block : getAdjacentBlocks(targetBlock)) {
 					if (block.getType() == Material.TRAP_DOOR) {
 						TrapDoor trapDoor = (TrapDoor) block.getState().getData();

@@ -88,12 +88,16 @@ public class Lock extends PersistableImpl implements Persistable {
 		return list;
 	}
 
+	public String getOwnerName() {
+		return owner;
+	}
+
 	public StandardPlayer getOwner() {
 		return StandardPlugin.getPlugin().getStandardPlayer(owner);
 	}
 
 	public boolean isOwner(StandardPlayer player) {
-		return owner.equals(player.getName());
+		return owner.equalsIgnoreCase(player.getName());
 	}
 
 	public boolean hasAccess(StandardPlayer player) {
