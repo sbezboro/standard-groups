@@ -1,5 +1,7 @@
 package com.sbezboro.standardgroups;
 
+import com.mojang.api.profiles.HttpProfileRepository;
+import com.mojang.api.profiles.Profile;
 import com.sbezboro.standardgroups.commands.GroupsCommand;
 import com.sbezboro.standardgroups.listeners.*;
 import com.sbezboro.standardgroups.managers.GroupManager;
@@ -13,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +100,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 
 	@Override
 	public void migrate() {
-
+		getGroupManager().migrate();
 	}
 
 	@Override

@@ -1,37 +1,40 @@
 package com.sbezboro.standardgroups.model;
 
-import java.util.*;
-
+import com.mojang.api.profiles.HttpProfileRepository;
+import com.mojang.api.profiles.Profile;
 import com.sbezboro.standardgroups.StandardGroups;
-import com.sbezboro.standardgroups.managers.GroupManager;
-import com.sbezboro.standardplugin.model.Title;
-import com.sbezboro.standardplugin.util.AnsiConverter;
-import com.sbezboro.standardplugin.util.MiscUtil;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.PersistedListProperty;
 import com.sbezboro.standardplugin.persistence.PersistedObject;
 import com.sbezboro.standardplugin.persistence.PersistedProperty;
 import com.sbezboro.standardplugin.persistence.storages.FileStorage;
+import com.sbezboro.standardplugin.util.MiscUtil;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+
+import java.util.*;
+import java.util.logging.Logger;
 
 public class Group extends PersistedObject implements Comparable<Group> {
 	public static final String SAFE_AREA = "safearea";
 
-	private PersistedListProperty<String> members;
-	private PersistedListProperty<String> moderators;
+	public PersistedListProperty<String> _members;
+	public PersistedListProperty<String> memberUuids;
+	private PersistedListProperty<String> _moderators;
+	private PersistedListProperty<String> moderatorUuids;
 	private PersistedListProperty<String> invites;
 	private PersistedListProperty<Claim> claims;
 	private PersistedListProperty<Lock> locks;
-	private PersistedListProperty<String> chat;
+	private PersistedListProperty<String> _chat;
+	private PersistedListProperty<String> chatPlayerUuids;
 
 	private PersistedProperty<String> uid;
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Long> lastGrowth;
 	private PersistedProperty<Integer> maxClaims;
-	private PersistedProperty<String> leader;
+	private PersistedProperty<String> _leader;
+	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
 	private Map<String, Lock> locationToLockMap;
@@ -47,8 +50,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		this.established.setValue(established);
 		this.maxClaims.setValue(10);
-		this.leader.setValue(leader.getName());
-		this.members.add(leader.getName());
+		this.leaderUuid.setValue(leader.getUuidString());
+		this.memberUuids.add(leader.getUuidString());
 
 		initialize();
 	}
@@ -60,23 +63,29 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	@Override
 	public void createProperties() {
-		members = createList(String.class, "members");
-		moderators = createList(String.class, "moderators");
+		_members = createList(String.class, "members");
+		memberUuids = createList(String.class, "member-uuids");
+		_moderators = createList(String.class, "moderators");
+		moderatorUuids = createList(String.class, "moderator-uuids");
 		invites = createList(String.class, "invites");
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
-		chat = createList(String.class, "chat");
+		_chat = createList(String.class, "chat");
+		chatPlayerUuids = createList(String.class, "chat-player-uuids");
 
 		uid = createProperty(String.class, "uid");
 		established = createProperty(Long.class, "established");
 		lastGrowth = createProperty(Long.class, "last-growth");
 		maxClaims = createProperty(Integer.class, "max-claims");
-		leader = createProperty(String.class, "leader");
+		_leader = createProperty(String.class, "leader");
+		leaderUuid = createProperty(String.class, "leader-uuid");
 	}
 
 	@Override
 	public void loadProperties() {
 		super.loadProperties();
+
+		initialize();
 
 		ArrayList<Claim> claimsToRemove = new ArrayList<Claim>();
 
@@ -135,43 +144,43 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 	
 	public void addMember(StandardPlayer player) {
-		members.add(player.getName());
+		memberUuids.add(player.getUuidString());
 		
 		this.save();
 	}
 	
 	public void removeMember(StandardPlayer player) {
-		members.remove(player.getName());
+		memberUuids.remove(player.getUuidString());
 
 		if (isModerator(player)) {
-			moderators.remove(player.getName());
+			moderatorUuids.remove(player.getUuidString());
 		}
 		
 		this.save();
 	}
 
 	public boolean isLeader(StandardPlayer player) {
-		return getLeader().equalsIgnoreCase(player.getName());
+		return getLeaderUuid().equals(player.getUuidString());
 	}
 
 	public boolean isModerator(StandardPlayer player) {
-		return moderators.contains(player.getName());
+		return moderatorUuids.contains(player.getUuidString());
 	}
 	
 	public boolean isMember(StandardPlayer player) {
-		return members.contains(player.getName());
+		return memberUuids.contains(player.getUuidString());
 	}
 
-	public String getLeader() {
-		return leader.getValue();
+	public String getLeaderUuid() {
+		return leaderUuid.getValue();
 	}
 	
-	public List<String> getMembers() {
-		return members.getList();
+	public List<String> getMemberUuids() {
+		return memberUuids.getList();
 	}
 
-	public List<String> getModerators() {
-		return moderators.getList();
+	public List<String> getModeratorUuids() {
+		return moderatorUuids.getList();
 	}
 
 	public int getOnlineCount() {
@@ -188,8 +197,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	
 	public List<StandardPlayer> getPlayers() {
 		ArrayList<StandardPlayer> list = new ArrayList<StandardPlayer>();
-		for (String username : members) {
-			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayer(username);
+
+		for (String uuid : memberUuids) {
+			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayerByUUID(uuid);
 			list.add(player);
 		}
 		
@@ -280,19 +290,19 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public void addModerator(StandardPlayer player) {
-		moderators.add(player.getName());
+		moderatorUuids.add(player.getUuidString());
 
 		this.save();
 	}
 
 	public void removeModerator(StandardPlayer player) {
-		moderators.remove(player.getName());
+		moderatorUuids.remove(player.getUuidString());
 
 		this.save();
 	}
 
 	public void setLeader(StandardPlayer player) {
-		leader.setValue(player.getName());
+		leaderUuid.setValue(player.getUuidString());
 
 		this.save();
 	}
@@ -369,17 +379,17 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public boolean isGroupChat(StandardPlayer player) {
-		return chat.contains(player.getName());
+		return chatPlayerUuids.contains(player.getUuidString());
 	}
 
 	public boolean toggleChat(StandardPlayer player) {
 		boolean result;
 
 		if (isGroupChat(player)) {
-			chat.remove(player.getName());
+			chatPlayerUuids.remove(player.getUuidString());
 			result = false;
 		} else {
-			chat.add(player.getName());
+			chatPlayerUuids.add(player.getUuidString());
 			result = true;
 		}
 
@@ -390,10 +400,10 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	@Override
 	public int compareTo(Group other) {
-		if (getMembers().size() == other.getMembers().size()) {
+		if (getMemberUuids().size() == other.getMemberUuids().size()) {
 			return getName().compareTo(other.getName());
 		} else {
-			return other.getMembers().size() - getMembers().size();
+			return other.getMemberUuids().size() - getMemberUuids().size();
 		}
 	}
 
@@ -409,10 +419,105 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		info.put("invites", invites.getList());
 
-		info.put("leader", leader.getValue());
-		info.put("moderators", getModerators());
-		info.put("members", getMembers());
+		info.put("leader_uuid", leaderUuid.getValue());
+		info.put("moderator_uuids", getModeratorUuids());
+		info.put("member_uuids", getMemberUuids());
 
 		return info;
+	}
+
+	@Deprecated
+	public void migrate() {
+		Logger logger = StandardGroups.getPlugin().getLogger();
+		HttpProfileRepository repository = new HttpProfileRepository("minecraft");
+
+		Set<String> usernames = new HashSet<String>(_members.getList());
+
+		usernames.add(_leader.getValue());
+		usernames.addAll(_moderators.getList());
+		usernames.addAll(_members.getList());
+		usernames.addAll(_chat.getList());
+
+		for (Lock lock : getLocks()) {
+			usernames.add(lock._owner);
+			usernames.addAll(lock._members);
+		}
+
+		for (Claim claim : getClaims()) {
+			usernames.add(claim._player);
+		}
+
+		Profile[] profiles = repository.findProfilesByNames(usernames.toArray(new String[usernames.size()]));
+
+		Map<String, String> uuidMap = new HashMap<String, String>();
+		for (Profile profile : profiles) {
+			uuidMap.put(profile.getName(), profile.getId());
+		}
+
+		logger.info("[" + getName() + "] Migrating leader");
+		leaderUuid.setValue(uuidMap.get(_leader.getValue()));
+
+		logger.info("[" + getName() + "] Migrating moderators");
+		for (String username : _moderators) {
+			String uuid = uuidMap.get(username);
+
+			if (uuid == null) {
+				logger.severe("[" + getName() + "] Unable to find uuid for moderator " + username);
+			} else {
+				moderatorUuids.add(uuid);
+			}
+		}
+
+		logger.info("[" + getName() + "] Migrating members");
+		for (String username : _members) {
+			String uuid = uuidMap.get(username);
+
+			if (uuid == null) {
+				logger.severe("[" + getName() + "] Unable to find uuid for member " + username);
+			} else {
+				memberUuids.add(uuid);
+			}
+		}
+
+		logger.info("[" + getName() + "] Migrating chat players");
+		for (String username : _chat) {
+			String uuid = uuidMap.get(username);
+
+			if (uuid == null) {
+				logger.severe("[" + getName() + "] Unable to find uuid for chat player " + username);
+			} else {
+				chatPlayerUuids.add(uuid);
+			}
+		}
+
+		logger.info("[" + getName() + "] Migrating locks");
+		for (Lock lock : getLocks()) {
+			logger.info("[" + getName() + "] Migrating lock owner");
+			lock.ownerUuid = uuidMap.get(lock._owner);
+
+			logger.info("[" + getName() + "] Migrating lock members");
+			for (String username : lock._members) {
+				String uuid = uuidMap.get(username);
+
+				if (uuid == null) {
+					logger.severe("[" + getName() + "] Unable to find uuid for lock member " + username);
+				} else {
+					lock.memberUuids.add(uuid);
+				}
+			}
+		}
+
+		logger.info("[" + getName() + "] Migrating claims");
+		for (Claim claim : getClaims()) {
+			String uuid = uuidMap.get(claim._player);
+
+			if (uuid == null) {
+				logger.severe("[" + getName() + "] Unable to find uuid for claimer " + claim._player);
+			} else {
+				claim.playerUuid = uuid;
+			}
+		}
+
+		save();
 	}
 }

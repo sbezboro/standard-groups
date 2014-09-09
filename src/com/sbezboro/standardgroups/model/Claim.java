@@ -13,7 +13,8 @@ public class Claim extends PersistableImpl implements Persistable {
 	private int x;
 	private int z;
 	private String world;
-	private String player;
+	public String _player;
+	public String playerUuid;
 	
 	private Group group;
 
@@ -24,7 +25,7 @@ public class Claim extends PersistableImpl implements Persistable {
 		this.x = location.getBlockX() >> 4;
 		this.z = location.getBlockZ() >> 4;
 		this.world = location.getWorld().getName();
-		this.player = player.getName();
+		this.playerUuid = player.getUuidString();
 		this.group = group;
 	}
 
@@ -33,7 +34,8 @@ public class Claim extends PersistableImpl implements Persistable {
 		x = (Integer) map.get("x");
 		z = (Integer) map.get("z");
 		world = (String) map.get("world");
-		player = (String) map.get("player");
+		_player = (String) map.get("player");
+		playerUuid = (String) map.get("player-uuid");
 	}
 
 	@Override
@@ -43,7 +45,7 @@ public class Claim extends PersistableImpl implements Persistable {
 		map.put("x", x);
 		map.put("z", z);
 		map.put("world", world);
-		map.put("player", player);
+		map.put("player-uuid", playerUuid);
 		
 		return map;
 	}

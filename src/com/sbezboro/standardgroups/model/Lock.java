@@ -15,8 +15,10 @@ import java.util.Map;
 
 public class Lock extends PersistableImpl implements Persistable {
 	private PersistableLocation location;
-	private String owner;
-	private List<String> members;
+	public String _owner;
+	public String ownerUuid;
+	public List<String> _members;
+	public List<String> memberUuids;
 	private LockType type;
 	private boolean publicLock;
 
@@ -33,9 +35,9 @@ public class Lock extends PersistableImpl implements Persistable {
 		this.location = new PersistableLocation(location);
 		this.group = group;
 
-		this.owner = player.getName();
-		this.members = new ArrayList<String>();
-		this.members.add(player.getName());
+		this.ownerUuid = player.getUuidString();
+		this.memberUuids = new ArrayList<String>();
+		this.memberUuids.add(player.getUuidString());
 
 		this.type = LockType.INDIVIDUAL;
 		this.publicLock = false;
@@ -47,10 +49,16 @@ public class Lock extends PersistableImpl implements Persistable {
 		location = new PersistableLocation();
 		location.loadFromPersistance((Map<String, Object>) map.get("location"));
 
-		owner = (String) map.get("owner");
-		members = (List<String>) map.get("members");
+		_owner = (String) map.get("owner");
+		ownerUuid = (String) map.get("owner-uuid");
+		_members = (List<String>) map.get("members");
+		memberUuids = (List<String>) map.get("member-uuids");
 		type = LockType.valueOf((String) map.get("type"));
 		publicLock = MiscUtil.safeBoolean(map.get("public"));
+
+		if (memberUuids == null) {
+			memberUuids = new ArrayList<String>();
+		}
 	}
 
 	@Override
@@ -58,8 +66,8 @@ public class Lock extends PersistableImpl implements Persistable {
 		Map<String, Object> map = new HashMap<String, Object>();
 		
 		map.put("location", location.mapRepresentation());
-		map.put("owner", owner);
-		map.put("members", members);
+		map.put("owner-uuid", ownerUuid);
+		map.put("member-uuids", memberUuids);
 		map.put("type", type.toString());
 		map.put("public", publicLock);
 		
@@ -80,36 +88,36 @@ public class Lock extends PersistableImpl implements Persistable {
 
 	public List<StandardPlayer> getMembers() {
 		ArrayList<StandardPlayer> list = new ArrayList<StandardPlayer>();
-		for (String username : members) {
-			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayer(username);
+		for (String uuid : memberUuids) {
+			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayerByUUID(uuid);
 			list.add(player);
 		}
 
 		return list;
 	}
 
-	public String getOwnerName() {
-		return owner;
+	public String getOwnerUuid() {
+		return ownerUuid;
 	}
 
 	public StandardPlayer getOwner() {
-		return StandardPlugin.getPlugin().getStandardPlayer(owner);
+		return StandardPlugin.getPlugin().getStandardPlayerByUUID(ownerUuid);
 	}
 
 	public boolean isOwner(StandardPlayer player) {
-		return owner.equalsIgnoreCase(player.getName());
+		return ownerUuid.equals(player.getUuidString());
 	}
 
 	public boolean hasAccess(StandardPlayer player) {
-		return members.contains(player.getName());
+		return memberUuids.contains(player.getUuidString());
 	}
 
 	public void addMember(StandardPlayer player) {
-		members.add(player.getName());
+		memberUuids.add(player.getUuidString());
 	}
 
 	public void removeMember(StandardPlayer otherPlayer) {
-		members.remove(otherPlayer.getName());
+		memberUuids.remove(otherPlayer.getUuidString());
 	}
 
 	public boolean isPublic() {

@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.scoreboard.*;
 
 import java.util.HashSet;
@@ -88,7 +89,7 @@ public class MapManager extends BaseManager {
 		for (int i = 0; i < mapRows.length; ++i) {
 			String data = mapRows[i];
 
-			StandardPlayer rowData = plugin.getStandardPlayer(data.substring(5, 17));
+			OfflinePlayer rowData = plugin.getServer().getOfflinePlayer(data.substring(5, 17));
 			Score score = objective.getScore(rowData);
 			score.setScore(MAP_WIDTH - i);
 

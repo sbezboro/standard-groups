@@ -1,24 +1,20 @@
 package com.sbezboro.standardgroups.managers;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-import com.sbezboro.standardgroups.model.Lock;
-import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
-import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
-import com.sbezboro.standardplugin.util.PaginatedOutput;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.model.Claim;
 import com.sbezboro.standardgroups.model.Group;
+import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
+import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
+import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.util.MiscUtil;
+import com.sbezboro.standardplugin.util.PaginatedOutput;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -27,6 +23,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.material.Bed;
 import org.bukkit.material.TrapDoor;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class GroupManager extends BaseManager {
 
@@ -71,7 +70,7 @@ public class GroupManager extends BaseManager {
 	
 	private GroupStorage storage;
 	
-	private Map<String, Group> usernameToGroupMap;
+	private Map<String, Group> uuidToGroupMap;
 	private Map<String, Group> locationToGroupMap;
 
 	private LandGrowthCheckTask landGrowthCheckTask;
@@ -84,37 +83,50 @@ public class GroupManager extends BaseManager {
 		
 		this.storage = storage;
 		this.storage.loadObjects();
-		
-		usernameToGroupMap = new HashMap<String, Group>();
-		locationToGroupMap = new HashMap<String, Group>();
 
 		landGrowthCheckTask = new LandGrowthCheckTask(plugin, subPlugin);
 		landGrowthCheckTask.runTaskTimer(subPlugin, 1200, 12000);
 
 		groupRemovalTask = new GroupRemovalTask(plugin, subPlugin);
 		groupRemovalTask.runTaskTimer(subPlugin, 2400, 24000);
-		
+
+		reload();
+	}
+
+	private void reload() {
+		uuidToGroupMap = new HashMap<String, Group>();
+		locationToGroupMap = new HashMap<String, Group>();
+
 		for (Group group : storage.getGroups()) {
-			for (String username : group.getMembers()) {
-				if (usernameToGroupMap.containsKey(username)) {
-					plugin.getLogger().severe("Duplicate member for " + group.getName() + " - " + username);
+			for (String uuid : group.getMemberUuids()) {
+				if (uuidToGroupMap.containsKey(uuid)) {
+					plugin.getLogger().severe("Duplicate member for " + group.getName() + " - " + uuid);
 				}
 
-				usernameToGroupMap.put(username, group);
+				uuidToGroupMap.put(uuid, group);
 			}
-			
+
 			for (Claim claim : group.getClaims()) {
 				locationToGroupMap.put(claim.getLocationKey(), group);
 			}
 
-			if (!group.getMembers().isEmpty()) {
-				if (!group.getMembers().contains(group.getLeader())) {
-					StandardPlayer firstMember = plugin.getStandardPlayer(group.getMembers().get(0));
-					plugin.getLogger().severe("Group " + group.getName() + " has no leader! Switching leader to " + firstMember.getName());
-					group.setLeader(firstMember);
-				}
+			if (!group.getMemberUuids().isEmpty() && !group.getMemberUuids().contains(group.getLeaderUuid())) {
+				StandardPlayer firstMember = plugin.getStandardPlayerByUUID(group.getMemberUuids().get(0));
+				plugin.getLogger().severe("Group " + group.getName() + " has no leader! Switching leader to " +
+						firstMember.getName());
+				group.setLeader(firstMember);
 			}
 		}
+	}
+
+	public void migrate() {
+		for (Group group : getGroups()) {
+			group.migrate();
+		}
+
+		storage.reload();
+
+		reload();
 	}
 
 	public Group getSafearea() {
@@ -147,7 +159,7 @@ public class GroupManager extends BaseManager {
 	}
 	
 	public Group getPlayerGroup(StandardPlayer player) {
-		return usernameToGroupMap.get(player.getName());
+		return uuidToGroupMap.get(player.getUuidString());
 	}
 	
 	public boolean playerInGroup(StandardPlayer player, Group group) {
@@ -203,11 +215,11 @@ public class GroupManager extends BaseManager {
 	}
 
 	private void removeMember(Group group, StandardPlayer player) {
-		if (group.isLeader(player) && group.getMembers().size() > 1) {
+		if (group.isLeader(player) && group.getMemberUuids().size() > 1) {
 			StandardPlayer newLeader;
 
-			if (!group.getModerators().isEmpty()) {
-				newLeader = plugin.getStandardPlayer(group.getModerators().get(0));
+			if (!group.getModeratorUuids().isEmpty()) {
+				newLeader = plugin.getStandardPlayerByUUID(group.getModeratorUuids().get(0));
 			} else {
 				List<StandardPlayer> players = group.getPlayers();
 
@@ -225,7 +237,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		usernameToGroupMap.remove(player.getName());
+		uuidToGroupMap.remove(player.getUuidString());
 		group.removeModerator(player);
 		group.removeMember(player);
 	}
@@ -364,7 +376,7 @@ public class GroupManager extends BaseManager {
 		}
 		
 		Group group = storage.createGroup(groupName, player);
-		usernameToGroupMap.put(player.getName(), group);
+		uuidToGroupMap.put(player.getUuidString(), group);
 		
 		StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has created a new group.");
 	}
@@ -403,8 +415,8 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		for (String username : group.getMembers()) {
-			usernameToGroupMap.remove(username);
+		for (String uuid : group.getMemberUuids()) {
+			uuidToGroupMap.remove(uuid);
 		}
 		
 		for (Claim claim : group.getClaims()) {
@@ -548,7 +560,8 @@ public class GroupManager extends BaseManager {
 		}
 
 		if (uninvitedPlayer.isOnline()) {
-			uninvitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has revoked your invitation to the group " + group.getName() + "!");
+			uninvitedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
+					" has revoked your invitation to the group " + group.getName() + "!");
 		}
 	}
 
@@ -557,7 +570,7 @@ public class GroupManager extends BaseManager {
 
 		removeMember(group, kickedPlayer);
 
-		if (group.getMembers().size() == 0) {
+		if (group.getMemberUuids().isEmpty()) {
 			for (Claim claim : group.getClaims()) {
 				locationToGroupMap.remove(claim.getLocationKey());
 			}
@@ -612,14 +625,17 @@ public class GroupManager extends BaseManager {
 
 		for (StandardPlayer other : group.getPlayers()) {
 			if (player == other) {
-				player.sendMessage(ChatColor.YELLOW + "You have kicked " + kickedPlayer.getDisplayName(false) + " from your group.");
+				player.sendMessage(ChatColor.YELLOW + "You have kicked " + kickedPlayer.getDisplayName(false) +
+						" from your group.");
 			} else if (other.isOnline()) {
-				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has kicked " + kickedPlayer.getDisplayName(false) + " from your group.");
+				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
+						" has kicked " + kickedPlayer.getDisplayName(false) + " from your group.");
 			}
 		}
 
 		if (kickedPlayer.isOnline()) {
-			kickedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has kicked you from the group " + group.getName() + "!");
+			kickedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
+					" has kicked you from the group " + group.getName() + "!");
 		}
 	}
 
@@ -649,7 +665,9 @@ public class GroupManager extends BaseManager {
 		if (!group.isInvited(player)) {
 			for (StandardPlayer other : group.getPlayers()) {
 				if (other.isOnline()) {
-					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " wants to join your group. Invite them by typing /g invite " + player.getDisplayName(false));
+					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
+							" wants to join your group. Invite them by typing /g invite " +
+							player.getDisplayName(false));
 				}
 			}
 			
@@ -663,7 +681,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 		
-		usernameToGroupMap.put(player.getName(), group);
+		uuidToGroupMap.put(player.getUuidString(), group);
 		
 		group.addMember(player);
 		group.removeInvite(player.getName());
@@ -681,7 +699,7 @@ public class GroupManager extends BaseManager {
 
 		removeMember(group, player);
 		
-		if (group.getMembers().size() > 0) {
+		if (!group.getMemberUuids().isEmpty()) {
 			for (StandardPlayer other : group.getPlayers()) {
 				if (other.isOnline()) {
 					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has left your group.");
@@ -1277,7 +1295,8 @@ public class GroupManager extends BaseManager {
 		for (Group group : list) {
 			int online = group.getOnlineCount();
 
-			paginatedOutput.addLine(group.getNameWithRelation(player) + " - " + ChatColor.WHITE + online + " online, " + group.getMembers().size() + " total members");
+			paginatedOutput.addLine(group.getNameWithRelation(player) + " - " + ChatColor.WHITE +
+					online + " online, " + group.getMemberUuids().size() + " total members");
 		}
 
 		paginatedOutput.show(sender);
