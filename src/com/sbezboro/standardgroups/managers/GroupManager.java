@@ -119,9 +119,9 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void migrate() {
+	public void migrate(Map<String, String> uuidMap) {
 		for (Group group : getGroups()) {
-			group.migrate();
+			group.migrate(uuidMap);
 		}
 
 		storage.reload();

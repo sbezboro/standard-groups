@@ -99,8 +99,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	}
 
 	@Override
-	public void migrate() {
-		getGroupManager().migrate();
+	public void migrate(Map<String, String> uuidMap) {
+		getGroupManager().migrate(uuidMap);
 	}
 
 	@Override

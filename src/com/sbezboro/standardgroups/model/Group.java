@@ -427,32 +427,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	@Deprecated
-	public void migrate() {
+	public void migrate(Map<String, String> uuidMap) {
 		Logger logger = StandardGroups.getPlugin().getLogger();
-		HttpProfileRepository repository = new HttpProfileRepository("minecraft");
-
-		Set<String> usernames = new HashSet<String>(_members.getList());
-
-		usernames.add(_leader.getValue());
-		usernames.addAll(_moderators.getList());
-		usernames.addAll(_members.getList());
-		usernames.addAll(_chat.getList());
-
-		for (Lock lock : getLocks()) {
-			usernames.add(lock._owner);
-			usernames.addAll(lock._members);
-		}
-
-		for (Claim claim : getClaims()) {
-			usernames.add(claim._player);
-		}
-
-		Profile[] profiles = repository.findProfilesByNames(usernames.toArray(new String[usernames.size()]));
-
-		Map<String, String> uuidMap = new HashMap<String, String>();
-		for (Profile profile : profiles) {
-			uuidMap.put(profile.getName(), profile.getId());
-		}
 
 		logger.info("[" + getName() + "] Migrating leader");
 		leaderUuid.setValue(uuidMap.get(_leader.getValue()));
