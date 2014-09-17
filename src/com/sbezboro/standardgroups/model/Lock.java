@@ -15,10 +15,8 @@ import java.util.Map;
 
 public class Lock extends PersistableImpl implements Persistable {
 	private PersistableLocation location;
-	public String _owner;
-	public String ownerUuid;
-	public List<String> _members;
-	public List<String> memberUuids;
+	private String ownerUuid;
+	private List<String> memberUuids;
 	private LockType type;
 	private boolean publicLock;
 
@@ -49,9 +47,7 @@ public class Lock extends PersistableImpl implements Persistable {
 		location = new PersistableLocation();
 		location.loadFromPersistance((Map<String, Object>) map.get("location"));
 
-		_owner = (String) map.get("owner");
 		ownerUuid = (String) map.get("owner-uuid");
-		_members = (List<String>) map.get("members");
 		memberUuids = (List<String>) map.get("member-uuids");
 		type = LockType.valueOf((String) map.get("type"));
 		publicLock = MiscUtil.safeBoolean(map.get("public"));

@@ -1,7 +1,5 @@
 package com.sbezboro.standardgroups.model;
 
-import com.mojang.api.profiles.HttpProfileRepository;
-import com.mojang.api.profiles.Profile;
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.model.StandardPlayer;
@@ -14,26 +12,21 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 public class Group extends PersistedObject implements Comparable<Group> {
 	public static final String SAFE_AREA = "safearea";
 
-	public PersistedListProperty<String> _members;
-	public PersistedListProperty<String> memberUuids;
-	private PersistedListProperty<String> _moderators;
+	private PersistedListProperty<String> memberUuids;
 	private PersistedListProperty<String> moderatorUuids;
 	private PersistedListProperty<String> invites;
 	private PersistedListProperty<Claim> claims;
 	private PersistedListProperty<Lock> locks;
-	private PersistedListProperty<String> _chat;
 	private PersistedListProperty<String> chatPlayerUuids;
 
 	private PersistedProperty<String> uid;
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Long> lastGrowth;
 	private PersistedProperty<Integer> maxClaims;
-	private PersistedProperty<String> _leader;
 	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
@@ -63,21 +56,17 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	@Override
 	public void createProperties() {
-		_members = createList(String.class, "members");
 		memberUuids = createList(String.class, "member-uuids");
-		_moderators = createList(String.class, "moderators");
 		moderatorUuids = createList(String.class, "moderator-uuids");
 		invites = createList(String.class, "invites");
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
-		_chat = createList(String.class, "chat");
 		chatPlayerUuids = createList(String.class, "chat-player-uuids");
 
 		uid = createProperty(String.class, "uid");
 		established = createProperty(Long.class, "established");
 		lastGrowth = createProperty(Long.class, "last-growth");
 		maxClaims = createProperty(Integer.class, "max-claims");
-		_leader = createProperty(String.class, "leader");
 		leaderUuid = createProperty(String.class, "leader-uuid");
 	}
 
@@ -339,7 +328,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public void setMaxClaims(int maxClaims) {
-		this.maxClaims.setValue(maxClaims);;
+		this.maxClaims.setValue(maxClaims);
 	}
 
 	public void addLockMember(Lock lock, StandardPlayer otherPlayer) {
@@ -426,74 +415,4 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return info;
 	}
 
-	@Deprecated
-	public void migrate(Map<String, String> uuidMap) {
-		Logger logger = StandardGroups.getPlugin().getLogger();
-
-		logger.info("[" + getName() + "] Migrating leader");
-		leaderUuid.setValue(uuidMap.get(_leader.getValue()));
-
-		logger.info("[" + getName() + "] Migrating moderators");
-		for (String username : _moderators) {
-			String uuid = uuidMap.get(username);
-
-			if (uuid == null) {
-				logger.severe("[" + getName() + "] Unable to find uuid for moderator " + username);
-			} else {
-				moderatorUuids.add(uuid);
-			}
-		}
-
-		logger.info("[" + getName() + "] Migrating members");
-		for (String username : _members) {
-			String uuid = uuidMap.get(username);
-
-			if (uuid == null) {
-				logger.severe("[" + getName() + "] Unable to find uuid for member " + username);
-			} else {
-				memberUuids.add(uuid);
-			}
-		}
-
-		logger.info("[" + getName() + "] Migrating chat players");
-		for (String username : _chat) {
-			String uuid = uuidMap.get(username);
-
-			if (uuid == null) {
-				logger.severe("[" + getName() + "] Unable to find uuid for chat player " + username);
-			} else {
-				chatPlayerUuids.add(uuid);
-			}
-		}
-
-		logger.info("[" + getName() + "] Migrating locks");
-		for (Lock lock : getLocks()) {
-			logger.info("[" + getName() + "] Migrating lock owner");
-			lock.ownerUuid = uuidMap.get(lock._owner);
-
-			logger.info("[" + getName() + "] Migrating lock members");
-			for (String username : lock._members) {
-				String uuid = uuidMap.get(username);
-
-				if (uuid == null) {
-					logger.severe("[" + getName() + "] Unable to find uuid for lock member " + username);
-				} else {
-					lock.memberUuids.add(uuid);
-				}
-			}
-		}
-
-		logger.info("[" + getName() + "] Migrating claims");
-		for (Claim claim : getClaims()) {
-			String uuid = uuidMap.get(claim._player);
-
-			if (uuid == null) {
-				logger.severe("[" + getName() + "] Unable to find uuid for claimer " + claim._player);
-			} else {
-				claim.playerUuid = uuid;
-			}
-		}
-
-		save();
-	}
 }

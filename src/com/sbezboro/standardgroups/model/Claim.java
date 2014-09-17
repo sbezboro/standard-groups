@@ -13,8 +13,7 @@ public class Claim extends PersistableImpl implements Persistable {
 	private int x;
 	private int z;
 	private String world;
-	public String _player;
-	public String playerUuid;
+	private String playerUuid;
 	
 	private Group group;
 
@@ -34,7 +33,6 @@ public class Claim extends PersistableImpl implements Persistable {
 		x = (Integer) map.get("x");
 		z = (Integer) map.get("z");
 		world = (String) map.get("world");
-		_player = (String) map.get("player");
 		playerUuid = (String) map.get("player-uuid");
 	}
 
