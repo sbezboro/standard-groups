@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
@@ -710,6 +711,11 @@ public class GroupManager extends BaseManager {
 
 	private void claim(StandardPlayer player, Group group, Location location) {
 		Group testGroup = getGroupByLocation(location);
+
+		if (location.getWorld().getEnvironment() == World.Environment.THE_END) {
+			player.sendMessage(ChatColor.RED + "You can't claim in the end.");
+			return;
+		}
 
 		if (testGroup == group) {
 			player.sendMessage("You already own this land.");
