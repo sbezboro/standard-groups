@@ -107,8 +107,18 @@ public class GroupManager extends BaseManager {
 				uuidToGroupMap.put(uuid, group);
 			}
 
+			List<Claim> claimsToRemove = new ArrayList<Claim>();
 			for (Claim claim : group.getClaims()) {
 				locationToGroupMap.put(claim.getLocationKey(), group);
+
+				if (claim.getWorld().getEnvironment() == World.Environment.THE_END) {
+					claimsToRemove.add(claim);
+				}
+			}
+
+			for (Claim claim : claimsToRemove) {
+				plugin.getLogger().severe("Group " + group.getName() + " has a claim in the end. Removing it");
+				group.unclaim(claim);
 			}
 
 			if (!group.getMemberUuids().isEmpty() && !group.getMemberUuids().contains(group.getLeaderUuid())) {
@@ -1449,7 +1459,7 @@ public class GroupManager extends BaseManager {
 		} else {
 			player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + group.getNameWithRelation(player) + " Claims" + ChatColor.GOLD + " ==============");
 			for (Claim claim : group.getClaims()) {
-				player.sendMessage(ChatColor.YELLOW + "(" + claim.getX() + ", " + claim.getZ() + ")");
+				player.sendMessage(ChatColor.YELLOW + "([" + claim.getWorldDisplayName() + "] " + claim.getX() + ", " + claim.getZ() + ")");
 			}
 		}
 	}
