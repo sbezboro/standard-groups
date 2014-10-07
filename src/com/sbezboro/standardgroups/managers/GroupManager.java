@@ -717,6 +717,11 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
+		if (plugin.isNearActiveEndPortal(location, 32)) {
+			player.sendMessage(ChatColor.RED + "You can't seem to claim this land...");
+			return;
+		}
+
 		if (testGroup == group) {
 			player.sendMessage("You already own this land.");
 			return;
