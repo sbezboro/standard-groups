@@ -7,6 +7,7 @@ import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,11 +26,16 @@ public class BlockPistonExtendListener extends SubPluginEventListener<StandardGr
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		for (Block block : event.getBlocks()) {
+			if (block.getType() == Material.SLIME_BLOCK) {
+				event.setCancelled(true);
+				return;
+			}
+
 			List<Lock> locks = groupManager.getLocksAffectedByBlock(block.getLocation());
 
 			if (!locks.isEmpty()) {
 				event.setCancelled(true);
-				break;
+				return;
 			}
 
 			Location oldLocation = block.getLocation();
