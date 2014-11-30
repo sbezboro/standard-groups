@@ -1054,12 +1054,14 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
+		boolean maxLandLimitReached = group.getMaxClaims() >= subPlugin.getGroupLandGrowthLimit();
+
 		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
 		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
 		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
-		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims());
+		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims() + (maxLandLimitReached ? " (max)" : ""));
 
-		if (player == null || getPlayerGroup(player) == group) {
+		if (!maxLandLimitReached && (player == null || getPlayerGroup(player) == group)) {
 			sender.sendMessage(ChatColor.YELLOW + "Next land growth: " + ChatColor.RESET +  MiscUtil.friendlyTimestamp(group.getNextGrowth()));
 		}
 

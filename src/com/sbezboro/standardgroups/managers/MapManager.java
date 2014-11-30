@@ -131,8 +131,12 @@ public class MapManager extends BaseManager {
 			@Override
 			public void run() {
 				for (StandardPlayer player : mapPlayers) {
-					if (player.isOnline()) {
-						renderMap(player);
+					try {
+						if (player.isOnline()) {
+							renderMap(player);
+						}
+					} catch (NullPointerException e) {
+						// Do nothing
 					}
 				}
 			}

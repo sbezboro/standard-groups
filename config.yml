@@ -2,4 +2,5 @@ group-name-min-length: 3
 group-name-max-length: 12
 group-land-growth: 2
 group-land-growth-days: 7
+group-land-growth-limit: 80
 group-auto-kick-days: 14

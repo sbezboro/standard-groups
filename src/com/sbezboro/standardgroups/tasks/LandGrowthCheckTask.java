@@ -25,6 +25,10 @@ public class LandGrowthCheckTask extends BaseTask {
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		for (Group group : groupManager.getGroups()) {
+			if (group.getMaxClaims() >= subPlugin.getGroupLandGrowthLimit()) {
+				continue;
+			}
+
 			long diff = curTime - group.getLastGrowth();
 			long growthPeriod = subPlugin.getGroupLandGrowthDays() * 86400000;
 

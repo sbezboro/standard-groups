@@ -313,7 +313,12 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 
 	public void grow() {
-		maxClaims.setValue(maxClaims.getValue() + 2);
+		int growthAmount = StandardGroups.getPlugin().getGroupLandGrowth();
+		int maxAmount = StandardGroups.getPlugin().getGroupLandGrowthLimit();
+
+		int newAmount = Math.min(maxClaims.getValue() + growthAmount, maxAmount);
+
+		maxClaims.setValue(newAmount);
 	}
 
 	public void rename(String name) {

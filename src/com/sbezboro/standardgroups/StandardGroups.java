@@ -144,6 +144,10 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		return config.getGroupLandGrowthDays();
 	}
 
+	public int getGroupLandGrowthLimit() {
+		return config.getGroupLandGrowthLimit();
+	}
+
 	public int getGroupAutoKickDays() {
 		return config.getGroupAutoKickDays();
 	}

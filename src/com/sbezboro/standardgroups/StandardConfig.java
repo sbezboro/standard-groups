@@ -13,6 +13,7 @@ public class StandardConfig {
 	private int groupNameMaxLength;
 	private int groupLandGrowth;
 	private int groupLandGrowthDays;
+	private int groupLandGrowthLimit;
 	private int groupAutoKickDays;
 
 	public StandardConfig(StandardPlugin plugin) {
@@ -26,6 +27,7 @@ public class StandardConfig {
 		groupNameMaxLength = config.getInt("group-name-max-length");
 		groupLandGrowth = config.getInt("group-land-growth");
 		groupLandGrowthDays = config.getInt("group-land-growth-days");
+		groupLandGrowthLimit = config.getInt("group-land-growth-limit");
 		groupAutoKickDays = config.getInt("group-auto-kick-days");
 	}
 
@@ -47,6 +49,10 @@ public class StandardConfig {
 
 	public int getGroupLandGrowthDays() {
 		return groupLandGrowthDays;
+	}
+
+	public int getGroupLandGrowthLimit() {
+		return groupLandGrowthLimit;
 	}
 
 	public int getGroupAutoKickDays() {
