@@ -791,6 +791,11 @@ public class GroupManager extends BaseManager {
 			// Check if admin player
 			if (isGroupsAdmin(player)) {
 				group = matchGroup(groupName);
+				if (group == null) {
+					if (groupName.equalsIgnoreCase("safearea")) {
+						group = getSafearea();
+					}
+				}
 
 				if (group == null) {
 					player.sendMessage("That group doesn't exist.");

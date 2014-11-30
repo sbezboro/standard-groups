@@ -10,9 +10,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
 import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 
 public class MapManager extends BaseManager {
 	private static final int MAP_WIDTH = 7;
@@ -32,6 +35,90 @@ public class MapManager extends BaseManager {
 	private HashSet<StandardPlayer> mapPlayers;
 
 	private int updateTaskId;
+
+	private class MapLine implements OfflinePlayer {
+
+		private final String contents;
+
+		public MapLine(String contents) {
+			this.contents = contents;
+		}
+
+		@Override
+		public boolean isOnline() {
+			return false;
+		}
+
+		@Override
+		public String getName() {
+			return contents;
+		}
+
+		@Override
+		public UUID getUniqueId() {
+			return null;
+		}
+
+		@Override
+		public boolean isBanned() {
+			return false;
+		}
+
+		@Override
+		public void setBanned(boolean b) {
+
+		}
+
+		@Override
+		public boolean isWhitelisted() {
+			return false;
+		}
+
+		@Override
+		public void setWhitelisted(boolean b) {
+
+		}
+
+		@Override
+		public Player getPlayer() {
+			return null;
+		}
+
+		@Override
+		public long getFirstPlayed() {
+			return 0;
+		}
+
+		@Override
+		public long getLastPlayed() {
+			return 0;
+		}
+
+		@Override
+		public boolean hasPlayedBefore() {
+			return false;
+		}
+
+		@Override
+		public Location getBedSpawnLocation() {
+			return null;
+		}
+
+		@Override
+		public Map<String, Object> serialize() {
+			return null;
+		}
+
+		@Override
+		public boolean isOp() {
+			return false;
+		}
+
+		@Override
+		public void setOp(boolean b) {
+
+		}
+	}
 
 	public MapManager(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin);
@@ -89,7 +176,7 @@ public class MapManager extends BaseManager {
 		for (int i = 0; i < mapRows.length; ++i) {
 			String data = mapRows[i];
 
-			OfflinePlayer rowData = plugin.getServer().getOfflinePlayer(data.substring(5, 17));
+			OfflinePlayer rowData = new MapLine(data.substring(5, 17));
 			Score score = objective.getScore(rowData);
 			score.setScore(MAP_WIDTH - i);
 

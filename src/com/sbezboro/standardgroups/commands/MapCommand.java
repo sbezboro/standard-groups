@@ -25,10 +25,9 @@ public class MapCommand extends SubCommand {
 	public boolean handle(CommandSender sender, String[] args) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 
-		player.sendMessage("This command is disabled for the time being");
-		//GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 
-		//groupManager.toggleMap(player);
+		groupManager.toggleMap(player);
 		
 		return true;
 	}
