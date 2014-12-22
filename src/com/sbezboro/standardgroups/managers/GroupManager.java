@@ -34,7 +34,17 @@ public class GroupManager extends BaseManager {
 	private static final HashSet<Material> PROTECTED_BLOCKS = new HashSet<Material>() {{
 		add(Material.CHEST);
 		add(Material.WOODEN_DOOR);
+		add(Material.SPRUCE_DOOR);
+		add(Material.ACACIA_DOOR);
+		add(Material.BIRCH_DOOR);
+		add(Material.DARK_OAK_DOOR);
+		add(Material.JUNGLE_DOOR);
 		add(Material.FENCE_GATE);
+		add(Material.SPRUCE_FENCE_GATE);
+		add(Material.ACACIA_FENCE_GATE);
+		add(Material.BIRCH_FENCE_GATE);
+		add(Material.DARK_OAK_FENCE_GATE);
+		add(Material.JUNGLE_FENCE_GATE);
 		add(Material.TRAP_DOOR);
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
@@ -60,8 +70,19 @@ public class GroupManager extends BaseManager {
 	}};
 
 	@SuppressWarnings("serial")
+	private static final HashSet<Material> WOODEN_DOOR_BLOCKS = new HashSet<Material>() {{
+		add(Material.WOODEN_DOOR);
+		add(Material.SPRUCE_DOOR);
+		add(Material.ACACIA_DOOR);
+		add(Material.BIRCH_DOOR);
+		add(Material.DARK_OAK_DOOR);
+		add(Material.JUNGLE_DOOR);
+	}};
+
+	@SuppressWarnings("serial")
 	private static final HashSet<EntityType> PROTECTED_ENTITIES = new HashSet<EntityType>() {{
 		add(EntityType.ITEM_FRAME);
+		add(EntityType.ARMOR_STAND);
 	}};
 
 	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
@@ -252,6 +273,10 @@ public class GroupManager extends BaseManager {
 		};
 	}
 
+	private boolean isWoodenDoor(Block block) {
+		return WOODEN_DOOR_BLOCKS.contains(block.getType());
+	}
+
 	public List<Lock> getLocksAffectedByBlock(Location location) {
 		Group group = getGroupByLocation(location);
 		return getLocksAffectedByBlock(group, location);
@@ -276,13 +301,13 @@ public class GroupManager extends BaseManager {
 		// 4. Blocks adjacent for potential trap doors
 		// 5. Block above for potential dragon egg
 		if (lock == null) {
-			if (targetBlock.getType() == Material.WOODEN_DOOR) {
+			if (isWoodenDoor(targetBlock)) {
 				Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
 				Block belowBlock = targetBlock.getRelative(BlockFace.DOWN);
 
-				if (aboveBlock.getType() == Material.WOODEN_DOOR) {
+				if (isWoodenDoor(aboveBlock)) {
 					affectedBlocks.add(aboveBlock);
-				} else if (belowBlock.getType() == Material.WOODEN_DOOR) {
+				} else if (isWoodenDoor(belowBlock)) {
 					affectedBlocks.add(belowBlock);
 				}
 			} else if (targetBlock.getType() == Material.CHEST) {
