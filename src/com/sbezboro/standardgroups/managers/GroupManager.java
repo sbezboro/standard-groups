@@ -4,6 +4,7 @@ import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.model.Claim;
 import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardgroups.model.Lock;
+import com.sbezboro.standardgroups.net.Notifications;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
 import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
@@ -85,6 +86,8 @@ public class GroupManager extends BaseManager {
 		add(EntityType.ARMOR_STAND);
 	}};
 
+	public static final int GROUP_REMOVAL_TASK_PERIOD = 1200; //seconds
+
 	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
 	private final String groupNamePatExplanation = "Group names can only contain letters and underscores.";
 
@@ -110,7 +113,7 @@ public class GroupManager extends BaseManager {
 		landGrowthCheckTask.runTaskTimer(subPlugin, 1200, 12000);
 
 		groupRemovalTask = new GroupRemovalTask(plugin, subPlugin);
-		groupRemovalTask.runTaskTimer(subPlugin, 2400, 24000);
+		groupRemovalTask.runTaskTimer(subPlugin, 2400, GROUP_REMOVAL_TASK_PERIOD * 20);
 
 		reload();
 	}
@@ -443,6 +446,11 @@ public class GroupManager extends BaseManager {
 
 		for (String uuid : group.getMemberUuids()) {
 			uuidToGroupMap.remove(uuid);
+
+			StandardPlayer kickedPlayer = plugin.getStandardPlayerByUUID(uuid);
+			if (!kickedPlayer.isOnline()) {
+				Notifications.createGroupDestroyedNotification(kickedPlayer, group, player);
+			}
 		}
 		
 		for (Claim claim : group.getClaims()) {
@@ -604,7 +612,11 @@ public class GroupManager extends BaseManager {
 			storage.destroyGroup(group);
 
 			StandardPlugin.broadcast(ChatColor.YELLOW + "The group " + group.getName() + " has been destroyed automatically.");
+
+			Notifications.createGroupDestroyedNotification(kickedPlayer, group);
 		}
+
+		Notifications.createKickedFromGroupNotification(kickedPlayer, group);
 	}
 
 	public void kickPlayer(StandardPlayer player, String kickedUsername) {
@@ -662,6 +674,8 @@ public class GroupManager extends BaseManager {
 		if (kickedPlayer.isOnline()) {
 			kickedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
 					" has kicked you from the group " + group.getName() + "!");
+		} else {
+			Notifications.createKickedFromGroupNotification(kickedPlayer, group, player);
 		}
 	}
 

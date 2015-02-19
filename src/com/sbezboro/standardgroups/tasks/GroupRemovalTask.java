@@ -3,6 +3,7 @@ package com.sbezboro.standardgroups.tasks;
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Group;
+import com.sbezboro.standardgroups.net.Notifications;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.tasks.BaseTask;
@@ -30,15 +31,21 @@ public class GroupRemovalTask extends BaseTask {
 				if (!player.isOnline()) {
 					long diff = curTime - player.getLastPlayed();
 					long kickPeriod = subPlugin.getGroupAutoKickDays() * 86400000;
+					long warnPeriodMin = kickPeriod - 86400000;
+					long warnPeriodMax = warnPeriodMin + (GroupManager.GROUP_REMOVAL_TASK_PERIOD * 1000);
 
-					if (diff != curTime && diff >= kickPeriod) {
-						subPlugin.getLogger().info("Kicking " + player.getDisplayName(false) + " from " + group.getName());
+					if (diff != curTime) {
+						if (diff >= kickPeriod) {
+							subPlugin.getLogger().info("Kicking " + player.getDisplayName(false) + " from " + group.getName());
 
-						groupManager.autoKickPlayer(player);
+							groupManager.autoKickPlayer(player);
 
-						group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has been " +
-								"auto-removed from your group for being offline for " +
-								subPlugin.getGroupAutoKickDays() + " days.");
+							group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has been " +
+									"auto-removed from your group for being offline for " +
+									subPlugin.getGroupAutoKickDays() + " days.");
+						} else if (diff > warnPeriodMin && diff < warnPeriodMax) {
+							Notifications.createGroupKickImminentNotification(player, group);
+						}
 					}
 				}
 			}
