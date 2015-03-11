@@ -17,7 +17,7 @@ public class Notifications {
 		data.put("group_name", group.getName());
 
 		if (kickerPlayer != null) {
-			data.put("kicker_uuid", kickedPlayer.getUuidString());
+			data.put("kicker_uuid", kickerPlayer.getUuidString());
 		}
 
 		HttpRequestManager.getInstance().startRequest(
