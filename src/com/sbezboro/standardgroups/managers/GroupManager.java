@@ -267,15 +267,6 @@ public class GroupManager extends BaseManager {
 		group.removeMember(player);
 	}
 
-	private Block[] getAdjacentBlocks(Block block) {
-		return new Block[] {
-				block.getRelative(BlockFace.NORTH),
-				block.getRelative(BlockFace.EAST),
-				block.getRelative(BlockFace.SOUTH),
-				block.getRelative(BlockFace.WEST)
-		};
-	}
-
 	private boolean isWoodenDoor(Block block) {
 		return WOODEN_DOOR_BLOCKS.contains(block.getType());
 	}
@@ -314,7 +305,7 @@ public class GroupManager extends BaseManager {
 					affectedBlocks.add(belowBlock);
 				}
 			} else if (targetBlock.getType() == Material.CHEST) {
-				for (Block block : getAdjacentBlocks(targetBlock)) {
+				for (Block block : MiscUtil.getAdjacentBlocks(targetBlock)) {
 					if (block.getType() == Material.CHEST) {
 						affectedBlocks.add(block);
 					}
@@ -328,7 +319,7 @@ public class GroupManager extends BaseManager {
 					affectedBlocks.add(targetBlock.getRelative(bed.getFacing()));
 				}
 			} else if (!PROTECTED_BLOCKS.contains(targetBlock.getType())) {
-				for (Block block : getAdjacentBlocks(targetBlock)) {
+				for (Block block : MiscUtil.getAdjacentBlocks(targetBlock)) {
 					if (block.getType() == Material.TRAP_DOOR) {
 						TrapDoor trapDoor = (TrapDoor) block.getState().getData();
 

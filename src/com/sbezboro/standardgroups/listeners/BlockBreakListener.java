@@ -7,13 +7,18 @@ import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import com.sbezboro.standardplugin.util.MiscUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class BlockBreakListener extends SubPluginEventListener<StandardGroups> implements Listener {
@@ -62,6 +67,40 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				if (group.isSafearea()) {
 					player.sendMessage(ChatColor.RED + "Cannot break blocks in the safearea");
 				} else {
+					Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
+
+					// Allow players to break one block in front of portals to get out of portal traps
+					if (playerBlock.getType() == Material.PORTAL) {
+						Block targetBlock = event.getBlock();
+
+						byte direction = playerBlock.getData();
+
+						boolean canBreakNearPortal =
+							group == groupManager.getGroupByLocation(player.getLocation()) &&
+							targetBlock.getY() >= playerBlock.getY() &&
+							targetBlock.getY() <= playerBlock.getY() + 1 && (
+								(
+									direction % 2 == 1 &&
+									playerBlock.getX() == targetBlock.getX() &&
+									Math.abs(playerBlock.getZ() - targetBlock.getZ()) == 1
+								) || (
+									direction % 2 == 0 &&
+									playerBlock.getZ() == targetBlock.getZ() &&
+									Math.abs(playerBlock.getX() - targetBlock.getX()) == 1
+								)
+						);
+
+						if (canBreakNearPortal) {
+							List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+							for (Lock lock : locks) {
+								group.unlock(lock);
+							}
+
+							event.setCancelled(false);
+							return;
+						}
+					}
+
 					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
 				}
 			}
