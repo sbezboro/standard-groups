@@ -68,6 +68,8 @@ public class GroupManager extends BaseManager {
 		add(Material.DIODE_BLOCK_ON);
 		add(Material.BEACON);
 		add(Material.BED_BLOCK);
+		add(Material.LEVER);
+		add(Material.STONE_BUTTON);
 	}};
 
 	@SuppressWarnings("serial")
