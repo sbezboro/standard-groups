@@ -24,7 +24,7 @@ public class EntityChangeBlockListener extends SubPluginEventListener<StandardGr
 
 		Group group = groupManager.getGroupByLocation(location);
 
-		if (group != null && group.isSafearea()) {
+		if (group != null && (group.isSafeArea() || group.isNeutralArea())) {
 			event.setCancelled(true);
 		}
 	}

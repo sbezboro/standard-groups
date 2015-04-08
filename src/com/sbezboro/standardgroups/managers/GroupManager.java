@@ -156,13 +156,18 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public Group getSafearea() {
+	public Group getSafeArea() {
 		return storage.getGroupByName(Group.SAFE_AREA);
+	}
+
+	public Group getNeutralArea() {
+		return storage.getGroupByName(Group.NEUTRAL_AREA);
 	}
 
 	public List<Group> getGroups() {
 		List<Group> groups = storage.getGroups();
-		groups.remove(getSafearea());
+		groups.remove(getSafeArea());
+		groups.remove(getNeutralArea());
 		return groups;
 	}
 
@@ -777,7 +782,7 @@ public class GroupManager extends BaseManager {
 		if (testGroup != null) {
 			// Admins can overclaim if necessary
 			if (isGroupsAdmin(player)) {
-				Claim claim = testGroup.getClaim(player.getLocation());
+				Claim claim = testGroup.getClaim(location);
 				testGroup.unclaim(claim);
 				locationToGroupMap.remove(claim.getLocationKey());
 			} else {
@@ -822,11 +827,12 @@ public class GroupManager extends BaseManager {
 		} else {
 			// Check if admin player
 			if (isGroupsAdmin(player)) {
-				group = matchGroup(groupName);
-				if (group == null) {
-					if (groupName.equalsIgnoreCase("safearea")) {
-						group = getSafearea();
-					}
+				if (groupName.equalsIgnoreCase(Group.SAFE_AREA)) {
+					group = getSafeArea();
+				} else if (groupName.equalsIgnoreCase(Group.NEUTRAL_AREA)) {
+					group = getNeutralArea();
+				} else {
+					group = matchGroup(groupName);
 				}
 
 				if (group == null) {
@@ -1055,7 +1061,7 @@ public class GroupManager extends BaseManager {
 		} else {
 			group = matchGroup(usernameOrGroup);
 
-			if (group != null && group.isSafearea()) {
+			if (group != null && (group.isSafeArea() || group.isNeutralArea())) {
 				group = null;
 			}
 			
@@ -1496,7 +1502,7 @@ public class GroupManager extends BaseManager {
 		if (group.getClaims().isEmpty()) {
 			player.sendMessage(ChatColor.YELLOW + "Your group has not claimed any land yet.");
 		} else {
-			player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + group.getNameWithRelation(player) + " Claims" + ChatColor.GOLD + " ==============");
+			player.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + group.getNameWithRelation(player) + " Claims (Chunk coords)" + ChatColor.GOLD + " ==============");
 			for (Claim claim : group.getClaims()) {
 				player.sendMessage(ChatColor.YELLOW + "([" + claim.getWorldDisplayName() + "] " + claim.getX() + ", " + claim.getZ() + ")");
 			}

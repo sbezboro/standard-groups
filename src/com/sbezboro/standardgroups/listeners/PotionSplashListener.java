@@ -6,8 +6,6 @@ import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
@@ -46,7 +44,7 @@ public class PotionSplashListener extends SubPluginEventListener<StandardGroups>
 				if (player != null) {
 					Group group = groupManager.getGroupByLocation(player.getLocation());
 
-					if (group != null && group.isSafearea()) {
+					if (group != null && group.isSafeArea()) {
 						event.setIntensity(entity, 0);
 					}
 				}

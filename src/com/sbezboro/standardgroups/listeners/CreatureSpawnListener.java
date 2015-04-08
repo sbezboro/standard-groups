@@ -26,7 +26,7 @@ public class CreatureSpawnListener extends SubPluginEventListener<StandardGroups
 
 		Group group = groupManager.getGroupByLocation(event.getLocation());
 
-		if (group != null && group.isSafearea()) {
+		if (group != null && group.isSafeArea()) {
 			event.setCancelled(true);
 		}
 	}

@@ -7,7 +7,6 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
@@ -45,14 +44,14 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 				Group damagerGroup = groupManager.getPlayerGroup(damager);
 				Group victimGroup = groupManager.getPlayerGroup(victim);
 
-				// Players in PVP can still be hurt in the safearea
+				// Players in PVP can still be hurt in the safe area
 				if (!victim.isInPvp()) {
-					if (victimLocationGroup != null && victimLocationGroup.isSafearea()) {
-						damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safearea");
+					if (victimLocationGroup != null && victimLocationGroup.isSafeArea()) {
+						damager.sendMessage(ChatColor.YELLOW + "You can't harm players in the safe area");
 						event.setCancelled(true);
 						return;
-					} else if (damagerLocationGroup != null && damagerLocationGroup.isSafearea()) {
-						damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safearea");
+					} else if (damagerLocationGroup != null && damagerLocationGroup.isSafeArea()) {
+						damager.sendMessage(ChatColor.YELLOW + "You can't harm players while in the safe area");
 						event.setCancelled(true);
 						return;
 					}
@@ -69,7 +68,7 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 
 			Group group = groupManager.getGroupByLocation(victim.getLocation());
 
-			if (group != null && group.isSafearea()) {
+			if (group != null && group.isSafeArea()) {
 				event.setCancelled(true);
 			}
 		}

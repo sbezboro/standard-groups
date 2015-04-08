@@ -40,8 +40,10 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 				}
 			} else if (!groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
-				if (group.isSafearea()) {
-					player.sendMessage(ChatColor.RED + "Cannot place blocks in the safearea");
+				if (group.isSafeArea()) {
+					player.sendMessage(ChatColor.RED + "Cannot place blocks in the safe area");
+				} else if (group.isNeutralArea()) {
+					player.sendMessage(ChatColor.RED + "Cannot place blocks in the neutral area");
 				} else {
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
 				}

@@ -10,7 +10,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 
 public class EntityTargetListener extends SubPluginEventListener<StandardGroups> implements Listener {
@@ -33,7 +32,7 @@ public class EntityTargetListener extends SubPluginEventListener<StandardGroups>
 
 		Group group = groupManager.getGroupByLocation(location);
 
-		if (group != null && group.isSafearea()) {
+		if (group != null && group.isSafeArea()) {
 			event.setCancelled(true);
 		}
 	}
