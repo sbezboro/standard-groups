@@ -8,6 +8,7 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.storages.MultiFileStorage;
 
 public class GroupStorage extends MultiFileStorage<Group> {
+	private HashMap<String, Group> uidMap;
 
 	public GroupStorage(StandardPlugin plugin) {
 		super(plugin, "groups");
@@ -16,6 +17,12 @@ public class GroupStorage extends MultiFileStorage<Group> {
 	@Override
 	public void loadObjects() {
 		super.loadObjects();
+
+		uidMap = new HashMap<String, Group>();
+
+		for (Group group : getGroups()) {
+			uidMap.put(group.getUid(), group);
+		}
 
 		Map<String, Group> defaults = new HashMap<String, Group>();
 		defaults.put(Group.SAFE_AREA, new Group(this, Group.SAFE_AREA));
@@ -33,6 +40,7 @@ public class GroupStorage extends MultiFileStorage<Group> {
 		Group group = new Group(this, name, new Date().getTime(), leader);
 		
 		cacheObject(name, group);
+		uidMap.put(group.getUid(), group);
 		
 		return group;
 	}
@@ -41,10 +49,15 @@ public class GroupStorage extends MultiFileStorage<Group> {
 		group.clearLocks();
 
 		remove(group.getIdentifier());
+		uidMap.remove(group.getUid());
 	}
 	
 	public Group getGroupByName(String name) {
 		return getObject(name);
+	}
+
+	public Group getGroupByUid(String uid) {
+		return uidMap.get(uid);
 	}
 
 	public List<Group> getGroups() {
@@ -54,5 +67,4 @@ public class GroupStorage extends MultiFileStorage<Group> {
 	public Group createObject(String identifier) {
 		return new Group(this, identifier);
 	}
-
 }

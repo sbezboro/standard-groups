@@ -153,22 +153,17 @@ public class GroupManager extends BaseManager {
 						firstMember.getName());
 				group.setLeader(firstMember);
 			}
+
+			for (String uid : group.getFriendedGroupUids()) {
+				Group otherGroup = getGroupByUid(uid);
+
+				if (otherGroup == null) {
+					plugin.getLogger().severe("Group " + group.getName() + " has an invalid friended group " + uid);
+				} else {
+					otherGroup.addGroupThatFriends(group);
+				}
+			}
 		}
-	}
-
-	public Group getSafeArea() {
-		return storage.getGroupByName(Group.SAFE_AREA);
-	}
-
-	public Group getNeutralArea() {
-		return storage.getGroupByName(Group.NEUTRAL_AREA);
-	}
-
-	public List<Group> getGroups() {
-		List<Group> groups = storage.getGroups();
-		groups.remove(getSafeArea());
-		groups.remove(getNeutralArea());
-		return groups;
 	}
 
 	public Group getGroupByName(String name) {
@@ -185,6 +180,10 @@ public class GroupManager extends BaseManager {
 
 		return null;
 	}
+
+	public Group getGroupByUid(String uid) {
+		return storage.getGroupByUid(uid);
+	}
 	
 	public Group getGroupByLocation(Location location) {
 		return locationToGroupMap.get(Claim.getLocationKey(location));
@@ -192,6 +191,21 @@ public class GroupManager extends BaseManager {
 	
 	public Group getPlayerGroup(StandardPlayer player) {
 		return uuidToGroupMap.get(player.getUuidString());
+	}
+
+	public Group getSafeArea() {
+		return getGroupByName(Group.SAFE_AREA);
+	}
+
+	public Group getNeutralArea() {
+		return getGroupByName(Group.NEUTRAL_AREA);
+	}
+
+	public List<Group> getGroups() {
+		List<Group> groups = storage.getGroups();
+		groups.remove(getSafeArea());
+		groups.remove(getNeutralArea());
+		return groups;
 	}
 	
 	public boolean playerInGroup(StandardPlayer player, Group group) {
@@ -216,6 +230,26 @@ public class GroupManager extends BaseManager {
 		}
 
 		return match;
+	}
+
+	public Group matchGroupByUsernameOrGroupName(CommandSender sender, String usernameOrGroupName) {
+		Group group = matchGroup(usernameOrGroupName);
+
+		if (group == null) {
+			StandardPlayer player = plugin.matchPlayer(usernameOrGroupName);
+
+			if (player == null) {
+				sender.sendMessage("No group or player by that name.");
+			} else {
+				group = getPlayerGroup(player);
+
+				if (group == null) {
+					sender.sendMessage("The player " + player.getDisplayName(false) + " is not in a group.");
+				}
+			}
+		}
+
+		return group;
 	}
 
 	public static boolean isBlockTypeProtected(Block block) {
@@ -246,7 +280,34 @@ public class GroupManager extends BaseManager {
 		return "";
 	}
 
-	private void removeMember(Group group, StandardPlayer player) {
+	private void handleGroupDeletion(Group group, StandardPlayer byPlayer, boolean automatically) {
+		for (Claim claim : group.getClaims()) {
+			locationToGroupMap.remove(claim.getLocationKey());
+		}
+
+		for (String uuid : group.getMemberUuids()) {
+			uuidToGroupMap.remove(uuid);
+
+			StandardPlayer kickedPlayer = plugin.getStandardPlayerByUUID(uuid);
+			if (!kickedPlayer.isOnline()) {
+				Notifications.createGroupDestroyedNotification(kickedPlayer, group, byPlayer);
+			}
+		}
+
+		group.removeFriendships();
+
+		storage.destroyGroup(group);
+
+		if (automatically) {
+			StandardPlugin.broadcast(ChatColor.YELLOW + "The group " + group.getName() + " has been destroyed automatically.");
+		} else if (byPlayer == null) {
+			StandardPlugin.broadcast(ChatColor.YELLOW + "A server admin has destroyed the group " + group.getName() + ".");
+		} else {
+			StandardPlugin.broadcast(ChatColor.YELLOW + byPlayer.getDisplayName(false) + " has destroyed their group.");
+		}
+	}
+
+	private void handleMemberRemoval(Group group, StandardPlayer player) {
 		if (group.isLeader(player) && group.getMemberUuids().size() > 1) {
 			StandardPlayer newLeader;
 
@@ -442,26 +503,7 @@ public class GroupManager extends BaseManager {
 			}
 		}
 
-		for (String uuid : group.getMemberUuids()) {
-			uuidToGroupMap.remove(uuid);
-
-			StandardPlayer kickedPlayer = plugin.getStandardPlayerByUUID(uuid);
-			if (!kickedPlayer.isOnline()) {
-				Notifications.createGroupDestroyedNotification(kickedPlayer, group, player);
-			}
-		}
-		
-		for (Claim claim : group.getClaims()) {
-			locationToGroupMap.remove(claim.getLocationKey());
-		}
-		
-		storage.destroyGroup(group);
-		
-		if (player == null) {
-			StandardPlugin.broadcast(ChatColor.YELLOW + "A server admin has destroyed the group " + group.getName() + ".");
-		} else {
-			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed their group.");
-		}
+		handleGroupDeletion(group, player, false);
 	}
 
 	public void setLeader(StandardPlayer player, String username) {
@@ -600,16 +642,10 @@ public class GroupManager extends BaseManager {
 	public void autoKickPlayer(StandardPlayer kickedPlayer) {
 		Group group = getPlayerGroup(kickedPlayer);
 
-		removeMember(group, kickedPlayer);
+		handleMemberRemoval(group, kickedPlayer);
 
 		if (group.getMemberUuids().isEmpty()) {
-			for (Claim claim : group.getClaims()) {
-				locationToGroupMap.remove(claim.getLocationKey());
-			}
-
-			storage.destroyGroup(group);
-
-			StandardPlugin.broadcast(ChatColor.YELLOW + "The group " + group.getName() + " has been destroyed automatically.");
+			handleGroupDeletion(group, null, true);
 
 			Notifications.createGroupDestroyedNotification(kickedPlayer, group);
 		}
@@ -657,17 +693,12 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		removeMember(group, kickedPlayer);
+		handleMemberRemoval(group, kickedPlayer);
 
-		for (StandardPlayer other : group.getPlayers()) {
-			if (player == other) {
-				player.sendMessage(ChatColor.YELLOW + "You have kicked " + kickedPlayer.getDisplayName(false) +
-						" from your group.");
-			} else if (other.isOnline()) {
-				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
-						" has kicked " + kickedPlayer.getDisplayName(false) + " from your group.");
-			}
-		}
+		group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) +
+				" has kicked " + kickedPlayer.getDisplayName(false) + " from your group.", player);
+		player.sendMessage(ChatColor.YELLOW + "You have kicked " + kickedPlayer.getDisplayName(false) +
+				" from your group.");
 
 		if (kickedPlayer.isOnline()) {
 			kickedPlayer.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
@@ -677,54 +708,33 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void joinGroup(StandardPlayer player, String usernameOrGroup) {
+	public void joinGroup(StandardPlayer player, String usernameOrGroupName) {
 		if (getPlayerGroup(player) != null) {
 			player.sendMessage("You must leave your existing group first before joining a different one.");
 			return;
 		}
 
-		Group group = matchGroup(usernameOrGroup);
+		Group group = matchGroupByUsernameOrGroupName(player, usernameOrGroupName);
 
 		if (group == null) {
-			StandardPlayer other = plugin.matchPlayer(usernameOrGroup);
-			if (other == null) {
-				player.sendMessage("No group or player by that name.");
-				return;
-			} else {
-				group = getPlayerGroup(other);
-
-				if (group == null) {
-					player.sendMessage("The player " + other.getDisplayName(false) + " is not in a group.");
-					return;
-				}
-			}
-		}
-		
-		if (!group.isInvited(player)) {
-			for (StandardPlayer other : group.getPlayers()) {
-				if (other.isOnline()) {
-					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) +
-							" wants to join your group. Invite them by typing /g invite " +
-							player.getDisplayName(false));
-				}
-			}
-			
-			player.sendMessage("You have not been invited to join this group yet.");
 			return;
 		}
+		
+		if (group.isInvited(player)) {
+			uuidToGroupMap.put(player.getUuidString(), group);
 
-		for (StandardPlayer other : group.getPlayers()) {
-			if (other.isOnline()) {
-				other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has joined your group.");
-			}
+			group.addMember(player);
+			group.removeInvite(player.getName());
+
+			group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has joined your group.", player);
+			player.sendMessage(ChatColor.YELLOW + "You have successfully joined the group " + group.getName() + ".");
+		} else {
+			group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) +
+					" wants to join your group. Invite them by typing /g invite " +
+					player.getDisplayName(false));
+			
+			player.sendMessage("You have not been invited to join this group yet.");
 		}
-		
-		uuidToGroupMap.put(player.getUuidString(), group);
-		
-		group.addMember(player);
-		group.removeInvite(player.getName());
-		
-		player.sendMessage(ChatColor.YELLOW + "You have successfully joined the group " + group.getName() + ".");
 	}
 
 	public void leaveGroup(StandardPlayer player) {
@@ -735,24 +745,13 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		removeMember(group, player);
+		handleMemberRemoval(group, player);
 		
-		if (!group.getMemberUuids().isEmpty()) {
-			for (StandardPlayer other : group.getPlayers()) {
-				if (other.isOnline()) {
-					other.sendMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has left your group.");
-				}
-			}
-			
-			player.sendMessage(ChatColor.YELLOW + "You have left the group " + group.getName() + ".");
+		if (group.getMemberUuids().isEmpty()) {
+			handleGroupDeletion(group, player, false);
 		} else {
-			for (Claim claim : group.getClaims()) {
-				locationToGroupMap.remove(claim.getLocationKey());
-			}
-			
-			storage.destroyGroup(group);
-
-			StandardPlugin.broadcast(ChatColor.YELLOW + player.getDisplayName(false) + " has destroyed their group.");
+			group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) + " has left your group.", player);
+			player.sendMessage(ChatColor.YELLOW + "You have left the group " + group.getName() + ".");
 		}
 	}
 
@@ -1047,11 +1046,11 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void groupInfo(CommandSender sender, String usernameOrGroup) {
+	public void groupInfo(CommandSender sender, String usernameOrGroupName) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		Group group;
 		
-		if (usernameOrGroup == null) {
+		if (usernameOrGroupName == null) {
 			group = getPlayerGroup(player);
 			
 			if (group == null) {
@@ -1059,30 +1058,16 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		} else {
-			group = matchGroup(usernameOrGroup);
+			group = matchGroupByUsernameOrGroupName(player, usernameOrGroupName);
 
-			if (group != null && (group.isSafeArea() || group.isNeutralArea())) {
-				group = null;
-			}
-			
 			if (group == null) {
-				StandardPlayer other = plugin.matchPlayer(usernameOrGroup);
-				if (other == null) {
-					sender.sendMessage("No group or player by that name.");
-					return;
-				} else {
-					group = getPlayerGroup(other);
-
-					if (group == null) {
-						sender.sendMessage("The player " + other.getDisplayName(false) + " is not in a group.");
-						return;
-					}
-				}
+				return;
 			}
 		}
 
-		ArrayList<String> onlineMembers = new ArrayList<String>();
-		ArrayList<String> offlineMembers = new ArrayList<String>();
+		List<String> onlineMembers = new ArrayList<String>();
+		List<String> offlineMembers = new ArrayList<String>();
+		List<String> friendlyGroupsNames = new ArrayList<String>();
 
 		for (StandardPlayer member : group.getPlayers()) {
 			if (member.isOnline()) {
@@ -1090,6 +1075,10 @@ public class GroupManager extends BaseManager {
 			} else {
 				offlineMembers.add(getGroupIdentifier(member) + member.getDisplayName());
 			}
+		}
+
+		for (Group friendlyGroup : group.getMutuallyFriendlyGroups()) {
+			friendlyGroupsNames.add(friendlyGroup.getName());
 		}
 
 		boolean maxLandLimitReached = group.getMaxClaims() >= subPlugin.getGroupLandGrowthLimit();
@@ -1103,6 +1092,7 @@ public class GroupManager extends BaseManager {
 			sender.sendMessage(ChatColor.YELLOW + "Next land growth: " + ChatColor.RESET +  MiscUtil.friendlyTimestamp(group.getNextGrowth()));
 		}
 
+		sender.sendMessage(ChatColor.YELLOW + "Friends: " + ChatColor.RESET + StringUtils.join(friendlyGroupsNames, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Online members: " + ChatColor.RESET + StringUtils.join(onlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Offline members: " + ChatColor.RESET + StringUtils.join(offlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Link: " + ChatColor.RESET + "standardsurvival.com/group/" + group.getName());
@@ -1508,4 +1498,113 @@ public class GroupManager extends BaseManager {
 			}
 		}
 	}
+
+	public void friendGroup(StandardPlayer player, String usernameOrGroupName) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group to friend other groups.");
+			return;
+		}
+
+		if (!group.isLeader(player)) {
+			player.sendMessage("Only the group leader can friend other groups.");
+			return;
+		}
+
+		Group otherGroup = matchGroupByUsernameOrGroupName(player, usernameOrGroupName);
+
+		if (otherGroup == null) {
+			return;
+		}
+
+		if (group == otherGroup) {
+			player.sendMessage("You can't friend your own group.");
+			return;
+		}
+
+		if (group.isGroupFriended(otherGroup)) {
+			player.sendMessage("Your group already considers the group " + otherGroup.getName() + " friendly.");
+			return;
+		}
+
+		group.setFriend(otherGroup);
+
+		if (otherGroup.isGroupFriended(group)) {
+			player.sendMessage(ChatColor.YELLOW + "Your group is now friends with the group " +
+					ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW + "!");
+			group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName() +
+					ChatColor.YELLOW + " has accepted friendship with the group " +
+					ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW, player);
+			otherGroup.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName() +
+					ChatColor.YELLOW + " from the group " + ChatColor.GOLD + group.getName() +
+					ChatColor.YELLOW + " has accepted your group's friendship.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "Your group now considers the group "
+					+ ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW +
+					" friendly. They must still friend your group back.");
+			group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName() +
+					ChatColor.YELLOW + " has requested to be friends with the group " +
+					ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW, player);
+			otherGroup.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName() +
+					ChatColor.YELLOW + " from the group " + ChatColor.GOLD + group.getName() +
+					ChatColor.YELLOW + " wishes to be friendly with your group.");
+		}
+	}
+
+	public void unfriendGroup(StandardPlayer player, String usernameOrGroupName) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage("You must be in a group to friend other groups.");
+			return;
+		}
+
+		if (!group.isLeader(player)) {
+			player.sendMessage("Only the group leader can friend other groups.");
+			return;
+		}
+
+		Group otherGroup = matchGroupByUsernameOrGroupName(player, usernameOrGroupName);
+
+		if (otherGroup == null) {
+			return;
+		}
+
+		if (group == otherGroup) {
+			player.sendMessage("You can't unfriend your own group.");
+			return;
+		}
+
+		if (!group.isGroupFriended(otherGroup)) {
+			player.sendMessage("Your group isn't friends with the group " + otherGroup.getName());
+			return;
+		}
+
+		group.unfriend(otherGroup);
+
+		if (otherGroup.isGroupFriended(group)) {
+			otherGroup.unfriend(group);
+
+			player.sendMessage(ChatColor.YELLOW + "The friendship between your group and " +
+					ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW +
+					" has been broken.");
+			group.sendGroupMessage(ChatColor.RED + player.getDisplayName() +
+					ChatColor.RED + " has broken the friendship between your group and the group " +
+					ChatColor.DARK_RED + otherGroup.getName() + ChatColor.RED + "!", player);
+			otherGroup.sendGroupMessage(ChatColor.RED + player.getDisplayName() +
+					ChatColor.RED + " from the group " + ChatColor.DARK_RED + group.getName() +
+					ChatColor.RED + " has broken the friendship with your group!");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "You no longer consider the group " +
+					ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW + " friendly.");
+			group.sendGroupMessage(ChatColor.RED + player.getDisplayName() +
+					ChatColor.YELLOW + " no longer considers the group " +
+					ChatColor.GOLD + otherGroup.getName() + ChatColor.YELLOW + " friendly", player);
+			otherGroup.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName() +
+					ChatColor.YELLOW + " from the group " + ChatColor.GOLD + group.getName() +
+					ChatColor.YELLOW + " no longer wants to be friends with your group.");
+		}
+	}
+
 }

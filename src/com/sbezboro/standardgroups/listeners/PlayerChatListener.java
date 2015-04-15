@@ -65,9 +65,12 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 				StandardPlayer onlinePlayer = plugin.getStandardPlayer(recipient);
 
 				String playerFormat = format;
+				Group onlinePlayerGroup = groupManager.getPlayerGroup(onlinePlayer);
 
-				if (groupManager.getPlayerGroup(onlinePlayer) == group) {
+				if (onlinePlayerGroup == group) {
 					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.GREEN) + "[");
+				} else if (onlinePlayerGroup.isMutualFriendship(group)) {
+					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.DARK_AQUA) + "[");
 				} else {
 					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.YELLOW) + "[");
 				}

@@ -1,6 +1,7 @@
 package com.sbezboro.standardgroups.model;
 
 import com.sbezboro.standardgroups.StandardGroups;
+import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.persistence.PersistedListProperty;
@@ -23,6 +24,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedListProperty<Claim> claims;
 	private PersistedListProperty<Lock> locks;
 	private PersistedListProperty<String> chatPlayerUuids;
+	private PersistedListProperty<String> friendGroupUids;
 
 	private PersistedProperty<String> uid;
 	private PersistedProperty<Long> established;
@@ -32,6 +34,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	private Map<String, Claim> locationToClaimMap;
 	private Map<String, Lock> locationToLockMap;
+	private List<Group> groupsThatFriend;
 
 	public Group(FileStorage storage, String name) {
 		super(storage, name);
@@ -53,6 +56,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	public void initialize() {
 		this.locationToLockMap = new HashMap<String, Lock>();
 		this.locationToClaimMap = new HashMap<String, Claim>();
+		this.groupsThatFriend = new ArrayList<Group>();
 	}
 
 	@Override
@@ -63,6 +67,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
 		chatPlayerUuids = createList(String.class, "chat-player-uuids");
+		friendGroupUids = createList(String.class, "friend-group-ids");
 
 		uid = createProperty(String.class, "uid");
 		established = createProperty(Long.class, "established");
@@ -235,7 +240,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return locationToClaimMap.get(Claim.getLocationKey(location));
 	}
 
-	public List<Lock>getLocks() {
+	public List<Lock> getLocks() {
 		return locks.getList();
 	}
 
@@ -397,6 +402,82 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return result;
 	}
 
+	public void removeFriendships() {
+		// Remove friend status of other groups to this group
+		for (Group group : groupsThatFriend) {
+			group.getFriendedGroupUids().remove(getUid());
+		}
+	}
+
+	public void setFriend(Group otherGroup) {
+		friendGroupUids.add(otherGroup.getUid());
+		otherGroup.addGroupThatFriends(this);
+	}
+
+	public void unfriend(Group otherGroup) {
+		friendGroupUids.remove(otherGroup.getUid());
+		otherGroup.removeGroupThatFriends(this);
+	}
+
+	public boolean isGroupFriended(Group otherGroup) {
+		return friendGroupUids.contains(otherGroup.getUid());
+	}
+
+	public boolean isMutualFriendship(Group otherGroup) {
+		return isGroupFriended(otherGroup) && otherGroup.isGroupFriended(this);
+	}
+
+	public List<String> getFriendedGroupUids() {
+		return friendGroupUids.getList();
+	}
+
+	public List<Group> getFriendedGroups() {
+		List<Group> groups = new ArrayList<Group>();
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+
+		for (String uid : getFriendedGroupUids()) {
+			Group group = groupManager.getGroupByUid(uid);
+
+			if (group == null) {
+				StandardGroups.getPlugin().getLogger().severe("Group " + getName() + " still friends invalid group " + uid);
+			} else {
+				groups.add(group);
+			}
+		}
+
+		return groups;
+	}
+
+	public List<Group> getMutuallyFriendlyGroups() {
+		List<Group> groups = new ArrayList<Group>();
+
+		for (Group group : getFriendedGroups()) {
+			if (group.isGroupFriended(this)) {
+				groups.add(group);
+			}
+		}
+
+		return groups;
+	}
+
+	public List<String> getMutuallyFriendedGroupUids() {
+		List<String> mutuallyFriendedGroupUids = new ArrayList<String>();
+
+		for (Group group : getMutuallyFriendlyGroups()) {
+			mutuallyFriendedGroupUids.add(group.getUid());
+		}
+
+		return mutuallyFriendedGroupUids;
+	}
+
+	public void addGroupThatFriends(Group group) {
+		groupsThatFriend.add(group);
+	}
+
+	public void removeGroupThatFriends(Group group) {
+		groupsThatFriend.remove(group);
+	}
+
 	@Override
 	public int compareTo(Group other) {
 		if (getMemberUuids().size() == other.getMemberUuids().size()) {
@@ -422,7 +503,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		info.put("moderator_uuids", getModeratorUuids());
 		info.put("member_uuids", getMemberUuids());
 
+		info.put("friendly_group_uids", getMutuallyFriendedGroupUids());
+
 		return info;
 	}
-
 }

@@ -41,6 +41,8 @@ public class GroupsCommand extends SubPluginCommand<StandardGroups> {
 		addSubCommand(new MapCommand(plugin, this));
 		addSubCommand(new ShowCommand(plugin, this));
 		addSubCommand(new UninviteCommand(plugin, this));
+		addSubCommand(new FriendCommand(plugin, this));
+		addSubCommand(new UnfriendCommand(plugin, this));
 		addSubCommand(new HelpCommand(plugin, this, subCommands.values()));
 	}
 

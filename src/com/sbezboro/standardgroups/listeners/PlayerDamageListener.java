@@ -57,10 +57,14 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 					}
 				}
 
-				if (damagerGroup != null && damagerGroup == victimGroup) {
-					damager.sendMessage(ChatColor.YELLOW + "You can't harm a fellow group member.");
-					event.setCancelled(true);
-					return;
+				if (damagerGroup != null && victimGroup != null) {
+					if (damagerGroup == victimGroup) {
+						damager.sendMessage(ChatColor.YELLOW + "You can't harm a fellow group member.");
+						event.setCancelled(true);
+					} else if (damagerGroup.isMutualFriendship(victimGroup)) {
+						damager.sendMessage(ChatColor.YELLOW + "You can't harm a group member in a friendly group.");
+						event.setCancelled(true);
+					}
 				}
 			}
 		} else if (victim != null) {
