@@ -31,21 +31,21 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 
 		GroupManager groupManager = subPlugin.getGroupManager();
 
-		Group group = groupManager.getPlayerGroup(player);
+		Group chatPlayerGroup = groupManager.getPlayerGroup(player);
 
 		String format = event.getFormat();
 		String message = event.getMessage();
 
 		event.setCancelled(true);
 
-		if (group != null && group.isGroupChat(player)) {
+		if (chatPlayerGroup != null && chatPlayerGroup.isGroupChat(player)) {
 			format = ChatColor.GREEN + "(To group) " + ChatColor.AQUA + "%s" + ChatColor.RESET + ": %s";
 
 			Bukkit.getConsoleSender().sendMessage(String.format(
-					format.replace("(To group)", "(To group " + group.getName() + ")"),
+					format.replace("(To group)", "(To group " + chatPlayerGroup.getName() + ")"),
 					player.getDisplayName(), message));
 
-			for (StandardPlayer otherPlayer : group.getPlayers()) {
+			for (StandardPlayer otherPlayer : chatPlayerGroup.getPlayers()) {
 				if (otherPlayer.isOnline()) {
 
 					otherPlayer.sendMessage(String.format(format, player.getDisplayName(), message));
@@ -53,8 +53,8 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 			}
 		} else {
 			String identifier = groupManager.getGroupIdentifier(player);
-			if (group != null) {
-				identifier += "[" + group.getName() + "] ";
+			if (chatPlayerGroup != null) {
+				identifier += "[" + chatPlayerGroup.getName() + "] ";
 			}
 
 			format = format.replace("[GROUP]", identifier);
@@ -67,9 +67,12 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 				String playerFormat = format;
 				Group onlinePlayerGroup = groupManager.getPlayerGroup(onlinePlayer);
 
-				if (onlinePlayerGroup != null && onlinePlayerGroup == group) {
+				if (onlinePlayerGroup != null &&
+						onlinePlayerGroup == chatPlayerGroup) {
 					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.GREEN) + "[");
-				} else if (onlinePlayerGroup != null && onlinePlayerGroup.isMutualFriendship(group)) {
+				} else if (onlinePlayerGroup != null &&
+						chatPlayerGroup != null &&
+						onlinePlayerGroup.isMutualFriendship(chatPlayerGroup)) {
 					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.DARK_AQUA) + "[");
 				} else {
 					playerFormat = playerFormat.replace("[", String.valueOf(ChatColor.YELLOW) + "[");
