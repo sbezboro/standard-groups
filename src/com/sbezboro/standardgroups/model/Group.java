@@ -46,7 +46,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		super(storage, name);
 
 		this.established.setValue(established);
-		this.maxClaims.setValue(10);
+		this.maxClaims.setValue(StandardGroups.getPlugin().getGroupStartingLand());
 		this.leaderUuid.setValue(leader.getUuidString());
 		this.memberUuids.add(leader.getUuidString());
 
