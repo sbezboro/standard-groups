@@ -154,14 +154,21 @@ public class GroupManager extends BaseManager {
 				group.setLeader(firstMember);
 			}
 
+			List<String> friendedGroupUidsToRemove = new ArrayList<String>();
 			for (String uid : group.getFriendedGroupUids()) {
 				Group otherGroup = getGroupByUid(uid);
 
 				if (otherGroup == null) {
 					plugin.getLogger().severe("Group " + group.getName() + " has an invalid friended group " + uid);
+					friendedGroupUidsToRemove.add(uid);
 				} else {
 					otherGroup.addGroupThatFriends(group);
 				}
+			}
+
+			if (!friendedGroupUidsToRemove.isEmpty()) {
+				group.getFriendedGroupUids().removeAll(friendedGroupUidsToRemove);
+				group.save();
 			}
 		}
 	}
