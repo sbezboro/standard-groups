@@ -223,7 +223,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	public void unclaim(Claim claim) {
 		for (Lock lock : new ArrayList<Lock>(getLocks())) {
 			if (locationToClaimMap.get(Claim.getLocationKey(lock.getLocation())) == claim) {
-				locks.remove(lock);
+				locks.remove(lock, false);
 
 				locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
 			}
