@@ -85,6 +85,11 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		Group group = groupManager.getGroupByLocation(location);
 
 		if (group != null) {
+			// Allow doors in safe or neutral area
+			if (groupManager.isWoodenDoor(location.getBlock()) && (group.isSafeArea() || group.isNeutralArea())) {
+				return;
+			}
+
 			List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
 			Lock lock = null;
 

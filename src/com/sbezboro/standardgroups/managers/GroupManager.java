@@ -342,7 +342,7 @@ public class GroupManager extends BaseManager {
 		group.removeMember(player);
 	}
 
-	private boolean isWoodenDoor(Block block) {
+	public boolean isWoodenDoor(Block block) {
 		return WOODEN_DOOR_BLOCKS.contains(block.getType());
 	}
 
@@ -1065,7 +1065,7 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		} else {
-			group = matchGroupByUsernameOrGroupName(player, usernameOrGroupName);
+			group = matchGroupByUsernameOrGroupName(sender, usernameOrGroupName);
 
 			if (group == null) {
 				return;
