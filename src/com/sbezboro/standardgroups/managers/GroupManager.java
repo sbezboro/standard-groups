@@ -32,20 +32,30 @@ import java.util.regex.Pattern;
 public class GroupManager extends BaseManager {
 
 	@SuppressWarnings("serial")
-	private static final HashSet<Material> PROTECTED_BLOCKS = new HashSet<Material>() {{
-		add(Material.CHEST);
+	private static final HashSet<Material> WOODEN_DOOR_BLOCKS = new HashSet<Material>() {{
 		add(Material.WOODEN_DOOR);
 		add(Material.SPRUCE_DOOR);
 		add(Material.ACACIA_DOOR);
 		add(Material.BIRCH_DOOR);
 		add(Material.DARK_OAK_DOOR);
 		add(Material.JUNGLE_DOOR);
+	}};
+
+	@SuppressWarnings("serial")
+	private static final HashSet<Material> FENCE_GATE_BLOCKS = new HashSet<Material>() {{
 		add(Material.FENCE_GATE);
 		add(Material.SPRUCE_FENCE_GATE);
 		add(Material.ACACIA_FENCE_GATE);
 		add(Material.BIRCH_FENCE_GATE);
 		add(Material.DARK_OAK_FENCE_GATE);
 		add(Material.JUNGLE_FENCE_GATE);
+	}};
+
+	@SuppressWarnings("serial")
+	private static final HashSet<Material> PROTECTED_BLOCKS = new HashSet<Material>() {{
+		addAll(WOODEN_DOOR_BLOCKS);
+		addAll(FENCE_GATE_BLOCKS);
+		add(Material.CHEST);
 		add(Material.TRAP_DOOR);
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
@@ -73,19 +83,19 @@ public class GroupManager extends BaseManager {
 	}};
 
 	@SuppressWarnings("serial")
-	private static final HashSet<Material> WOODEN_DOOR_BLOCKS = new HashSet<Material>() {{
-		add(Material.WOODEN_DOOR);
-		add(Material.SPRUCE_DOOR);
-		add(Material.ACACIA_DOOR);
-		add(Material.BIRCH_DOOR);
-		add(Material.DARK_OAK_DOOR);
-		add(Material.JUNGLE_DOOR);
-	}};
-
-	@SuppressWarnings("serial")
 	private static final HashSet<EntityType> PROTECTED_ENTITIES = new HashSet<EntityType>() {{
 		add(EntityType.ITEM_FRAME);
 		add(EntityType.ARMOR_STAND);
+	}};
+
+	@SuppressWarnings("serial")
+	private static final HashSet<Material> WHITELISTED_SAFEAREA_BLOCKS = new HashSet<Material>() {{
+		addAll(WOODEN_DOOR_BLOCKS);
+		addAll(FENCE_GATE_BLOCKS);
+		add(Material.NOTE_BLOCK);
+		add(Material.STONE_BUTTON);
+		add(Material.LEVER);
+		add(Material.TRAP_DOOR);
 	}};
 
 	public static final int GROUP_REMOVAL_TASK_PERIOD = 1200; //seconds
@@ -342,8 +352,12 @@ public class GroupManager extends BaseManager {
 		group.removeMember(player);
 	}
 
-	public boolean isWoodenDoor(Block block) {
+	private boolean isWoodenDoor(Block block) {
 		return WOODEN_DOOR_BLOCKS.contains(block.getType());
+	}
+
+	public boolean isWhitelistedSafeareaBlock(Block block) {
+		return WHITELISTED_SAFEAREA_BLOCKS.contains(block.getType());
 	}
 
 	public List<Lock> getLocksAffectedByBlock(Location location) {
