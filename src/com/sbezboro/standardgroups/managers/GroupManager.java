@@ -1148,6 +1148,11 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
+		if (!group.canLock(location)) {
+			player.sendMessage("There are too many locks in this claim already.");
+			return;
+		}
+
 		group.lock(player, location);
 
 		player.sendMessage(ChatColor.YELLOW + "You have locked this block for yourself.");

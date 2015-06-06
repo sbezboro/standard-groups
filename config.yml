@@ -5,3 +5,4 @@ group-land-growth-days: 7
 group-land-growth-limit: 80
 group-starting-land: 5
 group-auto-kick-days: 14
+max-locks-per-chunk: 50

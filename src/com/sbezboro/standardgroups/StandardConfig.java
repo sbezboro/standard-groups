@@ -16,6 +16,7 @@ public class StandardConfig {
 	private int groupLandGrowthLimit;
 	private int groupStartingLand;
 	private int groupAutoKickDays;
+	private int maxLocksPerChunk;
 
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
@@ -31,6 +32,7 @@ public class StandardConfig {
 		groupLandGrowthLimit = config.getInt("group-land-growth-limit");
 		groupStartingLand = config.getInt("group-starting-land");
 		groupAutoKickDays = config.getInt("group-auto-kick-days");
+		maxLocksPerChunk = config.getInt("max-locks-per-chunk");
 	}
 
 	public boolean isDebug() {
@@ -63,5 +65,9 @@ public class StandardConfig {
 
 	public int getGroupAutoKickDays() {
 		return groupAutoKickDays;
+	}
+
+	public int getMaxLocksPerChunk() {
+		return maxLocksPerChunk;
 	}
 }

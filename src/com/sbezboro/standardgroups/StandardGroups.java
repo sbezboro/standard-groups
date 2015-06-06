@@ -156,6 +156,10 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	public int getGroupAutoKickDays() {
 		return config.getGroupAutoKickDays();
 	}
+
+	public int getMaxLocksPerChunk() {
+		return config.getMaxLocksPerChunk();
+	}
 	
 	public GroupManager getGroupManager() {
 		return groupManager;

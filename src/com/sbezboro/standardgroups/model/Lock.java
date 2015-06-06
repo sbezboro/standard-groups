@@ -20,6 +20,9 @@ public class Lock extends PersistableImpl implements Persistable {
 	private LockType type;
 	private boolean publicLock;
 
+	private String locationKey;
+	private String chunkKey;
+
 	private Group group;
 
 	public static enum LockType {
@@ -39,6 +42,9 @@ public class Lock extends PersistableImpl implements Persistable {
 
 		this.type = LockType.INDIVIDUAL;
 		this.publicLock = false;
+
+		this.locationKey = MiscUtil.getLocationKey(location);
+		this.chunkKey = MiscUtil.getChunkKey(location.getChunk());
 	}
 
 	@Override
@@ -55,6 +61,10 @@ public class Lock extends PersistableImpl implements Persistable {
 		if (memberUuids == null) {
 			memberUuids = new ArrayList<String>();
 		}
+
+		Location realLocation = location.getLocation();
+		locationKey = MiscUtil.getLocationKey(realLocation);
+		chunkKey = MiscUtil.getChunkKey(realLocation.getChunk());
 	}
 
 	@Override
@@ -122,6 +132,14 @@ public class Lock extends PersistableImpl implements Persistable {
 
 	public void setPublic(boolean publicLock) {
 		this.publicLock = publicLock;
+	}
+
+	public String getLocationKey() {
+		return locationKey;
+	}
+
+	public String getChunkKey() {
+		return chunkKey;
 	}
 
 }

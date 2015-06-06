@@ -33,6 +33,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
+	private Map<String, Integer> chunkToLockCountMap;
 	private Map<String, Lock> locationToLockMap;
 	private List<Group> groupsThatFriend;
 
@@ -55,6 +56,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	public void initialize() {
 		this.locationToLockMap = new HashMap<String, Lock>();
+		this.chunkToLockCountMap = new HashMap<String, Integer>();
 		this.locationToClaimMap = new HashMap<String, Claim>();
 		this.groupsThatFriend = new ArrayList<Group>();
 	}
@@ -106,7 +108,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		for (Lock lock : locks) {
 			lock.setGroup(this);
 
-			locationToLockMap.put(MiscUtil.getLocationKey(lock.getLocation()), lock);
+			locationToLockMap.put(lock.getLocationKey(), lock);
+			incrementLockCount(lock.getChunkKey());
 		}
 
 		if (uid.getValue() == null || uid.getValue().length() == 0) {
@@ -225,7 +228,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 			if (locationToClaimMap.get(Claim.getLocationKey(lock.getLocation())) == claim) {
 				locks.remove(lock, false);
 
-				locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
+				locationToLockMap.remove(lock.getLocationKey());
 			}
 		}
 
@@ -252,7 +255,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		Lock lock = new Lock(player, location, this);
 		locks.add(lock);
 
-		locationToLockMap.put(MiscUtil.getLocationKey(location), lock);
+		locationToLockMap.put(lock.getLocationKey(), lock);
+		incrementLockCount(lock.getChunkKey());
 
 		this.save();
 
@@ -262,13 +266,34 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	public void unlock(Lock lock) {
 		locks.remove(lock);
 
-		locationToLockMap.remove(MiscUtil.getLocationKey(lock.getLocation()));
+		locationToLockMap.remove(lock.getLocationKey());
+		decrementLockCount(lock.getChunkKey());
 
 		this.save();
 	}
 
+	public boolean canLock(Location location) {
+		Integer lockCount = chunkToLockCountMap.get(MiscUtil.getChunkKey(location.getChunk()));
+		return lockCount == null || lockCount < StandardGroups.getPlugin().getMaxLocksPerChunk();
+	}
+
+	public void incrementLockCount(String chunkKey) {
+		Integer oldValue = chunkToLockCountMap.get(chunkKey);
+
+		if (oldValue == null) {
+			oldValue = 0;
+		}
+
+		chunkToLockCountMap.put(chunkKey, oldValue + 1);
+	}
+
+	public void decrementLockCount(String chunkKey) {
+		chunkToLockCountMap.put(chunkKey, chunkToLockCountMap.get(chunkKey) - 1);
+	}
+
 	public void clearLocks() {
 		this.locationToLockMap.clear();
+		this.chunkToLockCountMap.clear();
 		this.locks.clear();
 	}
 	
