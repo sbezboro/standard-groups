@@ -233,7 +233,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 
 		claims.remove(claim);
-
+		chunkToLockCountMap.put(claim.getLocationKey(), 0);
 		locationToClaimMap.remove(claim.getLocationKey());
 		
 		this.save();

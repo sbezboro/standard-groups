@@ -1323,6 +1323,11 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
+		if (!PROTECTED_BLOCKS.contains(block.getType())) {
+			player.sendMessage("This block isn't lockable.");
+			return;
+		}
+
 		Location location = block.getLocation();
 
 		Group testGroup = getGroupByLocation(location);
@@ -1337,6 +1342,10 @@ public class GroupManager extends BaseManager {
 		Lock lock;
 
 		if (locks.isEmpty()) {
+			if (!group.canLock(location)) {
+				player.sendMessage("There are too many locks in this claim already.");
+				return;
+			}
 			lock = group.lock(player, location);
 		} else {
 			lock = locks.get(0);
