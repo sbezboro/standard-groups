@@ -30,7 +30,7 @@ public class GroupRemovalTask extends BaseTask {
 			for (StandardPlayer player : group.getPlayers()) {
 				if (!player.isOnline()) {
 					long diff = curTime - player.getLastPlayed();
-					long kickPeriod = subPlugin.getGroupAutoKickDays() * 86400000;
+					long kickPeriod = subPlugin.getGroupAutoKickDays() * 86400000l;
 					long warnPeriodMin = kickPeriod - 86400000;
 					long warnPeriodMax = warnPeriodMin + (GroupManager.GROUP_REMOVAL_TASK_PERIOD * 1000);
 
