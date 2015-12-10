@@ -5,8 +5,8 @@ import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.TravelAgent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -25,9 +25,12 @@ public class PlayerPortalListener extends SubPluginEventListener<StandardGroups>
 
 		Group group = subPlugin.getGroupManager().getGroupByLocation(to);
 
+		TravelAgent agent = event.getPortalTravelAgent();
+		boolean destinationPortalExists = agent.findPortal(to) != null;
+
 		if (
 			cause == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL &&
-			group != null &&
+			!destinationPortalExists &&
 			shouldPreventPortalInGroupLand(player, group)
 		) {
 			player.sendMessage("Portal destination in group land. Please shift portal location!");
@@ -36,6 +39,10 @@ public class PlayerPortalListener extends SubPluginEventListener<StandardGroups>
 	}
 
 	private boolean shouldPreventPortalInGroupLand(StandardPlayer player, Group group) {
+		if (group == null) {
+			return false;
+		}
+
 		return group.isNeutralArea() || group.isSafeArea() || !group.isMember(player);
 	}
 }
