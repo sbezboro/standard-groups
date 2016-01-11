@@ -9,7 +9,9 @@ import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPlugin;
 import com.sbezboro.standardplugin.commands.ICommand;
+import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -97,6 +99,38 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		result.put("groups", groups);
 
 		return result;
+	}
+
+	@Override
+	public String formatWebChatName(StandardPlayer sender, StandardPlayer receiver, String name) {
+		Group senderGroup = groupManager.getPlayerGroup(sender);
+
+		if (senderGroup == null) {
+			return name;
+		}
+
+		Group receiverGroup = null;
+		if (receiver != null) {
+			receiverGroup = groupManager.getPlayerGroup(receiver);
+		}
+
+		String identifier = groupManager.getGroupIdentifier(sender);
+		identifier += "[" + senderGroup.getName() + "]";
+
+		if (receiverGroup != null &&
+				receiverGroup == senderGroup) {
+			name = name.replace(name, ChatColor.GREEN + identifier + " " + ChatColor.AQUA + name);
+		} else if (receiverGroup != null &&
+				receiverGroup.isMutualFriendship(senderGroup)) {
+			name = name.replace(name, ChatColor.DARK_AQUA + identifier + " " + ChatColor.AQUA + name);
+		} else if (receiver != null) {
+			name = name.replace(name, ChatColor.YELLOW + identifier + " " + ChatColor.AQUA + name);
+		} else {
+			// null receiver means console, don't use color for group name
+			name = name.replace(name, ChatColor.RESET + identifier + " " + ChatColor.AQUA + name);
+		}
+
+		return name;
 	}
 
 	@Override
