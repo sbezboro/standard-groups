@@ -103,7 +103,11 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 
 	@Override
 	public String formatWebChatName(StandardPlayer sender, StandardPlayer receiver, String name) {
-		Group senderGroup = groupManager.getPlayerGroup(sender);
+		Group senderGroup = null;
+
+		if (sender != null) {
+			senderGroup = groupManager.getPlayerGroup(sender);
+		}
 
 		if (senderGroup == null) {
 			return name;
