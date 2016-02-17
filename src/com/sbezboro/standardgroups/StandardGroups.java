@@ -10,6 +10,7 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPlugin;
 import com.sbezboro.standardplugin.commands.ICommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+import com.sbezboro.standardplugin.persistence.PersistedPropertyDefinition;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.PluginManager;
@@ -135,6 +136,12 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		}
 
 		return name;
+	}
+
+	@Override
+	public List<PersistedPropertyDefinition> extraPlayerPropertyDefinitions() {
+		// TODO: add some properties
+		return new ArrayList<PersistedPropertyDefinition>();
 	}
 
 	@Override
