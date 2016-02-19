@@ -17,6 +17,9 @@ public class StandardConfig {
 	private int groupStartingLand;
 	private int groupAutoKickDays;
 	private int maxLocksPerChunk;
+	private float groupPowerGrowth;
+	private float groupPowerMinValue;
+	private float groupPowerMaxValue;
 
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
@@ -33,6 +36,9 @@ public class StandardConfig {
 		groupStartingLand = config.getInt("group-starting-land");
 		groupAutoKickDays = config.getInt("group-auto-kick-days");
 		maxLocksPerChunk = config.getInt("max-locks-per-chunk");
+		groupPowerGrowth = config.getFloat("group-power-growth");
+		groupPowerMinValue = config.getFloat("group-power-min-value");
+		groupPowerMaxValue = config.getFloat("group-power-max-value");
 	}
 
 	public boolean isDebug() {
@@ -69,5 +75,17 @@ public class StandardConfig {
 
 	public int getMaxLocksPerChunk() {
 		return maxLocksPerChunk;
+	}
+	
+	public float getGroupPowerGrowth() {
+		return groupPowerGrowth;
+	}
+	
+	public float getGroupPowerMinValue() {
+		return groupPowerMinValue;
+	}
+	
+	public float getGroupPowerMaxValue() {
+		return groupPowerMaxValue;
 	}
 }
