@@ -27,7 +27,7 @@ public class PowerRestorationTask extends BaseTask {
 			float numNonAltMembers = group.getNonAltPlayerCount();
 			float onlineModifier = (float)(group.getNonAltOnlineCount()) / numMembers;
 			float memberModifier = 3.0f - 6.0f/(numNonAltMembers+2.0f);
-			float altPenalty = Math.max((numMembers-numNonAltMembers)/numMembers - 0.25f, 0.0f);
+			float altPenalty = 1.333333f * Math.max((numMembers-numNonAltMembers)/numMembers - 0.25f, 0.0f);
 			group.addPower(restoreAmount * (memberModifier * onlineModifier - altPenalty));
 		}
 	}
