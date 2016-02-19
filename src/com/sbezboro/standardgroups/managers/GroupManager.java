@@ -1415,6 +1415,10 @@ public class GroupManager extends BaseManager {
 			player.sendMessage("There are too many locks in this claim already.");
 			return;
 		}
+		
+		if (group.getPower() < LOCK_POWER_THRESHOLD) {
+			player.sendMessage(ChatColor.RED + "Your group's power is too low to lock more blocks.");
+		}
 
 		group.lock(player, location);
 
