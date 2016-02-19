@@ -121,6 +121,8 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 							group.unlock(lock);
 							group.addPower(0.5f);
 						}
+						
+						group.sendGroupMessage(ChatColor.RED + "A lock of your group has been broken.");
 					} else {
 						player.sendMessage(ChatColor.LIGHT_RED + "Cannot yet break locks in the territory of " + group.getName());
 						event.setCancelled(true);
