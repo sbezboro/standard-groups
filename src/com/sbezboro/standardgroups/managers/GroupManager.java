@@ -8,6 +8,7 @@ import com.sbezboro.standardgroups.net.Notifications;
 import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
 import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
+import com.sbezboro.standardgroups.tasks.PowerRestorationTask;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
@@ -97,6 +98,217 @@ public class GroupManager extends BaseManager {
 		add(Material.LEVER);
 		add(Material.TRAP_DOOR);
 	}};
+	
+	@SuppressWarnings("serial")
+	private static final Map<Material, float> MATERIAL_POWER_THRESHOLDS = new Map<Material, float>() {{
+		// not breakable
+		put(Material.BED_BLOCK, -999.0f);
+		// -11.0f
+		put(Material.BEACON, -11.0f);
+		put(Material.DRAGON_EGG, -11.0f);
+		// -9.0f
+		put(Material.OBSIDIAN, -9.0f);
+		// -7.0f
+		put(Material.ENCHANTMENT_TABLE, -7.0f);
+		put(Material.ENDER_CHEST, -7.0f);
+		put(Material.MOB_SPAWNER, -7.0f);
+		put(Material.TNT, -7.0f);
+		// -6.0f
+		put(Material.COAL_BLOCK, -6.0f);
+		put(Material.DIAMOND_BLOCK, -6.0f);
+		put(Material.EMERALD_BLOCK, -6.0f);
+		put(Material.ENDER_STONE, -6.0f);
+		put(Material.GOLD_BLOCK, -6.0f);
+		put(Material.IRON_BLOCK, -6.0f);
+		put(Material.LAPIS_BLOCK, -6.0f);
+		put(Material.QUARTZ_BLOCK, -6.0f);
+		put(Material.QUARTZ_STAIRS, -6.0f);
+		put(Material.REDSTONE_BLOCK, -6.0f);
+		// -5.0f
+		put(Material.ACTIVATOR_RAIL, -5.0f);
+		put(Material.ANVIL, -5.0f);
+		put(Material.CAULDRON, -5.0f);
+		put(Material.DETECTOR_RAIL, -5.0f);
+		put(Material.COAL_ORE, -5.0f);
+		put(Material.DIAMOND_ORE, -5.0f);
+		put(Material.EMERALD_ORE, -5.0f);
+		put(Material.GOLD_ORE, -5.0f);
+		put(Material.GOLD_PLATE, -5.0f);
+		put(Material.IRON_DOOR_BLOCK, -5.0f);
+		put(Material.IRON_FENCE, -5.0f);
+		put(Material.IRON_ORE, -5.0f);
+		put(Material.IRON_PLATE, -5.0f);
+		put(Material.IRON_TRAPDOOR, -5.0f);
+		put(Material.LAPIS_ORE, -5.0f);
+		put(Material.POWERED_RAIL, -5.0f);
+		put(Material.RAILS, -5.0f);
+		put(Material.QUARTZ_ORE, -5.0f);
+		put(Material.REDSTONE_ORE, -5.0f);
+		// -4.0f
+		put(Material.BRICK, -4.0f);
+		put(Material.BRICK_STAIRS, -4.0f);
+		put(Material.BURNING_FURNACE, -4.0f);
+		put(Material.COBBLE_WALL, -4.0f);
+		put(Material.COBBLESTONE, -4.0f);
+		put(Material.COBBLESTONE_STAIRS, -4.0f);
+		put(Material.FURNACE, -4.0f);
+		put(Material.HARD_CLAY, -4.0f);
+		put(Material.MONSTER_EGG, -4.0f);
+		put(Material.MONSTER_EGGS, -4.0f);
+		put(Material.MOSSY_COBBLESTONE, -4.0f);
+		put(Material.NETHER_BRICK, -4.0f);
+		put(Material.NETHER_BRICK_STAIRS, -4.0f);
+		put(Material.NETHER_FENCE, -4.0f);
+		put(Material.NETHERRACK, -4.0f);
+		put(Material.PRISMARINE, -4.0f);
+		put(Material.RED_SANDSTONE, -4.0f);
+		put(Material.RED_SANDSTONE_STAIRS, -4.0f);
+		put(Material.SANDSTONE, -4.0f);
+		put(Material.SANDSTONE_STAIRS, -4.0f);
+		put(Material.SMOOTH_BRICK, -4.0f);
+		put(Material.SMOOTH_STAIRS, -4.0f);
+		put(Material.STAINED_CLAY, -4.0f);
+		put(Material.STONE, -4.0f);
+		put(Material.STONE_SLAB2, -4.0f);
+		// -3.0f
+		put(Material.BOOKSHELF, -3.0f)
+		put(Material.CHEST, -3.0f);
+		put(Material.DAYLIGHT_DETECTOR, -3.0f);
+		put(Material.DAYLIGHT_DETECTOR_INVERTED, -3.0f);
+		put(Material.DIODE, -3.0f);
+		put(Material.DIODE_BLOCK_OFF, -3.0f);
+		put(Material.DIODE_BLOCK_ON, -3.0f);
+		put(Material.DISPENSER, -3.0f);
+		put(Material.DOUBLE_STEP, -3.0f);
+		put(Material.DOUBLE_STONE_SLAB2, -3.0f);
+		put(Material.DROPPER, -3.0f);
+		put(Material.HOPPER, -3.0f);
+		put(Material.JUKEBOX, -3.0f);
+		put(Material.NOTE_BLOCK, -3.0f);
+		put(Material.PISTON_BASE, -3.0f);
+		put(Material.PISTON_EXTENSION, -3.0f);
+		put(Material.PISTON_MOVING_PIECE, -3.0f);
+		put(Material.PISTON_STICKY_BASE, -3.0f);
+		put(Material.REDSTONE_COMPARATOR, -3.0f);
+		put(Material.REDSTONE_COMPARATOR_OFF, -3.0f);
+		put(Material.REDSTONE_COMPARATOR_ON, -3.0f);
+		put(Material.REDSTONE_LAMP_OFF, -3.0f);
+		put(Material.REDSTONE_LAMP_ON, -3.0f);
+		put(Material.STEP, -3.0f);
+		put(Material.STONE_BUTTON, -3.0f);
+		put(Material.STONE_PLATE, -3.0f);
+		put(Material.TRAPPED_CHEST, -3.0f);
+		// -2.0f
+		put(Material.ACACIA_DOOR, -2.0f);
+		put(Material.ACACIA_FENCE, -2.0f);
+		put(Material.ACACIA_FENCE_GATE, -2.0f);
+		put(Material.ACACIA_STAIRS, -2.0f);
+		put(Material.BIRCH_DOOR, -2.0f);
+		put(Material.BIRCH_FENCE, -2.0f);
+		put(Material.BIRCH_FENCE_GATE, -2.0f);
+		put(Material.BIRCH_WOOD_STAIRS, -2.0f);
+		put(Material.DARK_OAK_DOOR, -2.0f);
+		put(Material.DARK_OAK_FENCE, -2.0f);
+		put(Material.DARK_OAK_FENCE_GATE, -2.0f);
+		put(Material.DARK_OAK_STAIRS, -2.0f);
+		put(Material.FENCE, -2.0f);
+		put(Material.FENCE_GATE, -2.0f);
+		put(Material.JUNGLE_DOOR, -2.0f);
+		put(Material.JUNGLE_FENCE, -2.0f);
+		put(Material.JUNGLE_FENCE_GATE, -2.0f);
+		put(Material.JUNGLE_WOOD_STAIRS, -2.0f);
+		put(Material.LOG, -2.0f);
+		put(Material.LOG_2, -2.0f);
+		put(Material.SLIME_BLOCK, -2.0f);
+		put(Material.SPONGE, -2.0f);
+		put(Material.SPRUCE_DOOR, -2.0f);
+		put(Material.SPRUCE_FENCE, -2.0f);
+		put(Material.SPRUCE_FENCE_GATE, -2.0f);
+		put(Material.SPRUCE_WOOD_STAIRS, -2.0f);
+		put(Material.TRAP_DOOR, -2.0f);
+		put(Material.WOOD, -2.0f);
+		put(Material.WOOD_DOOR, -2.0f);
+		put(Material.WOOD_DOUBLE_STEP, -2.0f);
+		put(Material.WOOD_PLATE, -2.0f);
+		put(Material.WOOD_STAIRS, -2.0f);
+		put(Material.WOOD_STEP, -2.0f);
+		put(Material.WOODEN_DOOR, -2.0f);
+		put(Material.WORKBENCH, -2.0f);
+		// -1.0f
+		put(Material.ARMOR_STAND, -1.0f);
+		put(Material.BREWING_STAND, -1.0f);
+		put(Material.CLAY, -1.0f);
+		put(Material.DIRT, -1.0f);
+		put(Material.GLASS, -1.0f);
+		put(Material.GLOWSTONE, -1.0f);
+		put(Material.GRASS, -1.0f);
+		put(Material.GRAVEL, -1.0f);
+		put(Material.ICE, -1.0f);
+		put(Material.MYCEL, -1.0f);
+		put(Material.PACKED_ICE, -1.0f);
+		put(Material.SAND, -1.0f);
+		put(Material.SNOW_BLOCK, -1.0f);
+		put(Material.SOIL, -1.0f);
+		put(Material.SOUL_SAND, -1.0f);
+		put(Material.STAINED_GLASS, -1.0f);
+		put(Material.STAINED_GLASS_PANE, -1.0f);
+		put(Material.THIN_GLASS, -1.0f);
+		put(Material.WEB, -1.0f);
+		put(Material.WOOL, -1.0f);
+		// -0.5f
+		put(Material.CACTUS, -0.5f);
+		put(Material.CARPET, -0.5f);
+		put(Material.CARROT, -0.5f);
+		put(Material.COCOA, -0.5f);
+		put(Material.CROPS, -0.5f);
+		put(Material.HAY_BLOCK, -0.5f);
+		put(Material.JACK_O_LANTERN, -0.5f);
+		put(Material.LADDER, -0.5f);
+		put(Material.MELON_BLOCK, -0.5f);
+		put(Material.MELON_STEM, -0.5f);
+		put(Material.NETHER_STALK, -0.5f);
+		put(Material.NETHER_WARTS, -0.5f);
+		put(Material.POTATO, -0.5f);
+		put(Material.PUMPKIN, -0.5f);
+		put(Material.PUMPKIN_STEM, -0.5f);
+		put(Material.SEEDS, -0.5f);
+		put(Material.SIGN, -0.5f);
+		put(Material.SIGN_POST, -0.5f);
+		put(Material.SKULL, -0.5f);
+		put(Material.SNOW, -0.5f);
+		put(Material.STANDING_BANNER, -0.5f);
+		put(Material.SUGAR_CANE_BLOCK, -0.5f);
+		put(Material.WALL_BANNER, -0.5f);
+		put(Material.WALL_SIGN, -0.5f);
+		// 0.0f
+		put(Material.BROWN_MUSHROOM, 0.0f);
+		put(Material.CAKE, 0.0f);
+		put(Material.DEAD_BUSH, 0.0f);
+		put(Material.DOUBLE_PLANT, 0.0f);
+		put(Material.FLOWER_POT, 0.0f);
+		put(Material.HUGE_MUSHROOM_1, 0.0f);
+		put(Material.HUGE_MUSHROOM_2, 0.0f);
+		put(Material.LEAVES, 0.0f);
+		put(Material.LEAVES_2, 0.0f);
+		put(Material.LEVER, 0.0f);
+		put(Material.LONG_GRASS, 0.0f);
+		put(Material.RED_MUSHROOM, 0.0f);
+		put(Material.RED_ROSE, 0.0f);
+		put(Material.REDSTONE_TORCH_OFF, 0.0f);
+		put(Material.REDSTONE_TORCH_ON, 0.0f);
+		put(Material.REDSTONE_WIRE, 0.0f);
+		put(Material.SAPLING, 0.0f);
+		put(Material.TORCH, 0.0f);
+		put(Material.TRIPWIRE, 0.0f);
+		put(Material.TRIPWIRE_HOOK, 0.0f);
+		put(Material.VINE, 0.0f);
+		put(Material.WATER_LILY, 0.0f);
+		put(Material.YELLOW_FLOWER, 0.0f);
+	}};
+	
+	public static final float LOCK_POWER_THRESHOLD = -12.0f;
+	
+	public static final float ENTITY_POWER_THRESHOLD = 0.0f;
 
 	public static final int GROUP_REMOVAL_TASK_PERIOD = 1200; //seconds
 
@@ -112,6 +324,7 @@ public class GroupManager extends BaseManager {
 
 	private LandGrowthCheckTask landGrowthCheckTask;
 	private GroupRemovalTask groupRemovalTask;
+	private PowerRestorationTask powerRestorationTask;
 
 	public GroupManager(StandardPlugin plugin, StandardGroups subPlugin, GroupStorage storage) {
 		super(plugin);
@@ -126,6 +339,9 @@ public class GroupManager extends BaseManager {
 
 		groupRemovalTask = new GroupRemovalTask(plugin, subPlugin);
 		groupRemovalTask.runTaskTimer(subPlugin, 2400, GROUP_REMOVAL_TASK_PERIOD * 20);
+		
+		powerRestorationTask = new PowerRestorationTask(plugin, subPlugin);
+		powerRestorationTask.runTaskTimer(subPlugin, 1200, 1200);
 
 		reload();
 	}
@@ -458,6 +674,14 @@ public class GroupManager extends BaseManager {
 		}
 
 		return true;
+	}
+	
+	public float powerThresholdFor(Material material) {
+		float threshold = MATERIAL_POWER_THRESHOLDS.get(material);
+		if (threshold == null) {
+			return 0.0f;
+		}
+		return threshold;
 	}
 	
 	public void createGroup(StandardPlayer player, String groupName) {
@@ -810,6 +1034,11 @@ public class GroupManager extends BaseManager {
 				return;
 			}
 		}
+		
+		if (player.isInPvp() && !isGroupsAdmin(player)) {
+			player.sendMessage(ChatColor.RED + "Cannot claim land while in combat!");
+			return;
+		}
 
 		Claim claim = group.claim(player, location);
 		locationToGroupMap.put(claim.getLocationKey(), group);
@@ -1113,10 +1342,44 @@ public class GroupManager extends BaseManager {
 			sender.sendMessage(ChatColor.YELLOW + "Next land growth: " + ChatColor.RESET +  MiscUtil.friendlyTimestamp(group.getNextGrowth()));
 		}
 
+		sender.sendMessage(ChatColor.YELLOW + "Power: " + ChatColor.RESET + group.getPowerRounded() + " / " + group.getMaxPowerRounded());
 		sender.sendMessage(ChatColor.YELLOW + "Friends: " + ChatColor.RESET + StringUtils.join(friendlyGroupsNames, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Online members: " + ChatColor.RESET + StringUtils.join(onlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Offline members: " + ChatColor.RESET + StringUtils.join(offlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Link: " + ChatColor.RESET + "standardsurvival.com/group/" + group.getName());
+	}
+
+	public void groupPower(CommandSender sender, String usernameOrGroupName) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		Group group;
+		
+		if (usernameOrGroupName == null) {
+			group = getPlayerGroup(player);
+			
+			if (group == null) {
+				player.sendMessage("You must be in a group before you can use that command.");
+				return;
+			}
+		} else {
+			group = matchGroupByUsernameOrGroupName(sender, usernameOrGroupName);
+
+			if (group == null) {
+				return;
+			}
+		}
+
+		float power = group.getPowerRounded();
+		float maxPower = group.getMaxPowerRounded();
+		String powerColor = (power < -10.0f ? ChatColor.RED : (power < 0.0f ? ChatColor.LIGHT_RED : ChatColor.RESET));
+		if (getPlayerGroup(player) == group) {
+			sender.sendMessage(ChatColor.YELLOW + "Your group's current power is " +
+					powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
+		}
+		else {	
+			sender.sendMessage(ChatColor.YELLOW +
+					"The group " + group.getNameWithRelation(player) + ChatColor.YELLOW + " has power " +
+					powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
+		}
 	}
 
 	public void lock(StandardPlayer player, Block block) {
@@ -1151,6 +1414,10 @@ public class GroupManager extends BaseManager {
 		if (!group.canLock(location)) {
 			player.sendMessage("There are too many locks in this claim already.");
 			return;
+		}
+		
+		if (group.getPower() < LOCK_POWER_THRESHOLD) {
+			player.sendMessage(ChatColor.RED + "Your group's power is too low to lock more blocks.");
 		}
 
 		group.lock(player, location);
@@ -1376,8 +1643,9 @@ public class GroupManager extends BaseManager {
 		for (Group group : list) {
 			int online = group.getOnlineCount();
 
-			paginatedOutput.addLine(group.getNameWithRelation(player) + " - " + ChatColor.WHITE +
-					online + " online, " + group.getMemberUuids().size() + " total members");
+			paginatedOutput.addLine(group.getNameWithRelation(player) + ChatColor.WHITE + " - " +
+					online + " / " + group.getPlayerCount() + " online members; ");
+					group.getPowerRounded() + " / " + group.getMaxPowerRounded() + " power");
 		}
 
 		paginatedOutput.show(sender);

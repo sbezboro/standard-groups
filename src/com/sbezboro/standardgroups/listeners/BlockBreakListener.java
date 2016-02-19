@@ -35,6 +35,41 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 		Group group = groupManager.getGroupByLocation(location);
 		
 		if (group != null) {
+			Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
+
+			// Allow players to break one block in front of portals to get out of portal traps
+			if (playerBlock.getType() == Material.PORTAL) {
+				Block targetBlock = event.getBlock();
+
+				byte direction = playerBlock.getData();
+
+				boolean canBreakNearPortal =
+					group == groupManager.getGroupByLocation(player.getLocation()) &&
+					targetBlock.getY() >= playerBlock.getY() &&
+					targetBlock.getY() <= playerBlock.getY() + 1 && (
+						(
+							direction % 2 == 1 &&
+							playerBlock.getX() == targetBlock.getX() &&
+							Math.abs(playerBlock.getZ() - targetBlock.getZ()) == 1
+						) || (
+							direction % 2 == 0 &&
+							playerBlock.getZ() == targetBlock.getZ() &&
+							Math.abs(playerBlock.getX() - targetBlock.getX()) == 1
+						)
+				);
+
+				if (canBreakNearPortal) {
+					List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+					for (Lock lock : locks) {
+						group.unlock(lock);
+					}
+
+					event.setCancelled(false);
+					return;
+				}
+			}
+			
+			
 			if (groupManager.playerInGroup(player, group)) {
 				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
 
@@ -59,6 +94,48 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 						event.setCancelled(true);
 					}
 				}
+			} else if (group.getPower() < 0.0f) {
+				if (groupManager.isGroupsAdmin(player)) {
+					return;
+				}
+				if (player.hasTitle("Alt")) {
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+					event.setCancelled(true);
+					return;
+				}
+				if (event.getBlock().getType() == Material.BED_BLOCK) {
+					player.sendMessage(ChatColor.RED + "Cannot destroy beds in the territory of " + group.getName());
+					event.setCancelled(true);
+					return;
+				}
+				
+				float power = group.getPower();
+				
+				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+
+				if (!locks.isEmpty()) {
+					if (power < groupManager.LOCK_POWER_THRESHOLD) {
+						player.sendMessage(ChatColor.YELLOW + "You broke the enemy's lock on that block.");
+
+						for (Lock lock : locks) {
+							group.unlock(lock);
+							group.addPower(0.5f);
+						}
+						
+						group.sendGroupMessage(ChatColor.RED + "A lock of your group has been broken.");
+					} else {
+						player.sendMessage(ChatColor.LIGHT_RED + "Cannot yet break locks in the territory of " + group.getName());
+						event.setCancelled(true);
+					}
+				} else {
+					Block targetBlock = event.getBlock();
+					if (power >= groupManager.powerThresholdFor(targetBlock.getType()) && !groupManager.isGroupsAdmin(player)) {
+						player.sendMessage(ChatColor.LIGHT_RED + "Cannot yet break this type of block in the territory of " + group.getName());
+						event.setCancelled(true);
+					} else {
+						group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
+					}
+				}
 			} else if (!groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
 				if (group.isSafeArea()) {
@@ -66,40 +143,6 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				} else if (group.isNeutralArea()) {
 					player.sendMessage(ChatColor.RED + "Cannot break blocks in the neutral area");
 				} else {
-					Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
-
-					// Allow players to break one block in front of portals to get out of portal traps
-					if (playerBlock.getType() == Material.PORTAL) {
-						Block targetBlock = event.getBlock();
-
-						byte direction = playerBlock.getData();
-
-						boolean canBreakNearPortal =
-							group == groupManager.getGroupByLocation(player.getLocation()) &&
-							targetBlock.getY() >= playerBlock.getY() &&
-							targetBlock.getY() <= playerBlock.getY() + 1 && (
-								(
-									direction % 2 == 1 &&
-									playerBlock.getX() == targetBlock.getX() &&
-									Math.abs(playerBlock.getZ() - targetBlock.getZ()) == 1
-								) || (
-									direction % 2 == 0 &&
-									playerBlock.getZ() == targetBlock.getZ() &&
-									Math.abs(playerBlock.getX() - targetBlock.getX()) == 1
-								)
-						);
-
-						if (canBreakNearPortal) {
-							List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
-							for (Lock lock : locks) {
-								group.unlock(lock);
-							}
-
-							event.setCancelled(false);
-							return;
-						}
-					}
-
 					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
 				}
 			}

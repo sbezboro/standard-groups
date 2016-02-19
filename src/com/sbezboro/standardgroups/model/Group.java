@@ -30,6 +30,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Long> lastGrowth;
 	private PersistedProperty<Integer> maxClaims;
+	private PersistedProperty<Float> power;
+	private PersistedProperty<Float> maxPower;
 	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
@@ -48,6 +50,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		this.established.setValue(established);
 		this.maxClaims.setValue(StandardGroups.getPlugin().getGroupStartingLand());
+		this.power.setValue(20.0f);
+		this.maxPower.setValue(20.0f);
 		this.leaderUuid.setValue(leader.getUuidString());
 		this.memberUuids.add(leader.getUuidString());
 
@@ -75,6 +79,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		established = createProperty(Long.class, "established");
 		lastGrowth = createProperty(Long.class, "last-growth");
 		maxClaims = createProperty(Integer.class, "max-claims");
+		power = createProperty(Float.class, "power");
+		maxPower = createProperty(Float.class, "max-power");
 		leaderUuid = createProperty(String.class, "leader-uuid");
 	}
 
@@ -148,6 +154,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	public void addMember(StandardPlayer player) {
 		memberUuids.add(player.getUuidString());
 		
+		recalculateMaxPower();
+		
 		this.save();
 	}
 	
@@ -157,6 +165,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		if (isModerator(player)) {
 			moderatorUuids.remove(player.getUuidString());
 		}
+		
+		recalculateMaxPower();
 		
 		this.save();
 	}
@@ -196,6 +206,18 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		return online;
 	}
+
+	public int getNonAltOnlineCount() {
+		int online = 0;
+
+		for (StandardPlayer player : getPlayers()) {
+			if (player.isOnline() && !player.hasTitle("Alt")) {
+				online++;
+			}
+		}
+
+		return online;
+	}
 	
 	public List<StandardPlayer> getPlayers() {
 		ArrayList<StandardPlayer> list = new ArrayList<StandardPlayer>();
@@ -208,6 +230,23 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return list;
 	}
 	
+	public int getPlayerCount() {
+		return memberUuids.getList().size();
+	}
+	
+	public int getNonAltPlayerCount() {
+		int count;
+
+		for (String uuid : memberUuids) {
+			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayerByUUID(uuid);
+			if (!player.hasTitle("Alt")) {
+				count++;
+			}
+		}
+		
+		return count;
+	}
+	
 	public List<Claim> getClaims() {
 		return claims.getList();
 	}
@@ -217,6 +256,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		claims.add(claim);
 
 		locationToClaimMap.put(claim.getLocationKey(), claim);
+		
+		recalculateMaxPower();
 		
 		this.save();
 		
@@ -235,6 +276,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		claims.remove(claim);
 		chunkToLockCountMap.put(claim.getLocationKey(), 0);
 		locationToClaimMap.remove(claim.getLocationKey());
+		
+		recalculateMaxPower();
 		
 		this.save();
 	}
@@ -257,6 +300,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		locationToLockMap.put(lock.getLocationKey(), lock);
 		incrementLockCount(lock.getChunkKey());
+		
+		recalculateMaxPower();
 
 		this.save();
 
@@ -268,6 +313,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		locationToLockMap.remove(lock.getLocationKey());
 		decrementLockCount(lock.getChunkKey());
+		
+		recalculateMaxPower();
 
 		this.save();
 	}
@@ -369,6 +416,91 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	public void setMaxClaims(int maxClaims) {
 		this.maxClaims.setValue(maxClaims);
+	}
+	
+	public float getPower() {
+		return power.getValue();
+	}
+	
+	public String getPowerRounded() {
+		return String.format("%.2f", getPower());
+	}
+	
+	public void addPower(float difference) {
+		float oldAmount = getPower();
+		
+		float minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
+		float maxAmount = Math.min(StandardGroups.getPlugin().getGroupPowerMaxValue(), getMaxPower());
+		
+		float newAmount = Math.max(oldAmount + difference, minAmount);
+		newAmount = Math.min(newAmount, maxAmount);
+		
+		power.setValue(newAmount);
+		
+		if (oldAmount >= 0.0f && newAmount < 0.0f) {
+			sendGroupMessage(ChatColor.LIGHT_RED + "Your group's power has fallen below 0.");
+		}
+		if (oldAmount >= -6.0f && newAmount < -6.0f) {
+			sendGroupMessage(ChatColor.RED + "Your group's power is now getting dangerously low.");
+		}
+		if (oldAmount >= groupManager.LOCK_POWER_THRESHOLD && newAmount < groupManager.LOCK_POWER_THRESHOLD) {
+			sendGroupMessage(ChatColor.RED + "The locks of your group have become breakable.");
+		}
+		if (oldAmount <= groupManager.LOCK_POWER_THRESHOLD && newAmount > groupManager.LOCK_POWER_THRESHOLD) {
+			sendGroupMessage(ChatColor.YELLOW + "The locks of your group are now functional again.");
+		}
+		if (oldAmount <= 0.0f && newAmount > 0.0f) {
+			sendGroupMessage(ChatColor.YELLOW + "Your group's power has returned to positive.");
+		}
+	}
+	
+	public void setPower(float power) {
+		this.power.setValue(power);
+	}
+	
+	public float getMaxPower() {
+		return maxPower.getValue();
+	}
+	
+	public String getMaxPowerRounded() {
+		return String.format("%.2f", getMaxPower());
+	}
+	
+	public void setMaxPower(float maxPower) {
+		this.maxPower.setValue(maxPower);
+		
+		if (getPower() > maxPower) {
+			power.setValue(maxPower);
+		}
+	}
+	
+	public void recalculateMaxPower() {
+		float claimDifference = (float)(getMaxClaims() - StandardGroups.getPlugin().getGroupStartingLand());
+		float maxClaimDifference = (float)(StandardGroups.getPlugin().getGroupLandGrowthLimit() - StandardGroups.getPlugin().getGroupStartingLand());
+		float relTime = claimDifference / maxClaimDifference;
+		float timePenalty = 7.0f - 7.0f * (1.0f - relTime) * (1.0f - relTime);
+		
+		float numMembers = (float)getPlayerCount();
+		float numNonAltMembers = (float)getNonAltPlayerCount();
+		float memberPenalty = (numMembers <= 1.0f ? 0.0f : ( 5.0f - 6.0f/numMembers ));
+		
+		float numClaims = (float)(getClaims().size());
+		float bonusClaimThreshold = Math.min(numNonAltMembers - 1.0f, 6.0f);
+		float claimPenalty = (numClaims <= 2.0f + bonusClaimThreshold ? 0.0f : ( 4.0f - 49.0f / (12.0f*(numClaims-bonusClaimThreshold)-22.0f) ));
+		
+		float numLocks = (float)(getLocks().size());
+		float bonusLockThreshold = Math.min(2.0f * numNonAltMembers - 2.0f, 10.0f);
+		float lockPenalty = (numLocks <= 5.0f + bonusLockThreshold ? 0.0f : ( 4.0f - 21.0f / (4.0f*(numLocks-bonusLockThreshold)-18.0f) ));
+		
+		float newAmount = 20.0f - timePenalty - memberPenalty - claimPenalty - lockPenalty;
+		
+		float minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
+		float maxAmount = StandardGroups.getPlugin().getGroupPowerMaxValue();
+		
+		newAmount = Math.max(newAmount, minAmount);
+		newAmount = Math.min(newAmount, maxAmount);
+		
+		setMaxPower(newAmount);
 	}
 
 	public void addLockMember(Lock lock, StandardPlayer otherPlayer) {
@@ -521,6 +653,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		info.put("land_count", getClaims().size());
 		info.put("land_limit", getMaxClaims());
 		info.put("lock_count", getLocks().size());
+		info.put("power", getPower());
+		info.put("max_power", getMaxPower());
 
 		info.put("invites", invites.getList());
 

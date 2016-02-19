@@ -37,8 +37,15 @@ public class HangingBreakListener extends SubPluginEventListener<StandardGroups>
 
 		if (group != null) {
 			if (!groupManager.playerInGroup(player, group) && !groupManager.isGroupsAdmin(player)) {
-				event.setCancelled(true);
-				player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+				if (player.hasTitle("Alt")) {
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+					event.setCancelled(true);
+					return;
+				}
+				if (group.getPower() >= groupManager.ENTITY_POWER_THRESHOLD) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+				}
 			}
 		}
 	}

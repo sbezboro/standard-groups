@@ -158,6 +158,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new BlockPistonRetractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceListener(basePlugin, this), this);
 		pluginManager.registerEvents(new CreatureSpawnListener(basePlugin, this), this);
+		pluginManager.registerEvents(new DeathListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityBlockFormListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityBreakDoorListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityChangeBlockListener(basePlugin, this), this);
@@ -206,6 +207,18 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 
 	public int getMaxLocksPerChunk() {
 		return config.getMaxLocksPerChunk();
+	}
+	
+	public float getGroupPowerGrowth() {
+		return config.getGroupPowerGrowth();
+	}
+	
+	public float getGroupPowerMinValue() {
+		return config.getGroupPowerMinValue();
+	}
+	
+	public float getGroupPowerMaxValue() {
+		return config.getGroupPowerMaxValue();
 	}
 	
 	public GroupManager getGroupManager() {

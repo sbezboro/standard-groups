@@ -45,7 +45,23 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 				} else if (group.isNeutralArea()) {
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the neutral area");
 				} else {
-					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
+					if (group.getPower() < 0.0f) {
+						if (player.hasTitle("Alt")) {
+							player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
+							event.setCancelled(true);
+							return;
+						}
+						Block targetBlock = event.getBlock();
+						if (power >= groupManager.powerThresholdFor(targetBlock.getType())) {
+							player.sendMessage(ChatColor.LIGHT_RED + "Cannot yet place this type of block in the territory of " + group.getName());
+							event.setCancelled(true);
+						} else {
+							group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
+						}
+					} else {
+						player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
+						event.setCancelled(true);
+					}
 				}
 			}
 		}
