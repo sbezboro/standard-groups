@@ -427,6 +427,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 	
 	public void addPower(float difference) {
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
 		float oldAmount = getPower();
 		
 		float minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
@@ -438,13 +440,13 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		power.setValue(newAmount);
 		
 		if (oldAmount >= 0.0f && newAmount < 0.0f) {
-			sendGroupMessage(ChatColor.LIGHT_RED + "Your group's power has fallen below 0.");
+			sendGroupMessage(ChatColor.RED + "Your group's power has fallen below 0.");
 		}
 		if (oldAmount >= -6.0f && newAmount < -6.0f) {
-			sendGroupMessage(ChatColor.RED + "Your group's power is now getting dangerously low.");
+			sendGroupMessage(ChatColor.DARK_RED + "Your group's power is now getting dangerously low.");
 		}
 		if (oldAmount >= groupManager.LOCK_POWER_THRESHOLD && newAmount < groupManager.LOCK_POWER_THRESHOLD) {
-			sendGroupMessage(ChatColor.RED + "The locks of your group have become breakable.");
+			sendGroupMessage(ChatColor.DARK_RED + "The locks of your group have become breakable.");
 		}
 		if (oldAmount <= groupManager.LOCK_POWER_THRESHOLD && newAmount > groupManager.LOCK_POWER_THRESHOLD) {
 			sendGroupMessage(ChatColor.YELLOW + "The locks of your group are now functional again.");
