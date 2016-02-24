@@ -124,13 +124,13 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 						
 						group.sendGroupMessage(ChatColor.RED + "A lock of your group has been broken.");
 					} else {
-						player.sendMessage(ChatColor.GOLDEN + "Cannot yet break locks in the territory of " + group.getName());
+						player.sendMessage(ChatColor.GOLD + "Cannot yet break locks in the territory of " + group.getName());
 						event.setCancelled(true);
 					}
 				} else {
 					Block targetBlock = event.getBlock();
 					if (power >= groupManager.powerThresholdFor(targetBlock.getType()) && !groupManager.isGroupsAdmin(player)) {
-						player.sendMessage(ChatColor.GOLDEN + "Cannot yet break this type of block in the territory of " + group.getName());
+						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + group.getName());
 						event.setCancelled(true);
 					} else {
 						group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
