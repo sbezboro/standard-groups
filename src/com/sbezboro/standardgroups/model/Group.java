@@ -235,7 +235,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 	
 	public int getNonAltPlayerCount() {
-		int count;
+		int count = 0;
 
 		for (String uuid : memberUuids) {
 			StandardPlayer player = StandardPlugin.getPlugin().getStandardPlayerByUUID(uuid);
