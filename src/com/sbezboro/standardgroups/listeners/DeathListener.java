@@ -57,7 +57,7 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 				if (killerNonAltPlayerCount == 0.0f) {
 					powerLoss = 0.0f;
 				} else {
-					powerLoss = 3.5f - (1.0f / killerNonAltPlayerCount - (1.0f * (killerGroup.getMaxPower() / 20.0f));
+					powerLoss = 3.5f - (1.0f / killerNonAltPlayerCount - (1.0f * (killerGroup.getMaxPower() / 20.0f)));
 				}
 			} else {
 				powerLoss = 1.5f;
