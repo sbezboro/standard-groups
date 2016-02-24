@@ -100,7 +100,7 @@ public class GroupManager extends BaseManager {
 	}};
 	
 	@SuppressWarnings("serial")
-	private static final Map<Material, float> MATERIAL_POWER_THRESHOLDS = new Map<Material, float>() {{
+	private static final Map<Material, Float> MATERIAL_POWER_THRESHOLDS = new Map<Material, Float>() {{
 		// not breakable
 		put(Material.BED_BLOCK, -999.0f);
 		// -11.0f
