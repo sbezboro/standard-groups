@@ -37,7 +37,7 @@ public class HangingPlaceListener extends SubPluginEventListener<StandardGroups>
 					event.setCancelled(true);
 					return;
 				}
-				if (group.getPower >= groupManager.ENTITY_POWER_THRESHOLD) {
+				if (group.getPower() >= groupManager.ENTITY_POWER_THRESHOLD) {
 					event.setCancelled(true);
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
 				}
