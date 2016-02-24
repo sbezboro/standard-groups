@@ -40,13 +40,13 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 			return;
 		}
 
-		EntityDamageEvent damageEvent = victim.getLastDamageCause();
+		EntityDamageEvent damageEvent = victimPlayer.getLastDamageCause();
 		LivingEntity entity = MiscUtil.getLivingEntityFromDamageEvent(damageEvent);
 		StandardPlayer killerPlayer = plugin.getStandardPlayer(entity);
 		
 		float powerLoss;
 		float locationModifier;
-		Location location = victim.getLocation();
+		Location location = victimPlayer.getLocation();
 		Group locationGroup = groupManager.getGroupByLocation(location);
 
 		if (killerPlayer != null) {			
@@ -77,7 +77,7 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 			}
 		} else {
 			if (victimPlayer.isInPvp()) {
-				StandardPlayer killerPlayer = plugin.getLastAttacker();
+				killerPlayer = victimPlayer.getLastAttacker();
 				Group killerGroup = groupManager.getPlayerGroup(killerPlayer);
 			
 				if (killerGroup != null) {
