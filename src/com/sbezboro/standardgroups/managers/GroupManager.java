@@ -1645,7 +1645,7 @@ public class GroupManager extends BaseManager {
 			int online = group.getOnlineCount();
 
 			paginatedOutput.addLine(group.getNameWithRelation(player) + ChatColor.WHITE + " - " +
-					online + " / " + group.getPlayerCount() + " online members; ");
+					online + " / " + group.getPlayerCount() + " online members; " +
 					group.getPowerRounded() + " / " + group.getMaxPowerRounded() + " power");
 		}
 
