@@ -1370,7 +1370,7 @@ public class GroupManager extends BaseManager {
 
 		float power = group.getPower();
 		float maxPower = group.getMaxPower();
-		String powerColor = (power < -10.0f ? ChatColor.DARK_RED : (power < 0.0f ? ChatColor.RED : ChatColor.RESET));
+		ChatColor powerColor = (power < -10.0f ? ChatColor.DARK_RED : (power < 0.0f ? ChatColor.RED : ChatColor.RESET));
 		if (getPlayerGroup(player) == group) {
 			sender.sendMessage(ChatColor.YELLOW + "Your group's current power is " +
 					powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
