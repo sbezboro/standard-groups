@@ -171,7 +171,7 @@ public class GroupManager extends BaseManager {
 		put(Material.STONE, -4.0f);
 		put(Material.STONE_SLAB2, -4.0f);
 		// -3.0f
-		put(Material.BOOKSHELF, -3.0f)
+		put(Material.BOOKSHELF, -3.0f);
 		put(Material.CHEST, -3.0f);
 		put(Material.DAYLIGHT_DETECTOR, -3.0f);
 		put(Material.DAYLIGHT_DETECTOR_INVERTED, -3.0f);
