@@ -23,11 +23,16 @@ public class EntityBreakDoorListener extends SubPluginEventListener<StandardGrou
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		Location location = event.getBlock().getLocation();
-		List<Lock> locks = groupManager.getLocksAffectedByBlock(location);
 
-		if (!locks.isEmpty()) {
-			if (group.getPower >= groupManager.LOCK_POWER_THRESHOLD) {
-				event.setCancelled(true);
+		Group group = groupManager.getGroupByLocation(location);
+		
+		if (group != null) {
+			List<Lock> locks = groupManager.getLocksAffectedByBlock(location);
+	
+			if (!locks.isEmpty()) {
+				if (group.getPower() >= groupManager.LOCK_POWER_THRESHOLD) {
+					event.setCancelled(true);
+				}
 			}
 		}
 	}
