@@ -56,7 +56,7 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 						}
 						Block targetBlock = event.getBlock();
 						if (group.getPower() >= groupManager.powerThresholdFor(targetBlock.getType())) {
-							player.sendMessage(ChatColor.GOLDEN + "Cannot yet place this type of block in the territory of " + group.getName());
+							player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + group.getName());
 							event.setCancelled(true);
 						} else {
 							group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
