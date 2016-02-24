@@ -44,8 +44,8 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 		LivingEntity entity = MiscUtil.getLivingEntityFromDamageEvent(damageEvent);
 		StandardPlayer killerPlayer = plugin.getStandardPlayer(entity);
 		
-		float powerLoss;
-		float locationModifier;
+		float powerLoss = 0.0f;
+		float locationModifier = 1.0f;
 		Location location = victimPlayer.getLocation();
 		Group locationGroup = groupManager.getGroupByLocation(location);
 
