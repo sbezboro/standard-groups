@@ -10,9 +10,12 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.util.MiscUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 
 public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> implements Listener {
 
@@ -52,8 +55,8 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 							return;
 						}
 						Block targetBlock = event.getBlock();
-						if (power >= groupManager.powerThresholdFor(targetBlock.getType())) {
-							player.sendMessage(ChatColor.LIGHT_RED + "Cannot yet place this type of block in the territory of " + group.getName());
+						if (group.getPower() >= groupManager.powerThresholdFor(targetBlock.getType())) {
+							player.sendMessage(ChatColor.GOLDEN + "Cannot yet place this type of block in the territory of " + group.getName());
 							event.setCancelled(true);
 						} else {
 							group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
