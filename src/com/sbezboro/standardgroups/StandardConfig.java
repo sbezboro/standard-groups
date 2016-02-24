@@ -36,9 +36,9 @@ public class StandardConfig {
 		groupStartingLand = config.getInt("group-starting-land");
 		groupAutoKickDays = config.getInt("group-auto-kick-days");
 		maxLocksPerChunk = config.getInt("max-locks-per-chunk");
-		groupPowerGrowth = config.getFloat("group-power-growth");
-		groupPowerMinValue = config.getFloat("group-power-min-value");
-		groupPowerMaxValue = config.getFloat("group-power-max-value");
+		groupPowerGrowth = (float)(config.getDouble("group-power-growth"));
+		groupPowerMinValue = (float)(config.getDouble("group-power-min-value"));
+		groupPowerMaxValue = (float)(config.getDouble("group-power-max-value"));
 	}
 
 	public boolean isDebug() {
