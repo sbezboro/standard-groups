@@ -30,8 +30,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedProperty<Long> established;
 	private PersistedProperty<Long> lastGrowth;
 	private PersistedProperty<Integer> maxClaims;
-	private PersistedProperty<Float> power;
-	private PersistedProperty<Float> maxPower;
+	private PersistedProperty<Double> power;
+	private PersistedProperty<Double> maxPower;
 	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
@@ -50,8 +50,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 		this.established.setValue(established);
 		this.maxClaims.setValue(StandardGroups.getPlugin().getGroupStartingLand());
-		this.power.setValue(20.0f);
-		this.maxPower.setValue(20.0f);
+		this.power.setValue(20.0);
+		this.maxPower.setValue(20.0);
 		this.leaderUuid.setValue(leader.getUuidString());
 		this.memberUuids.add(leader.getUuidString());
 
@@ -79,8 +79,8 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		established = createProperty(Long.class, "established");
 		lastGrowth = createProperty(Long.class, "last-growth");
 		maxClaims = createProperty(Integer.class, "max-claims");
-		power = createProperty(Float.class, "power");
-		maxPower = createProperty(Float.class, "max-power");
+		power = createProperty(Double.class, "power");
+		maxPower = createProperty(Double.class, "max-power");
 		leaderUuid = createProperty(String.class, "leader-uuid");
 	}
 
@@ -128,6 +128,13 @@ public class Group extends PersistedObject implements Comparable<Group> {
 			}
 		} catch (ClassCastException e) {
 			// ignore
+		}
+		
+		if (power.getValue() == null) {
+			power.setValue(20.0);
+		}
+		if (maxPower.getValue() == null) {
+			recalculateMaxPower();
 		}
 	}
 
@@ -418,7 +425,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		this.maxClaims.setValue(maxClaims);
 	}
 	
-	public float getPower() {
+	public double getPower() {
 		return power.getValue();
 	}
 	
@@ -426,15 +433,15 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return String.format("%.2f", getPower());
 	}
 	
-	public void addPower(float difference) {
+	public void addPower(double difference) {
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		
-		float oldAmount = getPower();
+		double oldAmount = getPower();
 		
-		float minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
-		float maxAmount = Math.min(StandardGroups.getPlugin().getGroupPowerMaxValue(), getMaxPower());
+		double minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
+		double maxAmount = Math.min(StandardGroups.getPlugin().getGroupPowerMaxValue(), getMaxPower());
 		
-		float newAmount = Math.max(oldAmount + difference, minAmount);
+		double newAmount = Math.max(oldAmount + difference, minAmount);
 		newAmount = Math.min(newAmount, maxAmount);
 		
 		power.setValue(newAmount);
@@ -456,11 +463,11 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 	}
 	
-	public void setPower(float power) {
+	public void setPower(double power) {
 		this.power.setValue(power);
 	}
 	
-	public float getMaxPower() {
+	public double getMaxPower() {
 		return maxPower.getValue();
 	}
 	
@@ -468,7 +475,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return String.format("%.2f", getMaxPower());
 	}
 	
-	public void setMaxPower(float maxPower) {
+	public void setMaxPower(double maxPower) {
 		this.maxPower.setValue(maxPower);
 		
 		if (getPower() > maxPower) {
@@ -477,27 +484,27 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 	
 	public void recalculateMaxPower() {
-		float claimDifference = (float)(getMaxClaims() - StandardGroups.getPlugin().getGroupStartingLand());
-		float maxClaimDifference = (float)(StandardGroups.getPlugin().getGroupLandGrowthLimit() - StandardGroups.getPlugin().getGroupStartingLand());
-		float relTime = claimDifference / maxClaimDifference;
-		float timePenalty = 7.0f - 7.0f * (1.0f - relTime) * (1.0f - relTime);
+		double claimDifference = (double)(getMaxClaims() - StandardGroups.getPlugin().getGroupStartingLand());
+		double maxClaimDifference = (double)(StandardGroups.getPlugin().getGroupLandGrowthLimit() - StandardGroups.getPlugin().getGroupStartingLand());
+		double relTime = claimDifference / maxClaimDifference;
+		double timePenalty = 7.0 - 7.0 * (1.0 - relTime) * (1.0 - relTime);
 		
-		float numMembers = (float)getPlayerCount();
-		float numNonAltMembers = (float)getNonAltPlayerCount();
-		float memberPenalty = (numMembers <= 1.0f ? 0.0f : ( 5.0f - 6.0f/numMembers ));
+		double numMembers = (double)getPlayerCount();
+		double numNonAltMembers = (double)getNonAltPlayerCount();
+		double memberPenalty = (numMembers <= 1.0 ? 0.0 : ( 5.0 - 6.0/numMembers ));
 		
-		float numClaims = (float)(getClaims().size());
-		float bonusClaimThreshold = Math.min(numNonAltMembers - 1.0f, 6.0f);
-		float claimPenalty = (numClaims <= 2.0f + bonusClaimThreshold ? 0.0f : ( 4.0f - 49.0f / (12.0f*(numClaims-bonusClaimThreshold)-22.0f) ));
+		double numClaims = (double)(getClaims().size());
+		double bonusClaimThreshold = Math.min(numNonAltMembers - 1.0, 6.0);
+		double claimPenalty = (numClaims <= 2.0 + bonusClaimThreshold ? 0.0 : ( 4.0 - 49.0 / (12.0*(numClaims-bonusClaimThreshold)-22.0) ));
 		
-		float numLocks = (float)(getLocks().size());
-		float bonusLockThreshold = Math.min(2.0f * numNonAltMembers - 2.0f, 10.0f);
-		float lockPenalty = (numLocks <= 5.0f + bonusLockThreshold ? 0.0f : ( 4.0f - 21.0f / (4.0f*(numLocks-bonusLockThreshold)-18.0f) ));
+		double numLocks = (double)(getLocks().size());
+		double bonusLockThreshold = Math.min(2.0f * numNonAltMembers - 2.0f, 10.0f);
+		double lockPenalty = (numLocks <= 5.0 + bonusLockThreshold ? 0.0 : ( 4.0 - 21.0 / (4.0*(numLocks-bonusLockThreshold)-18.0) ));
 		
-		float newAmount = 20.0f - timePenalty - memberPenalty - claimPenalty - lockPenalty;
+		double newAmount = 20.0 - timePenalty - memberPenalty - claimPenalty - lockPenalty;
 		
-		float minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
-		float maxAmount = StandardGroups.getPlugin().getGroupPowerMaxValue();
+		double minAmount = StandardGroups.getPlugin().getGroupPowerMinValue();
+		double maxAmount = StandardGroups.getPlugin().getGroupPowerMaxValue();
 		
 		newAmount = Math.max(newAmount, minAmount);
 		newAmount = Math.min(newAmount, maxAmount);
