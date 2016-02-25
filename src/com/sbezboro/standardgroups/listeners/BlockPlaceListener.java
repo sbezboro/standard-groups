@@ -42,13 +42,14 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 					group.unlock(lock);
 				}
 			} else if (!groupManager.isGroupsAdmin(player)) {
-				event.setCancelled(true);
 				if (group.isSafeArea()) {
+					event.setCancelled(true);
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the safe area");
 				} else if (group.isNeutralArea()) {
+					event.setCancelled(true);
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the neutral area");
 				} else {
-					if (group.getPower() < 0.0f) {
+					if (group.getPower() < 0.0) {
 						if (player.hasTitle("Alt")) {
 							player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
 							event.setCancelled(true);
@@ -59,7 +60,7 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 							player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + group.getName());
 							event.setCancelled(true);
 						} else {
-							group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
+							group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0);
 						}
 					} else {
 						player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
