@@ -79,7 +79,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 							player.sendMessage(ChatColor.YELLOW + "Your lock on that block has been broken.");
 						} else {
 							player.sendMessage(ChatColor.YELLOW + "The locks associated with that block have been broken.");
-						}fl
+						}
 
 						for (Lock lock : locks) {
 							group.unlock(lock);
