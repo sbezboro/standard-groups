@@ -44,8 +44,8 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 		LivingEntity entity = MiscUtil.getLivingEntityFromDamageEvent(damageEvent);
 		StandardPlayer killerPlayer = plugin.getStandardPlayer(entity);
 		
-		float powerLoss = 0.0f;
-		float locationModifier = 1.0f;
+		double powerLoss = 0.0;
+		double locationModifier = 1.0;
 		Location location = victimPlayer.getLocation();
 		Group locationGroup = groupManager.getGroupByLocation(location);
 
@@ -53,27 +53,27 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 			Group killerGroup = groupManager.getPlayerGroup(killerPlayer);
 			
 			if (killerGroup != null) {
-				float killerNonAltPlayerCount = (float)(killerGroup.getNonAltPlayerCount());
-				if (killerNonAltPlayerCount == 0.0f) {
-					powerLoss = 0.0f;
+				double killerNonAltPlayerCount = (double)(killerGroup.getNonAltPlayerCount());
+				if (killerNonAltPlayerCount == 0.0) {
+					powerLoss = 0.0;
 				} else {
-					powerLoss = 3.5f - (1.0f / killerNonAltPlayerCount - (1.0f * (killerGroup.getMaxPower() / 20.0f)));
+					powerLoss = 3.5 - (1.0 / killerNonAltPlayerCount - (1.0 * (killerGroup.getMaxPower() / 20.0)));
 				}
 			} else {
-				powerLoss = 1.5f;
+				powerLoss = 1.5;
 			}
 			
 			if (locationGroup == null) {
-				locationModifier = 1.0f;
+				locationModifier = 1.0;
 			} else if (groupManager.playerInGroup(victimPlayer, locationGroup)) {
-				locationModifier = 0.6666667f;
+				locationModifier = 0.6666667;
 			} else if (groupManager.playerInGroup(killerPlayer, locationGroup)) {
-				powerLoss = 3.5f - (1.0f / (float)(victimGroup.getPlayerCount())) - (1.0f * (victimGroup.getMaxPower() / 20.0f));
-				locationModifier = 2.0f;
+				powerLoss = 3.5 - (1.0 / (double)(victimGroup.getPlayerCount())) - (1.0 * (victimGroup.getMaxPower() / 20.0));
+				locationModifier = 2.0;
 			}
 		
 			if (killerPlayer.hasTitle("Alt")) {
-				powerLoss = 0.0f;
+				powerLoss = 0.0;
 			}
 		} else {
 			if (victimPlayer.isInPvp()) {
@@ -81,40 +81,40 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 				Group killerGroup = groupManager.getPlayerGroup(killerPlayer);
 			
 				if (killerGroup != null) {
-					float killerNonAltPlayerCount = (float)(killerGroup.getNonAltPlayerCount());
+					double killerNonAltPlayerCount = (double)(killerGroup.getNonAltPlayerCount());
 					if (killerNonAltPlayerCount == 0) {
-						powerLoss = 0.0f;
+						powerLoss = 0.0;
 					} else {
-						powerLoss = 3.5f - (1.0f / killerNonAltPlayerCount) - (1.0f * (killerGroup.getMaxPower() / 20.0f));
+						powerLoss = 3.5 - (1.0 / killerNonAltPlayerCount) - (1.0 * (killerGroup.getMaxPower() / 20.0));
 					}
 				} else {
-					powerLoss = 1.5f;
+					powerLoss = 1.5;
 				}
 				
 				if (locationGroup == null) {
-					locationModifier = 1.0f;
+					locationModifier = 1.0;
 				} else if (groupManager.playerInGroup(victimPlayer, locationGroup)) {
-					locationModifier = 0.6666667f;
+					locationModifier = 0.6666667;
 				} else if (groupManager.playerInGroup(killerPlayer, locationGroup)) {
-					powerLoss = 3.5f - (1.0f / (float)(victimGroup.getPlayerCount())) - (1.0f * (victimGroup.getMaxPower() / 20.0f));
-					locationModifier = 2.0f;
+					powerLoss = 3.5 - (1.0 / (double)(victimGroup.getPlayerCount())) - (1.0 * (victimGroup.getMaxPower() / 20.0));
+					locationModifier = 2.0;
 				}
 		
 				if (killerPlayer.hasTitle("Alt")) {
-					powerLoss = 0.0f;
+					powerLoss = 0.0;
 				}
 			} else {
-				powerLoss = 1.5f;
+				powerLoss = 1.5;
 				if (locationGroup == null || groupManager.playerInGroup(victimPlayer, locationGroup)) {
-					locationModifier = 1.0f;
+					locationModifier = 1.0;
 				} else {
-					locationModifier = 3.0f;
+					locationModifier = 3.0;
 				}
-				float currentPower = victimGroup.getPower();
-				if (currentPower >= 0.0f && currentPower - powerLoss * locationModifier < 0.0f) {
+				double currentPower = victimGroup.getPower();
+				if (currentPower >= 0.0 && currentPower - powerLoss * locationModifier < 0.0) {
 					victimGroup.addPower(-currentPower);
 					return;
-				} else if (currentPower < 0.0f) {
+				} else if (currentPower < 0.0) {
 					return;
 				}
 			}
