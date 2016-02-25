@@ -20,14 +20,14 @@ public class PowerRestorationTask extends BaseTask {
 	public void run() {
 		GroupManager groupManager = subPlugin.getGroupManager();
 		
-		float restoreAmount = StandardGroups.getPlugin().getGroupPowerGrowth();
+		double restoreAmount = StandardGroups.getPlugin().getGroupPowerGrowth();
 
 		for (Group group : groupManager.getGroups()) {
-			float numMembers = group.getPlayerCount();
-			float numNonAltMembers = group.getNonAltPlayerCount();
-			float onlineModifier = (float)(group.getNonAltOnlineCount()) / numMembers;
-			float memberModifier = 3.0f - 6.0f/(numNonAltMembers+2.0f);
-			float altPenalty = 1.333333f * Math.max((numMembers-numNonAltMembers)/numMembers - 0.25f, 0.0f);
+			double numMembers = group.getPlayerCount();
+			double numNonAltMembers = group.getNonAltPlayerCount();
+			double onlineModifier = (double)(group.getNonAltOnlineCount()) / numMembers;
+			double memberModifier = 3.0 - 6.0/(numNonAltMembers+2.0);
+			double altPenalty = 1.333333 * Math.max((numMembers-numNonAltMembers)/numMembers - 0.25, 0.0);
 			group.addPower(restoreAmount * (memberModifier * onlineModifier - altPenalty));
 		}
 	}
