@@ -94,7 +94,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 						event.setCancelled(true);
 					}
 				}
-			} else if (group.getPower() < 0.0f) {
+			} else if (group.getPower() < 0.0) {
 				if (groupManager.isGroupsAdmin(player)) {
 					return;
 				}
@@ -119,7 +119,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 
 						for (Lock lock : locks) {
 							group.unlock(lock);
-							group.addPower(0.5f);
+							group.addPower(0.5);
 						}
 						
 						group.sendGroupMessage(ChatColor.RED + "A lock of your group has been broken.");
@@ -133,7 +133,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + group.getName());
 						event.setCancelled(true);
 					} else {
-						group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0f);
+						group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0);
 					}
 				}
 			} else if (!groupManager.isGroupsAdmin(player)) {
