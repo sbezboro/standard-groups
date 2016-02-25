@@ -209,15 +209,15 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		return config.getMaxLocksPerChunk();
 	}
 	
-	public float getGroupPowerGrowth() {
+	public double getGroupPowerGrowth() {
 		return config.getGroupPowerGrowth();
 	}
 	
-	public float getGroupPowerMinValue() {
+	public double getGroupPowerMinValue() {
 		return config.getGroupPowerMinValue();
 	}
 	
-	public float getGroupPowerMaxValue() {
+	public double getGroupPowerMaxValue() {
 		return config.getGroupPowerMaxValue();
 	}
 	
