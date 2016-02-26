@@ -1370,9 +1370,16 @@ public class GroupManager extends BaseManager {
 
 		double power = group.getPower();
 		ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
-		if (getPlayerGroup(player) == group) {
-			sender.sendMessage(ChatColor.YELLOW + "Your group's current power is " +
-					powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
+		if (player != null) {
+			if (getPlayerGroup(player) == group) {
+				sender.sendMessage(ChatColor.YELLOW + "Your group's current power is " +
+						powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
+			}
+			else {	
+				sender.sendMessage(ChatColor.YELLOW +
+						"The group " + group.getNameWithRelation(player) + ChatColor.YELLOW + " has power " +
+						powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
+			}
 		}
 		else {	
 			sender.sendMessage(ChatColor.YELLOW +
