@@ -31,6 +31,11 @@ public class ClaimCommand extends SubCommand {
 		}
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
 
 		String name = null;
 		int width = 1;
@@ -51,6 +56,8 @@ public class ClaimCommand extends SubCommand {
 		}
 
 		groupManager.claim(player, name, width);
+		
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 		
 		return true;
 	}
