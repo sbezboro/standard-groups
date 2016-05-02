@@ -220,6 +220,10 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	public double getGroupPowerMaxValue() {
 		return config.getGroupPowerMaxValue();
 	}
+
+	public double getPowerDamageModifier() {
+		return config.getPowerDamageModifier();
+	}
 	
 	public GroupManager getGroupManager() {
 		return groupManager;
