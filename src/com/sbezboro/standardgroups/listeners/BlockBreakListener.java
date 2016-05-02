@@ -7,6 +7,9 @@ import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
+
+import net.minecraft.server.v1_9_R1.Enchantments;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -32,9 +35,14 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 		
 		GroupManager groupManager = subPlugin.getGroupManager();
 		
-		Group group = groupManager.getGroupByLocation(location);
+		Group victimGroup = groupManager.getGroupByLocation(location);
+		Group attackerGroup = groupManager.getPlayerGroup(player);
 		
-		if (group != null) {
+		if (victimGroup != null) {
+			if (event.getBlock().getType() == Material.TNT) {
+				victimGroup.decrementAllowedTnt();
+			}
+			
 			Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
 
 			// Allow players to break one block in front of portals to get out of portal traps
@@ -44,7 +52,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				byte direction = playerBlock.getData();
 
 				boolean canBreakNearPortal =
-					group == groupManager.getGroupByLocation(player.getLocation()) &&
+					victimGroup == groupManager.getGroupByLocation(player.getLocation()) &&
 					targetBlock.getY() >= playerBlock.getY() &&
 					targetBlock.getY() <= playerBlock.getY() + 1 && (
 						(
@@ -59,9 +67,9 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				);
 
 				if (canBreakNearPortal) {
-					List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+					List<Lock> locks = groupManager.getLocksAffectedByBlock(victimGroup, location);
 					for (Lock lock : locks) {
-						group.unlock(lock);
+						victimGroup.unlock(lock);
 					}
 
 					event.setCancelled(false);
@@ -69,9 +77,9 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				}
 			}
 			
-			
-			if (groupManager.playerInGroup(player, group)) {
-				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+			// Player in group
+			if (groupManager.playerInGroup(player, victimGroup)) {
+				List<Lock> locks = groupManager.getLocksAffectedByBlock(victimGroup, location);
 
 				if (!locks.isEmpty()) {
 					if (groupManager.isOwnerOfAllLocks(player, locks)) {
@@ -82,7 +90,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 						}
 
 						for (Lock lock : locks) {
-							group.unlock(lock);
+							victimGroup.unlock(lock);
 						}
 					} else {
 						if (locks.size() == 1) {
@@ -94,56 +102,90 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 						event.setCancelled(true);
 					}
 				}
-			} else if (group.getPower() < 0.0) {
+			} 
+			
+			// Player not in group, but group has low power, so blocks may be breakable
+			else if (victimGroup.getPower() < 0.0) {
 				if (groupManager.isGroupsAdmin(player)) {
 					return;
 				}
-				if (player.hasTitle("Alt")) {
-					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
-					event.setCancelled(true);
-					return;
-				}
 				if (event.getBlock().getType() == Material.BED_BLOCK) {
-					player.sendMessage(ChatColor.RED + "Cannot destroy beds in the territory of " + group.getName());
+					player.sendMessage(ChatColor.RED + "Cannot break beds in the territory of " + victimGroup.getName());
 					event.setCancelled(true);
 					return;
 				}
+				if (attackerGroup == null) {
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + victimGroup.getName());
+					event.setCancelled(true);
+					return;
+				}
+				String attackerGroupUid = attackerGroup.getUid();
 				
-				double power = group.getPower();
+				double power = victimGroup.getPower();
 				
-				List<Lock> locks = groupManager.getLocksAffectedByBlock(group, location);
+				List<Lock> locks = groupManager.getLocksAffectedByBlock(victimGroup, location);
 
+				// Locked blocks
 				if (!locks.isEmpty()) {
-					if (power < groupManager.LOCK_POWER_THRESHOLD) {
+					if (power < GroupManager.LOCK_POWER_THRESHOLD) {
+						if (victimGroup.getPvpPowerLoss(attackerGroupUid) < 2.0) {
+							player.sendMessage(ChatColor.GOLD + "Cannot yet break locks in the territory of " + victimGroup.getName());
+							event.setCancelled(true);
+							return;
+						}
+						
 						player.sendMessage(ChatColor.YELLOW + "You broke the enemy's lock on that block.");
 
 						for (Lock lock : locks) {
-							group.unlock(lock);
-							group.addPower(0.5);
+							victimGroup.unlock(lock);
+							// Restore some of victim's power
+							// May in rare cases allow people to break more locks than they are supposed to (e.g. door on furnace)
+							victimGroup.addPower(2.0);
+							victimGroup.reducePvpPowerLoss(attackerGroupUid, 2.0);
 						}
 						
-						group.sendGroupMessage(ChatColor.RED + "A lock of your group has been broken.");
+						victimGroup.sendGroupMessage(ChatColor.RED + "A lock of your group has been broken.");
 					} else {
-						player.sendMessage(ChatColor.GOLD + "Cannot yet break locks in the territory of " + group.getName());
+						player.sendMessage(ChatColor.GOLD + "Cannot yet break locks in the territory of " + victimGroup.getName());
 						event.setCancelled(true);
-					}
-				} else {
-					Block targetBlock = event.getBlock();
-					if (power >= groupManager.powerThresholdFor(targetBlock.getType()) && !groupManager.isGroupsAdmin(player)) {
-						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + group.getName());
-						event.setCancelled(true);
-					} else {
-						group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0);
+						return;
 					}
 				}
-			} else if (!groupManager.isGroupsAdmin(player)) {
+				// No locks
+				else {
+					if (power >= GroupManager.BLOCK_POWER_THRESHOLD) {
+						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + victimGroup.getName());
+						event.setCancelled(true);
+						return;
+					}
+
+					// Restore some of victim's power
+					double powerRestoration = 0.25;
+					if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
+						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + victimGroup.getName());
+						event.setCancelled(true);
+						return;
+					}
+					victimGroup.addPower(powerRestoration);
+					victimGroup.reducePvpPowerLoss(attackerGroupUid, powerRestoration);
+				}
+				
+				// Prevent ice blocks from forming water when broken
+				if (event.getBlock().getType() == Material.ICE && !player.getItemInHand().getEnchantments().containsKey(Enchantments.SILK_TOUCH)) {
+					event.setCancelled(true);
+					event.getBlock().setType(Material.AIR);
+				}
+			}
+			
+			// Unauthorized. Canceling
+			else if (!groupManager.isGroupsAdmin(player)) {
 				event.setCancelled(true);
-				if (group.isSafeArea()) {
+				if (victimGroup.isSafeArea()) {
 					player.sendMessage(ChatColor.RED + "Cannot break blocks in the safe area");
-				} else if (group.isNeutralArea()) {
+				} else if (victimGroup.isNeutralArea()) {
 					player.sendMessage(ChatColor.RED + "Cannot break blocks in the neutral area");
 				} else {
-					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + victimGroup.getName());
 				}
 			}
 		}
