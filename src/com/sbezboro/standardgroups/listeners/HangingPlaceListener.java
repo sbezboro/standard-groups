@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 
 public class HangingPlaceListener extends SubPluginEventListener<StandardGroups> implements Listener {
@@ -20,7 +19,7 @@ public class HangingPlaceListener extends SubPluginEventListener<StandardGroups>
 		super(plugin, subPlugin);
 	}
 
-	@EventHandler(ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onHangingBreak(HangingPlaceEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 
@@ -28,19 +27,31 @@ public class HangingPlaceListener extends SubPluginEventListener<StandardGroups>
 
 		GroupManager groupManager = subPlugin.getGroupManager();
 
-		Group group = groupManager.getGroupByLocation(location);
+		Group victimGroup = groupManager.getGroupByLocation(location);
+		Group attackerGroup = groupManager.getPlayerGroup(player);
 
-		if (group != null) {
-			if (!groupManager.playerInGroup(player, group) && !groupManager.isGroupsAdmin(player)) {
-				if (player.hasTitle("Alt")) {
-					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
+		if (victimGroup != null) {
+			if (!groupManager.playerInGroup(player, victimGroup) && !groupManager.isGroupsAdmin(player)) {
+				if (victimGroup.getPower() >= GroupManager.ENTITY_POWER_THRESHOLD) {
 					event.setCancelled(true);
+					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + victimGroup.getName());
 					return;
 				}
-				if (group.getPower() >= groupManager.ENTITY_POWER_THRESHOLD) {
+				if (attackerGroup == null) {
 					event.setCancelled(true);
-					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
+					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + victimGroup.getName());
+					return;
 				}
+				String attackerGroupUid = attackerGroup.getUid();
+				
+				double powerRestoration = -subPlugin.getGroupPowerMinValue() / 300.0;
+				if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + victimGroup.getName());
+					return;
+				}
+				victimGroup.addPower(powerRestoration);
+				victimGroup.reducePvpPowerLoss(attackerGroupUid, powerRestoration);
 			}
 		}
 	}
