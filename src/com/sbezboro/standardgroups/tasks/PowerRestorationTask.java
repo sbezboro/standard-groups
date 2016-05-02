@@ -23,8 +23,7 @@ public class PowerRestorationTask extends BaseTask {
 
 		for (Group group : groupManager.getGroups()) {
 			if (!group.hasPvpPowerLoss()) {
-				double powerAmplitude = subPlugin.getGroupPowerMaxValue() - subPlugin.getGroupPowerMinValue();
-				double restoreAmount = subPlugin.getGroupPowerGrowth() * (group.getMaxPower() / powerAmplitude);
+				double restoreAmount = subPlugin.getGroupPowerGrowth();
 				double numMembers = group.getPlayerCount();
 				double onlineRatio = (double)(group.getOnlineCount()) / numMembers;
 				double onlineModifier = ((1.0 - (1.0-onlineRatio)*(1.0-onlineRatio)) + onlineRatio) / 2.0;
