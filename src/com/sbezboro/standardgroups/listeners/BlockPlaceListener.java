@@ -31,41 +31,80 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 		
 		GroupManager groupManager = subPlugin.getGroupManager();
 		
-		Group group = groupManager.getGroupByLocation(location);
+		Group victimGroup = groupManager.getGroupByLocation(location);
+		Group attackerGroup = groupManager.getPlayerGroup(player);
 
-		if (group != null) {
-			if (groupManager.playerInGroup(player, group)) {
+		if (victimGroup != null) {
+			if (event.getBlock().getType() == Material.TNT) {
+				victimGroup.incrementAllowedTnt();
+			}
+			
+			// Player in group
+			if (groupManager.playerInGroup(player, victimGroup)) {
 				// Sanity check
-				Lock lock = group.getLock(location);
+				Lock lock = victimGroup.getLock(location);
 				if (lock != null) {
 					subPlugin.getLogger().severe("REMOVING STALE LOCK! " + MiscUtil.locationFormat(location));
-					group.unlock(lock);
+					victimGroup.unlock(lock);
 				}
-			} else if (!groupManager.isGroupsAdmin(player)) {
-				if (group.isSafeArea()) {
+			}
+			
+			// Player not in group, but group has low power, so blocks may be placeable
+			else if (victimGroup.getPower() < 0.0) {
+				if (groupManager.isGroupsAdmin(player)) {
+					return;
+				}
+				if (event.getBlock().getType() == Material.BED_BLOCK) {
+					player.sendMessage(ChatColor.RED + "Cannot place beds in the territory of " + victimGroup.getName());
 					event.setCancelled(true);
+					return;
+				}
+				if (attackerGroup == null) {
+					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + victimGroup.getName());
+					event.setCancelled(true);
+					return;
+				}
+				String attackerGroupUid = attackerGroup.getUid();
+				
+				// Deny hoppers and dispensers from being placed (because of chests and water, respectively)
+				Block targetBlock = event.getBlock();
+				if (targetBlock.getType() == Material.HOPPER || targetBlock.getType() == Material.DISPENSER) {
+					player.sendMessage(ChatColor.RED + "Cannot place this type of block in the territory of " + victimGroup.getName());
+					event.setCancelled(true);
+					return;
+				}
+				if (victimGroup.getPower() >= GroupManager.BLOCK_POWER_THRESHOLD) {
+					player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + victimGroup.getName());
+					event.setCancelled(true);
+					return;
+				}
+				
+				// Restore some of victim's power
+				double powerRestoration;
+				if (targetBlock.getType() == Material.TNT) {
+					powerRestoration = 1.0;
+				} else {
+					powerRestoration = 0.25;
+				}
+				if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
+					player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + victimGroup.getName());
+					event.setCancelled(true);
+					return;
+				}
+				victimGroup.addPower(powerRestoration);
+				victimGroup.reducePvpPowerLoss(attackerGroupUid, powerRestoration);
+			}
+			
+
+			// Unauthorized. Canceling
+			else if (!groupManager.isGroupsAdmin(player)) {
+				event.setCancelled(true);
+				if (victimGroup.isSafeArea()) {
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the safe area");
-				} else if (group.isNeutralArea()) {
-					event.setCancelled(true);
+				} else if (victimGroup.isNeutralArea()) {
 					player.sendMessage(ChatColor.RED + "Cannot place blocks in the neutral area");
 				} else {
-					if (group.getPower() < 0.0) {
-						if (player.hasTitle("Alt")) {
-							player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
-							event.setCancelled(true);
-							return;
-						}
-						Block targetBlock = event.getBlock();
-						if (group.getPower() >= groupManager.powerThresholdFor(targetBlock.getType())) {
-							player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + group.getName());
-							event.setCancelled(true);
-						} else {
-							group.addPower(groupManager.powerThresholdFor(targetBlock.getType()) / 1000.0);
-						}
-					} else {
-						player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + group.getName());
-						event.setCancelled(true);
-					}
+					player.sendMessage(ChatColor.RED + "Cannot place blocks in the territory of " + victimGroup.getName());
 				}
 			}
 		}
