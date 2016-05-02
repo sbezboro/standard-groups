@@ -20,6 +20,7 @@ public class StandardConfig {
 	private double groupPowerGrowth;
 	private double groupPowerMinValue;
 	private double groupPowerMaxValue;
+	private double powerDamageModifier;
 
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
@@ -39,6 +40,7 @@ public class StandardConfig {
 		groupPowerGrowth = config.getDouble("group-power-growth");
 		groupPowerMinValue = config.getDouble("group-power-min-value");
 		groupPowerMaxValue = config.getDouble("group-power-max-value");
+		powerDamageModifier = config.getDouble("power-damage-modifier");
 	}
 
 	public boolean isDebug() {
@@ -87,5 +89,9 @@ public class StandardConfig {
 	
 	public double getGroupPowerMaxValue() {
 		return groupPowerMaxValue;
+	}
+	
+	public double getPowerDamageModifier() {
+		return powerDamageModifier;
 	}
 }
