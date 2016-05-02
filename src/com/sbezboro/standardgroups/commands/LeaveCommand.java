@@ -25,8 +25,21 @@ public class LeaveCommand extends SubCommand {
 	public boolean handle(CommandSender sender, String[] args) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
+		if (sender == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
+		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
+		
 		groupManager.leaveGroup(player);
+		
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 		
 		return true;
 	}
