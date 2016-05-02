@@ -154,6 +154,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	private void registerEvents() {
 		PluginManager pluginManager = getServer().getPluginManager();
 		pluginManager.registerEvents(new BlockBreakListener(basePlugin, this), this);
+		pluginManager.registerEvents(new BlockFadeListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPistonExtendListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPistonRetractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceListener(basePlugin, this), this);
@@ -172,6 +173,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new PlayerBucketFillListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerDamageListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerJoinListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
 		//pluginManager.registerEvents(new PlayerPortalListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PotionSplashListener(basePlugin, this), this);
