@@ -9,6 +9,7 @@ import com.sbezboro.standardgroups.persistence.storages.GroupStorage;
 import com.sbezboro.standardgroups.tasks.GroupRemovalTask;
 import com.sbezboro.standardgroups.tasks.LandGrowthCheckTask;
 import com.sbezboro.standardgroups.tasks.PowerRestorationTask;
+import com.sbezboro.standardgroups.tasks.PurgeCooldownsTask;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
@@ -99,221 +100,31 @@ public class GroupManager extends BaseManager {
 		add(Material.TRAP_DOOR);
 	}};
 	
-	@SuppressWarnings("serial")
-	private static final Map<Material, Double> MATERIAL_POWER_THRESHOLDS = new EnumMap<Material, Double>(Material.class) {{
-		// not breakable
-		put(Material.BED_BLOCK, -999.0);
-		// -11.0
-		put(Material.BEACON, -11.0);
-		put(Material.DRAGON_EGG, -11.0);
-		// -9.0
-		put(Material.OBSIDIAN, -9.0);
-		// -7.0
-		put(Material.ENCHANTMENT_TABLE, -7.0);
-		put(Material.ENDER_CHEST, -7.0);
-		put(Material.MOB_SPAWNER, -7.0);
-		put(Material.TNT, -7.0);
-		// -6.0
-		put(Material.COAL_BLOCK, -6.0);
-		put(Material.DIAMOND_BLOCK, -6.0);
-		put(Material.EMERALD_BLOCK, -6.0);
-		put(Material.ENDER_STONE, -6.0);
-		put(Material.GOLD_BLOCK, -6.0);
-		put(Material.IRON_BLOCK, -6.0);
-		put(Material.LAPIS_BLOCK, -6.0);
-		put(Material.QUARTZ_BLOCK, -6.0);
-		put(Material.QUARTZ_STAIRS, -6.0);
-		put(Material.REDSTONE_BLOCK, -6.0);
-		// -5.0
-		put(Material.ACTIVATOR_RAIL, -5.0);
-		put(Material.ANVIL, -5.0);
-		put(Material.CAULDRON, -5.0);
-		put(Material.DETECTOR_RAIL, -5.0);
-		put(Material.COAL_ORE, -5.0);
-		put(Material.DIAMOND_ORE, -5.0);
-		put(Material.EMERALD_ORE, -5.0);
-		put(Material.GOLD_ORE, -5.0);
-		put(Material.GOLD_PLATE, -5.0);
-		put(Material.IRON_DOOR_BLOCK, -5.0);
-		put(Material.IRON_FENCE, -5.0);
-		put(Material.IRON_ORE, -5.0);
-		put(Material.IRON_PLATE, -5.0);
-		put(Material.IRON_TRAPDOOR, -5.0);
-		put(Material.LAPIS_ORE, -5.0);
-		put(Material.POWERED_RAIL, -5.0);
-		put(Material.RAILS, -5.0);
-		put(Material.QUARTZ_ORE, -5.0);
-		put(Material.REDSTONE_ORE, -5.0);
-		// -4.0
-		put(Material.BRICK, -4.0);
-		put(Material.BRICK_STAIRS, -4.0);
-		put(Material.BURNING_FURNACE, -4.0);
-		put(Material.COBBLE_WALL, -4.0);
-		put(Material.COBBLESTONE, -4.0);
-		put(Material.COBBLESTONE_STAIRS, -4.0);
-		put(Material.FURNACE, -4.0);
-		put(Material.HARD_CLAY, -4.0);
-		put(Material.MONSTER_EGG, -4.0);
-		put(Material.MONSTER_EGGS, -4.0);
-		put(Material.MOSSY_COBBLESTONE, -4.0);
-		put(Material.NETHER_BRICK, -4.0);
-		put(Material.NETHER_BRICK_STAIRS, -4.0);
-		put(Material.NETHER_FENCE, -4.0);
-		put(Material.NETHERRACK, -4.0);
-		put(Material.PRISMARINE, -4.0);
-		put(Material.RED_SANDSTONE, -4.0);
-		put(Material.RED_SANDSTONE_STAIRS, -4.0);
-		put(Material.SANDSTONE, -4.0);
-		put(Material.SANDSTONE_STAIRS, -4.0);
-		put(Material.SMOOTH_BRICK, -4.0);
-		put(Material.SMOOTH_STAIRS, -4.0);
-		put(Material.STAINED_CLAY, -4.0);
-		put(Material.STONE, -4.0);
-		put(Material.STONE_SLAB2, -4.0);
-		// -3.0
-		put(Material.BOOKSHELF, -3.0);
-		put(Material.CHEST, -3.0);
-		put(Material.DAYLIGHT_DETECTOR, -3.0);
-		put(Material.DAYLIGHT_DETECTOR_INVERTED, -3.0);
-		put(Material.DIODE, -3.0);
-		put(Material.DIODE_BLOCK_OFF, -3.0);
-		put(Material.DIODE_BLOCK_ON, -3.0);
-		put(Material.DISPENSER, -3.0);
-		put(Material.DOUBLE_STEP, -3.0);
-		put(Material.DOUBLE_STONE_SLAB2, -3.0);
-		put(Material.DROPPER, -3.0);
-		put(Material.HOPPER, -3.0);
-		put(Material.JUKEBOX, -3.0);
-		put(Material.NOTE_BLOCK, -3.0);
-		put(Material.PISTON_BASE, -3.0);
-		put(Material.PISTON_EXTENSION, -3.0);
-		put(Material.PISTON_MOVING_PIECE, -3.0);
-		put(Material.PISTON_STICKY_BASE, -3.0);
-		put(Material.REDSTONE_COMPARATOR, -3.0);
-		put(Material.REDSTONE_COMPARATOR_OFF, -3.0);
-		put(Material.REDSTONE_COMPARATOR_ON, -3.0);
-		put(Material.REDSTONE_LAMP_OFF, -3.0);
-		put(Material.REDSTONE_LAMP_ON, -3.0);
-		put(Material.STEP, -3.0);
-		put(Material.STONE_BUTTON, -3.0);
-		put(Material.STONE_PLATE, -3.0);
-		put(Material.TRAPPED_CHEST, -3.0);
-		// -2.0
-		put(Material.ACACIA_DOOR, -2.0);
-		put(Material.ACACIA_FENCE, -2.0);
-		put(Material.ACACIA_FENCE_GATE, -2.0);
-		put(Material.ACACIA_STAIRS, -2.0);
-		put(Material.BIRCH_DOOR, -2.0);
-		put(Material.BIRCH_FENCE, -2.0);
-		put(Material.BIRCH_FENCE_GATE, -2.0);
-		put(Material.BIRCH_WOOD_STAIRS, -2.0);
-		put(Material.DARK_OAK_DOOR, -2.0);
-		put(Material.DARK_OAK_FENCE, -2.0);
-		put(Material.DARK_OAK_FENCE_GATE, -2.0);
-		put(Material.DARK_OAK_STAIRS, -2.0);
-		put(Material.FENCE, -2.0);
-		put(Material.FENCE_GATE, -2.0);
-		put(Material.JUNGLE_DOOR, -2.0);
-		put(Material.JUNGLE_FENCE, -2.0);
-		put(Material.JUNGLE_FENCE_GATE, -2.0);
-		put(Material.JUNGLE_WOOD_STAIRS, -2.0);
-		put(Material.LOG, -2.0);
-		put(Material.LOG_2, -2.0);
-		put(Material.SLIME_BLOCK, -2.0);
-		put(Material.SPONGE, -2.0);
-		put(Material.SPRUCE_DOOR, -2.0);
-		put(Material.SPRUCE_FENCE, -2.0);
-		put(Material.SPRUCE_FENCE_GATE, -2.0);
-		put(Material.SPRUCE_WOOD_STAIRS, -2.0);
-		put(Material.TRAP_DOOR, -2.0);
-		put(Material.WOOD, -2.0);
-		put(Material.WOOD_DOOR, -2.0);
-		put(Material.WOOD_DOUBLE_STEP, -2.0);
-		put(Material.WOOD_PLATE, -2.0);
-		put(Material.WOOD_STAIRS, -2.0);
-		put(Material.WOOD_STEP, -2.0);
-		put(Material.WOODEN_DOOR, -2.0);
-		put(Material.WORKBENCH, -2.0);
-		// -1.0
-		put(Material.ARMOR_STAND, -1.0);
-		put(Material.BREWING_STAND, -1.0);
-		put(Material.CLAY, -1.0);
-		put(Material.DIRT, -1.0);
-		put(Material.GLASS, -1.0);
-		put(Material.GLOWSTONE, -1.0);
-		put(Material.GRASS, -1.0);
-		put(Material.GRAVEL, -1.0);
-		put(Material.ICE, -1.0);
-		put(Material.MYCEL, -1.0);
-		put(Material.PACKED_ICE, -1.0);
-		put(Material.SAND, -1.0);
-		put(Material.SNOW_BLOCK, -1.0);
-		put(Material.SOIL, -1.0);
-		put(Material.SOUL_SAND, -1.0);
-		put(Material.STAINED_GLASS, -1.0);
-		put(Material.STAINED_GLASS_PANE, -1.0);
-		put(Material.THIN_GLASS, -1.0);
-		put(Material.WEB, -1.0);
-		put(Material.WOOL, -1.0);
-		// -0.5
-		put(Material.CACTUS, -0.5);
-		put(Material.CARPET, -0.5);
-		put(Material.CARROT, -0.5);
-		put(Material.COCOA, -0.5);
-		put(Material.CROPS, -0.5);
-		put(Material.HAY_BLOCK, -0.5);
-		put(Material.JACK_O_LANTERN, -0.5);
-		put(Material.LADDER, -0.5);
-		put(Material.MELON_BLOCK, -0.5);
-		put(Material.MELON_STEM, -0.5);
-		put(Material.NETHER_STALK, -0.5);
-		put(Material.NETHER_WARTS, -0.5);
-		put(Material.POTATO, -0.5);
-		put(Material.PUMPKIN, -0.5);
-		put(Material.PUMPKIN_STEM, -0.5);
-		put(Material.SEEDS, -0.5);
-		put(Material.SIGN, -0.5);
-		put(Material.SIGN_POST, -0.5);
-		put(Material.SKULL, -0.5);
-		put(Material.SNOW, -0.5);
-		put(Material.STANDING_BANNER, -0.5);
-		put(Material.SUGAR_CANE_BLOCK, -0.5);
-		put(Material.WALL_BANNER, -0.5);
-		put(Material.WALL_SIGN, -0.5);
-		// 0.0
-		put(Material.BROWN_MUSHROOM, 0.0);
-		put(Material.CAKE, 0.0);
-		put(Material.DEAD_BUSH, 0.0);
-		put(Material.DOUBLE_PLANT, 0.0);
-		put(Material.FLOWER_POT, 0.0);
-		put(Material.HUGE_MUSHROOM_1, 0.0);
-		put(Material.HUGE_MUSHROOM_2, 0.0);
-		put(Material.LEAVES, 0.0);
-		put(Material.LEAVES_2, 0.0);
-		put(Material.LEVER, 0.0);
-		put(Material.LONG_GRASS, 0.0);
-		put(Material.RED_MUSHROOM, 0.0);
-		put(Material.RED_ROSE, 0.0);
-		put(Material.REDSTONE_TORCH_OFF, 0.0);
-		put(Material.REDSTONE_TORCH_ON, 0.0);
-		put(Material.REDSTONE_WIRE, 0.0);
-		put(Material.SAPLING, 0.0);
-		put(Material.TORCH, 0.0);
-		put(Material.TRIPWIRE, 0.0);
-		put(Material.TRIPWIRE_HOOK, 0.0);
-		put(Material.VINE, 0.0);
-		put(Material.WATER_LILY, 0.0);
-		put(Material.YELLOW_FLOWER, 0.0);
-	}};
-	
-	public static final double LOCK_POWER_THRESHOLD = -12.0;
-	
 	public static final double ENTITY_POWER_THRESHOLD = 0.0;
+	
+	public static final double BLOCK_POWER_THRESHOLD = -5.0;
+	
+	public static final double LOCK_POWER_THRESHOLD = -10.0;
 
 	public static final int GROUP_REMOVAL_TASK_PERIOD = 1200; //seconds
+	
+	// Comparators for differently sorted group lists
+	public static class PowerComparator implements Comparator<Group> {
+		@Override
+		public int compare(Group g1, Group g2) {
+			return Double.compare(g1.getPower(), g2.getPower());
+		}
+	}
+
+	public static class MaxPowerComparator implements Comparator<Group> {
+		@Override
+		public int compare(Group g1, Group g2) {
+			return Double.compare(g1.getMaxPower(), g2.getMaxPower());
+		}
+	}
 
 	private final Pattern groupNamePat = Pattern.compile("^[a-zA-Z_]*$");
-	private final String groupNamePatExplanation = "Group names can only contain letters and underscores.";
+	private final String groupNamePatExplanation = ChatColor.RED + "Group names can only contain letters and underscores.";
 
 	private StandardGroups subPlugin;
 	
@@ -321,10 +132,13 @@ public class GroupManager extends BaseManager {
 	
 	private Map<String, Group> uuidToGroupMap;
 	private Map<String, Group> locationToGroupMap;
+	// Command macro protection
+	private Map<String, Long> lastPlayerCommandMap;
 
 	private LandGrowthCheckTask landGrowthCheckTask;
 	private GroupRemovalTask groupRemovalTask;
 	private PowerRestorationTask powerRestorationTask;
+	private PurgeCooldownsTask purgeCooldownsTask;
 
 	public GroupManager(StandardPlugin plugin, StandardGroups subPlugin, GroupStorage storage) {
 		super(plugin);
@@ -342,6 +156,9 @@ public class GroupManager extends BaseManager {
 		
 		powerRestorationTask = new PowerRestorationTask(plugin, subPlugin);
 		powerRestorationTask.runTaskTimer(subPlugin, 1200, 1200);
+		
+		purgeCooldownsTask = new PurgeCooldownsTask(plugin, subPlugin);
+		purgeCooldownsTask.runTaskTimer(subPlugin, 6000, 6000);
 
 		reload();
 	}
@@ -349,6 +166,7 @@ public class GroupManager extends BaseManager {
 	private void reload() {
 		uuidToGroupMap = new HashMap<String, Group>();
 		locationToGroupMap = new HashMap<String, Group>();
+		lastPlayerCommandMap = new HashMap<String, Long>();
 
 		for (Group group : storage.getGroups()) {
 			for (String uuid : group.getMemberUuids()) {
@@ -416,6 +234,10 @@ public class GroupManager extends BaseManager {
 
 	public Group getGroupByUid(String uid) {
 		return storage.getGroupByUid(uid);
+	}
+
+	public Group getGroupByPlayerUuid(String uuid) {
+		return uuidToGroupMap.get(uuid);
 	}
 	
 	public Group getGroupByLocation(Location location) {
@@ -676,22 +498,14 @@ public class GroupManager extends BaseManager {
 		return true;
 	}
 	
-	public double powerThresholdFor(Material material) {
-		Double threshold = MATERIAL_POWER_THRESHOLDS.get(material);
-		if (threshold == null) {
-			return 0.0;
-		}
-		return (double)threshold;
-	}
-	
 	public void createGroup(StandardPlayer player, String groupName) {
 		if (getPlayerGroup(player) != null) {
-			player.sendMessage("You must leave your existing group first before creating a new one.");
+			player.sendMessage(ChatColor.RED + "You must leave your existing group first before creating a new one.");
 			return;
 		}
 		
 		if (getGroupByName(groupName) != null) {
-			player.sendMessage("That group name is already taken");
+			player.sendMessage(ChatColor.RED + "That group name is already taken");
 			return;
 		}
 		
@@ -704,7 +518,7 @@ public class GroupManager extends BaseManager {
 		int maxLength = subPlugin.getGroupNameMaxLength();
 		
 		if (groupName.length() < minLength || groupName.length() > maxLength) {
-			player.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
+			player.sendMessage(ChatColor.RED + "The group name must be between " + minLength + " and " + maxLength + " characters long.");
 			return;
 		}
 		
@@ -724,12 +538,12 @@ public class GroupManager extends BaseManager {
 			group = getPlayerGroup(player);
 			
 			if (group == null) {
-				player.sendMessage("You can't destroy a group if you aren't in one.");
+				player.sendMessage(ChatColor.RED + "You can't destroy a group if you aren't in one.");
 				return;
 			}
 
 			if (!group.isLeader(player)) {
-				player.sendMessage("You can only destroy a group if you are the leader.");
+				player.sendMessage(ChatColor.RED + "You can only destroy a group if you are the leader.");
 				return;
 			}
 		// Trying to destroy another group by name
@@ -739,7 +553,7 @@ public class GroupManager extends BaseManager {
 				group = matchGroup(groupName);
 				
 				if (group == null) {
-					sender.sendMessage("That group doesn't exist.");
+					sender.sendMessage(ChatColor.RED + "That group doesn't exist.");
 					return;
 				}
 			} else {
@@ -755,29 +569,29 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can invite players.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can invite players.");
 			return;
 		}
 
 		if (!group.isLeader(player)) {
-			player.sendMessage("Only the group leader can designate another leader.");
+			player.sendMessage(ChatColor.RED + "Only the group leader can designate another leader.");
 			return;
 		}
 
 		StandardPlayer leaderPlayer = plugin.matchPlayer(username);
 
 		if (leaderPlayer == null) {
-			player.sendMessage("That player doesn't exist.");
+			player.sendMessage(ChatColor.RED + "That player doesn't exist.");
 			return;
 		}
 
 		if (!group.isMember(leaderPlayer)) {
-			player.sendMessage("That player isn't part of your group.");
+			player.sendMessage(ChatColor.RED + "That player isn't part of your group.");
 			return;
 		}
 
 		if (player == leaderPlayer) {
-			player.sendMessage("You are already the leader.");
+			player.sendMessage(ChatColor.YELLOW + "You are already the leader.");
 			return;
 		}
 
@@ -802,29 +616,29 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can invite players.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can invite players.");
 			return;
 		}
 		
 		StandardPlayer invitedPlayer = plugin.matchPlayer(invitedUsername);
 		
 		if (invitedPlayer == null) {
-			player.sendMessage("That player doesn't exist.");
+			player.sendMessage(ChatColor.RED + "That player doesn't exist.");
 			return;
 		}
 
 		if (!group.isModerator(player) && !group.isLeader(player)) {
-			player.sendMessage("Only the group leader or a moderator can invite players.");
+			player.sendMessage(ChatColor.RED + "Only the group leader or a moderator can invite players.");
 			return;
 		}
 		
 		if (group.isInvited(invitedPlayer)) {
-			player.sendMessage("That player has already been invited to your group.");
+			player.sendMessage(ChatColor.YELLOW + "That player has already been invited to your group.");
 			return;
 		}
 		
 		if (group.isMember(invitedPlayer)) {
-			player.sendMessage("That player is already a member of your group.");
+			player.sendMessage(ChatColor.YELLOW + "That player is already a member of your group.");
 			return;
 		}
 
@@ -847,24 +661,24 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You can't uninvite players if you aren't in a group.");
+			player.sendMessage(ChatColor.RED + "You can't uninvite players if you aren't in a group.");
 			return;
 		}
 
 		StandardPlayer uninvitedPlayer = plugin.matchPlayer(uninvitedUsername);
 
 		if (!group.isModerator(player) && !group.isLeader(player)) {
-			player.sendMessage("You must be either the group leader or a moderator to be able to uninvite players.");
+			player.sendMessage(ChatColor.RED + "You must be either the group leader or a moderator to be able to uninvite players.");
 			return;
 		}
 
 		if (uninvitedPlayer == null) {
-			player.sendMessage("That player doesn't exist.");
+			player.sendMessage(ChatColor.RED + "That player doesn't exist.");
 			return;
 		}
 
 		if (!group.isInvited(uninvitedPlayer)) {
-			player.sendMessage("That player hasn't been invited to your group yet.");
+			player.sendMessage(ChatColor.YELLOW + "That player hasn't been invited to your group yet.");
 			return;
 		}
 
@@ -902,42 +716,52 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You can't kick members from a group if you aren't in one.");
+			player.sendMessage(ChatColor.RED + "You can't kick members from a group if you aren't in one.");
 			return;
 		}
 
 		StandardPlayer kickedPlayer = plugin.matchPlayer(kickedUsername);
 
 		if (!group.isModerator(player) && !group.isLeader(player)) {
-			player.sendMessage("You must be either the group leader or a moderator to be able to kick members.");
+			player.sendMessage(ChatColor.RED + "You must be either the group leader or a moderator to be able to kick members.");
 			return;
 		}
 
 		if (kickedPlayer == null) {
-			player.sendMessage("That player doesn't exist.");
+			player.sendMessage(ChatColor.RED + "That player doesn't exist.");
 			return;
 		}
 
 		if (!group.isMember(kickedPlayer)) {
-			player.sendMessage("That player isn't part of your group.");
+			player.sendMessage(ChatColor.YELLOW + "That player isn't part of your group.");
 			return;
 		}
 
 		if (player == kickedPlayer) {
-			player.sendMessage("You cannot kick yourself.");
+			player.sendMessage(ChatColor.YELLOW + "You cannot kick yourself.");
 			return;
 		}
 
 		if (group.isLeader(kickedPlayer)) {
-			player.sendMessage("You cannot kick the group leader.");
+			player.sendMessage(ChatColor.RED + "You cannot kick the group leader.");
 			return;
 		}
 
 		if (group.isModerator(player) && group.isModerator(kickedPlayer)) {
-			player.sendMessage("Only the group leader can kick a moderator.");
+			player.sendMessage(ChatColor.RED + "Only the group leader can kick a moderator.");
 			return;
 		}
-
+		
+		if (kickedPlayer.isInPvp()) {
+			player.sendMessage(ChatColor.RED + "Cannot kick a player currently in PVP");
+			return;
+		}
+		
+		if (player.isInPvp()) {
+			player.sendMessage(ChatColor.RED + "Cannot kick a player while in PVP");
+			return;
+		}
+		
 		handleMemberRemoval(group, kickedPlayer);
 
 		group.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName(false) +
@@ -955,7 +779,7 @@ public class GroupManager extends BaseManager {
 
 	public void joinGroup(StandardPlayer player, String usernameOrGroupName) {
 		if (getPlayerGroup(player) != null) {
-			player.sendMessage("You must leave your existing group first before joining a different one.");
+			player.sendMessage(ChatColor.RED + "You must leave your existing group first before joining a different one.");
 			return;
 		}
 
@@ -978,7 +802,7 @@ public class GroupManager extends BaseManager {
 					" wants to join your group. Invite them by typing /g invite " +
 					player.getDisplayName(false));
 			
-			player.sendMessage("You have not been invited to join this group yet.");
+			player.sendMessage(ChatColor.RED + "You have not been invited to join this group yet.");
 		}
 	}
 
@@ -986,7 +810,14 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 		
 		if (group == null) {
-			player.sendMessage("You can't leave a group if you aren't in one.");
+			player.sendMessage(ChatColor.RED + "You can't leave a group if you aren't in one.");
+			return;
+		}
+		
+		Group locationGroup = getGroupByLocation(player.getLocation());
+		
+		if (locationGroup != null && locationGroup.isMember(player)) {
+			player.sendMessage(ChatColor.RED + "Cannot leave a group while currently on their land");
 			return;
 		}
 
@@ -1014,12 +845,17 @@ public class GroupManager extends BaseManager {
 		}
 
 		if (testGroup == group) {
-			player.sendMessage("You already own this land.");
+			player.sendMessage(ChatColor.YELLOW + "You already own this land.");
 			return;
 		}
 
-		if (group.getClaims().size() >= group.getMaxClaims()) {
-			player.sendMessage("Your group cannot claim any more land at the moment.");
+		// Spawn claims are "worth" 10 normal claims
+		boolean nextToSpawn = isNextToSpawn(location);
+		if (group.getWeightedClaimCount() >= group.getMaxClaims()) {
+			player.sendMessage(ChatColor.RED + "Your group cannot claim any more land at the moment.");
+			return;
+		} else if (nextToSpawn && group.getWeightedClaimCount() + 10 > group.getMaxClaims()) {
+			player.sendMessage(ChatColor.GOLD + "Your group cannot claim any more land next to spawn at the moment.");
 			return;
 		}
 
@@ -1030,7 +866,7 @@ public class GroupManager extends BaseManager {
 				testGroup.unclaim(claim);
 				locationToGroupMap.remove(claim.getLocationKey());
 			} else {
-				player.sendMessage("This land is already claimed.");
+				player.sendMessage(ChatColor.RED + "This land is already claimed.");
 				return;
 			}
 		}
@@ -1057,6 +893,11 @@ public class GroupManager extends BaseManager {
 	}
 
 	public void claim(StandardPlayer player, String groupName, int width) {
+		if (player.isInPvp()) {
+			player.sendMessage(ChatColor.RED + "Cannot claim while in combat!");
+			return;
+		}
+		
 		Group group;
 
 		// No group name means claiming for own group
@@ -1064,12 +905,12 @@ public class GroupManager extends BaseManager {
 			group = getPlayerGroup(player);
 
 			if (group == null) {
-				player.sendMessage("You must be in a group before you can claim land.");
+				player.sendMessage(ChatColor.RED + "You must be in a group before you can claim land.");
 				return;
 			}
 
 			if (!group.isModerator(player) && !group.isLeader(player)) {
-				player.sendMessage("Only the group leader or a moderator can claim land.");
+				player.sendMessage(ChatColor.RED + "Only the group leader or a moderator can claim land.");
 				return;
 			}
 		// Trying to claim for another group
@@ -1085,7 +926,7 @@ public class GroupManager extends BaseManager {
 				}
 
 				if (group == null) {
-					player.sendMessage("That group doesn't exist.");
+					player.sendMessage(ChatColor.RED + "That group doesn't exist.");
 					return;
 				}
 			} else {
@@ -1142,27 +983,27 @@ public class GroupManager extends BaseManager {
 			group = getGroupByLocation(location);
 
 			if (group == null) {
-				player.sendMessage("No group owns this land.");
+				player.sendMessage(ChatColor.RED + "No group owns this land.");
 				return;
 			}
 		} else {
 			group = getPlayerGroup(player);
 
 			if (group == null) {
-				player.sendMessage("You must be in a group before you can unclaim land.");
+				player.sendMessage(ChatColor.RED + "You must be in a group before you can unclaim land.");
 				return;
 			}
 
 			if (!group.isModerator(player) && !group.isLeader(player)) {
-				player.sendMessage("Only the group leader or a moderator can unclaim land.");
+				player.sendMessage(ChatColor.RED + "Only the group leader or a moderator can unclaim land.");
 				return;
 			}
 
 			if (getGroupByLocation(location) != group) {
 				if (location == player.getLocation()) {
-					player.sendMessage("You don't own this land.");
+					player.sendMessage(ChatColor.RED + "You don't own this land.");
 				} else {
-					player.sendMessage("You don't own that chunk.");
+					player.sendMessage(ChatColor.RED + "You don't own that chunk.");
 				}
 
 				return;
@@ -1200,12 +1041,12 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can unclaim land.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can unclaim land.");
 			return;
 		}
 
 		if (!group.isLeader(player)) {
-			player.sendMessage("Only the group leader can unclaim all land.");
+			player.sendMessage(ChatColor.RED + "Only the group leader can unclaim all land.");
 			return;
 		}
 
@@ -1226,6 +1067,36 @@ public class GroupManager extends BaseManager {
 			}
 		}
 	}
+	
+	// Checks whether loc is in a chunk directly next to safe / neutral area. Cornering does not count
+	public boolean isNextToSpawn(Location loc) {
+		Location location = new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+		
+		location.setX(location.getBlockX() + 16);
+		Group locationGroup;
+		
+		int dx = -16;
+		int dz = -16;
+		for (int i = 0; i < 3; i++) {
+			locationGroup = getGroupByLocation(location);
+			
+			if (locationGroup != null && (locationGroup.isSafeArea() || locationGroup.isNeutralArea())) {
+				return true;
+			}
+			
+			location.setX(location.getBlockX() + dx);
+			location.setZ(location.getBlockZ() + dz);
+			
+			int t = dx;
+			dx = dz;
+			dz = -t;
+		}
+		return false;
+	}
+	
+	public boolean isNextToSpawn(World world, int x, int z) {
+		return isNextToSpawn(new Location(world, x, 0, z));
+	}
 
 	public void rename(CommandSender sender, String name, String groupName) {
 		Group group;
@@ -1237,12 +1108,12 @@ public class GroupManager extends BaseManager {
 			group = getPlayerGroup(player);
 
 			if (group == null) {
-				player.sendMessage("You must be in a group before you can rename one.");
+				player.sendMessage(ChatColor.RED + "You must be in a group before you can rename one.");
 				return;
 			}
 
 			if (!group.isLeader(player) && !group.isModerator(player)) {
-				player.sendMessage("Only the group leader or a moderator can rename a group.");
+				player.sendMessage(ChatColor.RED + "Only the group leader or a moderator can rename a group.");
 				return;
 			}
 		// Trying to rename another group by name
@@ -1252,7 +1123,7 @@ public class GroupManager extends BaseManager {
 				group = matchGroup(groupName);
 
 				if (group == null) {
-					sender.sendMessage("That group doesn't exist.");
+					sender.sendMessage(ChatColor.RED + "That group doesn't exist.");
 					return;
 				}
 			} else {
@@ -1262,12 +1133,12 @@ public class GroupManager extends BaseManager {
 		}
 		
 		if (name.equals(group.getName())) {
-			sender.sendMessage("Your group is already named that.");
+			sender.sendMessage(ChatColor.YELLOW + "Your group is already named that.");
 			return;
 		}
 		
 		if (getGroupByName(name) != null) {
-			sender.sendMessage("That group name is already taken");
+			sender.sendMessage(ChatColor.RED + "That group name is already taken");
 			return;
 		}
 		
@@ -1280,7 +1151,7 @@ public class GroupManager extends BaseManager {
 		int maxLength = subPlugin.getGroupNameMaxLength();
 		
 		if (name.length() < minLength || name.length() > maxLength) {
-			sender.sendMessage("The group name must be between " + minLength + " and " + maxLength + " characters long.");
+			sender.sendMessage(ChatColor.RED + "The group name must be between " + minLength + " and " + maxLength + " characters long.");
 			return;
 		}
 
@@ -1304,7 +1175,7 @@ public class GroupManager extends BaseManager {
 			group = getPlayerGroup(player);
 			
 			if (group == null) {
-				player.sendMessage("You must be in a group before you can use that command.");
+				player.sendMessage(ChatColor.RED + "You must be in a group before you can use that command.");
 				return;
 			}
 		} else {
@@ -1332,23 +1203,26 @@ public class GroupManager extends BaseManager {
 		}
 
 		boolean maxLandLimitReached = group.getMaxClaims() >= subPlugin.getGroupLandGrowthLimit();
+		double power = group.getPower();
+		ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 
 		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
 		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
-		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getClaims().size());
+		sender.sendMessage(ChatColor.YELLOW + "Land count: " + ChatColor.RESET + group.getWeightedClaimCount());
 		sender.sendMessage(ChatColor.YELLOW + "Land limit: " + ChatColor.RESET + group.getMaxClaims() + (maxLandLimitReached ? " (max)" : ""));
 
 		if (!maxLandLimitReached && (player == null || getPlayerGroup(player) == group)) {
 			sender.sendMessage(ChatColor.YELLOW + "Next land growth: " + ChatColor.RESET +  MiscUtil.friendlyTimestamp(group.getNextGrowth()));
 		}
 
-		sender.sendMessage(ChatColor.YELLOW + "Power: " + ChatColor.RESET + group.getPowerRounded() + " / " + group.getMaxPowerRounded());
+		sender.sendMessage(ChatColor.YELLOW + "Power: " + powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
 		sender.sendMessage(ChatColor.YELLOW + "Friends: " + ChatColor.RESET + StringUtils.join(friendlyGroupsNames, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Online members: " + ChatColor.RESET + StringUtils.join(onlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Offline members: " + ChatColor.RESET + StringUtils.join(offlineMembers, ChatColor.RESET + ", "));
 		sender.sendMessage(ChatColor.YELLOW + "Link: " + ChatColor.RESET + "standardsurvival.com/group/" + group.getName());
 	}
 
+	// Displays the power of a group
 	public void groupPower(CommandSender sender, String usernameOrGroupName) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		Group group;
@@ -1357,7 +1231,7 @@ public class GroupManager extends BaseManager {
 			group = getPlayerGroup(player);
 			
 			if (group == null) {
-				player.sendMessage("You must be in a group before you can use that command.");
+				player.sendMessage(ChatColor.RED + "You must be in a group before you can see your power.");
 				return;
 			}
 		} else {
@@ -1387,17 +1261,75 @@ public class GroupManager extends BaseManager {
 					powerColor + group.getPowerRounded() + ChatColor.RESET + " / " + group.getMaxPowerRounded());
 		}
 	}
+	
+	// /g adjustmaxpower <adj> - shows what would happen with that amount but does not do anything yet
+	public void adjustMaxPowerInfo(StandardPlayer player, double adjustment) {
+		if (adjustment < -10.0 || adjustment > 10.0) {
+			player.sendMessage(ChatColor.RED + "The adjustment must be between -10 and 10.");
+			return;
+		}
+		
+		Group group = getPlayerGroup(player);
+		if (group == null) {
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can use this command.");
+			return;
+		}
+
+		double powerDamagePercent;
+		
+		if (adjustment >= 0.0) {
+			powerDamagePercent = adjustment * 10.0;
+			player.sendMessage(ChatColor.AQUA + "Your group will receive a permanent " + ChatColor.YELLOW +
+					String.format("%.2f", adjustment) + ChatColor.AQUA + " bonus to its maximum power.");
+			player.sendMessage(ChatColor.AQUA + "Its power damage will be reduced by " + ChatColor.YELLOW +
+					Math.round(powerDamagePercent) + "%" + ChatColor.AQUA + ".");
+		} else {
+			powerDamagePercent = -adjustment * 5.0;
+			player.sendMessage(ChatColor.AQUA + "Your group will suffer a permanent " + ChatColor.YELLOW +
+					String.format("%.2f", -adjustment) + ChatColor.AQUA + " malus to its maximum power.");
+			player.sendMessage(ChatColor.AQUA + "Its power damage will be increased by " + ChatColor.YELLOW +
+					Math.round(powerDamagePercent) + "%" + ChatColor.AQUA + ".");
+		}
+		
+		if (!group.isLeader(player)) {
+			player.sendMessage(ChatColor.AQUA + "Only the group leader is able to actually set the adjustment.");
+		} else {
+			player.sendMessage(ChatColor.AQUA + "Use " + ChatColor.GOLD + "/g adjustmaxpower " + String.format("%.2f", adjustment) + " confirm" +
+					ChatColor.AQUA + " to set this adjustment.");
+		}
+	}
+	
+	// /g adjustmaxpower <adj> confirm - apply the adjustment
+	public void adjustMaxPower(StandardPlayer player, double adjustment) {
+		if (adjustment < -10.0 || adjustment > 10.0) {
+			player.sendMessage(ChatColor.RED + "The adjustment must be between -10 and 10");
+			return;
+		}
+		
+		Group group = getPlayerGroup(player);
+		if (group == null) {
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can use this command.");
+			return;
+		}
+		if (!group.isLeader(player)) {
+			player.sendMessage(ChatColor.RED + "Only the group leader is able to set the max power adjustment.");
+			return;
+		}
+
+		group.setMaxPowerAdjustment(adjustment);
+		player.sendMessage(ChatColor.YELLOW + "You have successfully adjusted your group's max power.");
+	}
 
 	public void lock(StandardPlayer player, Block block) {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can lock things.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can lock things.");
 			return;
 		}
 
 		if (!PROTECTED_BLOCKS.contains(block.getType())) {
-			player.sendMessage("This block isn't lockable.");
+			player.sendMessage(ChatColor.RED + "This block isn't lockable.");
 			return;
 		}
 
@@ -1406,25 +1338,33 @@ public class GroupManager extends BaseManager {
 		Group testGroup = getGroupByLocation(location);
 
 		if (testGroup != group) {
-			player.sendMessage("You can only lock things in your group's territory.");
+			player.sendMessage(ChatColor.RED + "You can only lock things in your group's territory.");
 			return;
 		}
 
 		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
 		if (!locks.isEmpty()) {
-			player.sendMessage("A lock already exists on this block.");
+			player.sendMessage(ChatColor.YELLOW + "A lock already exists on this block.");
 			return;
 		}
 
 		if (!group.canLock(location)) {
-			player.sendMessage("There are too many locks in this claim already.");
+			player.sendMessage(ChatColor.RED + "There are too many locks in this claim already.");
 			return;
 		}
 		
 		if (group.getPower() < LOCK_POWER_THRESHOLD) {
 			player.sendMessage(ChatColor.RED + "Your group's power is too low to lock more blocks.");
 			return;
+		}
+		
+		// Prevent surrounding chests with locked beds by limiting their number
+		if (location.getBlock().getType() == Material.BED_BLOCK) {
+			if (group.getLockedBedsCount() >= 5) {
+				player.sendMessage(ChatColor.RED + "Your group cannot lock any more beds.");
+				return;
+			}
 		}
 
 		group.lock(player, location);
@@ -1436,7 +1376,7 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can unlock things.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can unlock things.");
 			return;
 		}
 
@@ -1445,34 +1385,27 @@ public class GroupManager extends BaseManager {
 		Group testGroup = getGroupByLocation(location);
 
 		if (testGroup != group) {
-			player.sendMessage("You can only unlock things in your group's territory.");
+			player.sendMessage(ChatColor.RED + "You can only unlock things in your group's territory.");
 			return;
 		}
 
 		if (!PROTECTED_BLOCKS.contains(block.getType())) {
-			player.sendMessage("This block isn't lockable.");
+			player.sendMessage(ChatColor.RED + "This block isn't lockable.");
 			return;
 		}
 
 		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
 		if (locks.isEmpty()) {
-			player.sendMessage("No lock exists on this block.");
+			player.sendMessage(ChatColor.YELLOW + "No lock exists on this block.");
 			return;
 		}
 
 		Lock lock = locks.get(0);
 
 		if (!lock.isOwner(player)) {
-			if (group.isLeader(player)) {
-				if (getPlayerGroup(lock.getOwner()) == group) {
-					player.sendMessage("The player who owns this lock is still in your group.");
-					return;
-				}
-			} else {
-				player.sendMessage("You are not the owner of this lock.");
-				return;
-			}
+			player.sendMessage(ChatColor.RED + "You are not the owner of this lock.");
+			return;
 		}
 
 		group.unlock(lock);
@@ -1484,12 +1417,7 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can add a member to a lock.");
-			return;
-		}
-
-		if (group != getPlayerGroup(otherPlayer)) {
-			player.sendMessage("That player isn't part of your group.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can add a member to a lock.");
 			return;
 		}
 
@@ -1498,20 +1426,30 @@ public class GroupManager extends BaseManager {
 		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
 		if (locks.isEmpty()) {
-			player.sendMessage("No lock exists on this block.");
+			player.sendMessage(ChatColor.RED + "No lock exists on this block.");
 			return;
 		}
 
 		Lock lock = locks.get(0);
 
 		if (!lock.isOwner(player)) {
-			player.sendMessage("You are not the owner of this lock.");
+			player.sendMessage(ChatColor.RED + "You are not the owner of this lock.");
 			return;
 		}
 
 		if (lock.hasAccess(otherPlayer)) {
-			player.sendMessage("That player already has access.");
+			player.sendMessage(ChatColor.YELLOW + "That player already has access.");
 			return;
+		}
+
+		Group otherGroup = getPlayerGroup(otherPlayer);
+		
+		if (group != otherGroup) {
+			if (otherGroup == null) {
+				player.sendMessage(ChatColor.GOLD + otherPlayer.getName() + " won't have access until they join a friendly group!");
+			} else if (!group.isMutualFriendship(otherGroup)) {
+				player.sendMessage(ChatColor.GOLD + "Your group will additionally need to friend " + otherGroup.getName() + "!");
+			}
 		}
 
 		group.addLockMember(lock, otherPlayer);
@@ -1523,7 +1461,7 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you revoke access to locks.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can revoke access to locks.");
 			return;
 		}
 
@@ -1532,19 +1470,19 @@ public class GroupManager extends BaseManager {
 		List<Lock> locks = getLocksAffectedByBlock(group, location);
 
 		if (locks.isEmpty()) {
-			player.sendMessage("No lock exists on this block.");
+			player.sendMessage(ChatColor.RED + "No lock exists on this block.");
 			return;
 		}
 
 		Lock lock = locks.get(0);
 
-		if (!lock.isOwner(player) && !group.isLeader(player)) {
-			player.sendMessage("You are not the owner of this lock.");
+		if (!lock.isOwner(player)) {
+			player.sendMessage(ChatColor.RED + "You are not the owner of this lock.");
 			return;
 		}
 
 		if (!lock.hasAccess(otherPlayer)) {
-			player.sendMessage("That player already doesn't have access.");
+			player.sendMessage(ChatColor.YELLOW + "That player already doesn't have access.");
 			return;
 		}
 
@@ -1564,7 +1502,7 @@ public class GroupManager extends BaseManager {
 		List<Lock> locks = getLocksAffectedByBlock(location);
 
 		if (locks.isEmpty()) {
-			player.sendMessage("No lock exists on this block.");
+			player.sendMessage(ChatColor.RED + "No lock exists on this block.");
 			return;
 		}
 
@@ -1593,12 +1531,12 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group before you can set lock status.");
+			player.sendMessage(ChatColor.RED + "You must be in a group before you can set lock status.");
 			return;
 		}
 
 		if (!PROTECTED_BLOCKS.contains(block.getType())) {
-			player.sendMessage("This block isn't lockable.");
+			player.sendMessage(ChatColor.RED + "This block isn't lockable.");
 			return;
 		}
 
@@ -1607,7 +1545,7 @@ public class GroupManager extends BaseManager {
 		Group testGroup = getGroupByLocation(location);
 
 		if (testGroup != group) {
-			player.sendMessage("You can only lock things in your group's territory.");
+			player.sendMessage(ChatColor.RED + "You can only lock things in your group's territory.");
 			return;
 		}
 
@@ -1617,7 +1555,7 @@ public class GroupManager extends BaseManager {
 
 		if (locks.isEmpty()) {
 			if (!group.canLock(location)) {
-				player.sendMessage("There are too many locks in this claim already.");
+				player.sendMessage(ChatColor.RED + "There are too many locks in this claim already.");
 				return;
 			}
 			lock = group.lock(player, location);
@@ -1625,7 +1563,7 @@ public class GroupManager extends BaseManager {
 			lock = locks.get(0);
 
 			if (!lock.isOwner(player)) {
-				player.sendMessage("You are not the owner of this lock.");
+				player.sendMessage(ChatColor.RED + "You are not the owner of this lock.");
 				return;
 			}
 		}
@@ -1639,20 +1577,35 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	public void groupList(CommandSender sender, int page) {
+	public void groupList(CommandSender sender, int page, Comparator<Group> comparator) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 
 		PaginatedOutput paginatedOutput = new PaginatedOutput("Active Groups", page);
 
 		List<Group> list = getGroups();
-		Collections.sort(list);
+		if (comparator != null) {
+			Collections.sort(list, comparator);
+		} else {
+			Collections.sort(list);
+		}
 
 		for (Group group : list) {
 			int online = group.getOnlineCount();
+			int members = group.getPlayerCount();
 
-			paginatedOutput.addLine(group.getNameWithRelation(player) + ChatColor.WHITE + " - " +
-					online + " / " + group.getPlayerCount() + " online members; " +
-					group.getPowerRounded() + " / " + group.getMaxPowerRounded() + " power");
+			double power = group.getPower();
+			ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+			ChatColor groupColor = (player != null && group.isMember(player) ? ChatColor.GREEN : ChatColor.YELLOW);
+			if (comparator != null) {
+				paginatedOutput.addLine((online < 10 ? " " : "") + online + " / " +  (members < 10 ? " " : "") + members + " online; " +
+						powerColor + StringUtils.leftPad(group.getPowerRounded(), 6) + ChatColor.RESET + " / " +
+						StringUtils.leftPad(group.getMaxPowerRounded(), 6) + " power - " + groupColor + group.getIdentifier());
+			} else {
+				paginatedOutput.addLine(groupColor + StringUtils.rightPad(group.getIdentifier(), subPlugin.getGroupNameMaxLength()) +
+						ChatColor.RESET + " - " + (online < 10 ? " " : "") + online + " / " +  (members < 10 ? " " : "") + members + " online; " +
+						powerColor + StringUtils.leftPad(group.getPowerRounded(), 6) + ChatColor.RESET + " / " +
+						StringUtils.leftPad(group.getMaxPowerRounded(), 6) + " power");
+			}
 		}
 
 		paginatedOutput.show(sender);
@@ -1662,34 +1615,34 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You can't set moderators for a group if you aren't in one.");
+			player.sendMessage(ChatColor.RED + "You can't set moderators for a group if you aren't in one.");
 			return;
 		}
 
 		if (!group.isLeader(player)) {
-			player.sendMessage("You can only designate moderators for your group if you are the leader.");
+			player.sendMessage(ChatColor.RED + "You can only designate moderators for your group if you are the leader.");
 			return;
 		}
 
 		StandardPlayer moderatorPlayer = plugin.matchPlayer(username);
 
 		if (moderatorPlayer == null) {
-			player.sendMessage("That player doesn't exist.");
+			player.sendMessage(ChatColor.RED + "That player doesn't exist.");
 			return;
 		}
 
 		if (player == moderatorPlayer) {
-			player.sendMessage("You can't set yourself as a moderator.");
+			player.sendMessage(ChatColor.YELLOW + "You can't set yourself as a moderator.");
 			return;
 		}
 
 		if (!group.isMember(moderatorPlayer)) {
-			player.sendMessage("That player isn't part of your group.");
+			player.sendMessage(ChatColor.RED + "That player isn't part of your group.");
 			return;
 		}
 
 		if (group.isModerator(moderatorPlayer)) {
-			player.sendMessage("That player is already a moderator.");
+			player.sendMessage(ChatColor.YELLOW + "That player is already a moderator.");
 			return;
 		}
 
@@ -1714,29 +1667,29 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You can't remove moderators from a group if you aren't in one.");
+			player.sendMessage(ChatColor.RED + "You can't remove moderators from a group if you aren't in one.");
 			return;
 		}
 
 		if (!group.isLeader(player)) {
-			player.sendMessage("Only the group leader can remove moderators from the group.");
+			player.sendMessage(ChatColor.RED + "Only the group leader can remove moderators from the group.");
 			return;
 		}
 
 		StandardPlayer moderatorPlayer = plugin.matchPlayer(username);
 
 		if (moderatorPlayer == null) {
-			player.sendMessage("That player doesn't exist.");
+			player.sendMessage(ChatColor.RED + "That player doesn't exist.");
 			return;
 		}
 
 		if (!group.isMember(moderatorPlayer)) {
-			player.sendMessage("That player isn't part of your group.");
+			player.sendMessage(ChatColor.RED + "That player isn't part of your group.");
 			return;
 		}
 
 		if (!group.isModerator(moderatorPlayer)) {
-			player.sendMessage("That player isn't a moderator.");
+			player.sendMessage(ChatColor.YELLOW + "That player isn't a moderator.");
 			return;
 		}
 
@@ -1761,7 +1714,7 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You can't change chat modes if you aren't in a group.");
+			player.sendMessage(ChatColor.RED + "You can't change chat modes if you aren't in a group.");
 			return;
 		}
 
@@ -1790,12 +1743,12 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You can't show claims if you aren't in a group.");
+			player.sendMessage(ChatColor.RED + "You can't show claims if you aren't in a group.");
 			return;
 		}
 
 		if (!group.isModerator(player) && !group.isLeader(player)) {
-			player.sendMessage("Only the group leader or a moderator can show claims.");
+			player.sendMessage(ChatColor.RED + "Only the group leader or a moderator can show claims.");
 			return;
 		}
 
@@ -1813,12 +1766,12 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group to friend other groups.");
+			player.sendMessage(ChatColor.RED + "You must be in a group to friend other groups.");
 			return;
 		}
 
 		if (!group.isLeader(player)) {
-			player.sendMessage("Only the group leader can friend other groups.");
+			player.sendMessage(ChatColor.RED + "Only the group leader can friend other groups.");
 			return;
 		}
 
@@ -1829,12 +1782,12 @@ public class GroupManager extends BaseManager {
 		}
 
 		if (group == otherGroup) {
-			player.sendMessage("You can't friend your own group.");
+			player.sendMessage(ChatColor.YELLOW + "You can't friend your own group.");
 			return;
 		}
 
 		if (group.isGroupFriended(otherGroup)) {
-			player.sendMessage("Your group already considers the group " + otherGroup.getName() + " friendly.");
+			player.sendMessage(ChatColor.YELLOW + "Your group already considers the group " + otherGroup.getName() + " friendly.");
 			return;
 		}
 
@@ -1866,12 +1819,12 @@ public class GroupManager extends BaseManager {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
-			player.sendMessage("You must be in a group to friend other groups.");
+			player.sendMessage(ChatColor.RED + "You must be in a group to friend other groups.");
 			return;
 		}
 
 		if (!group.isLeader(player)) {
-			player.sendMessage("Only the group leader can friend other groups.");
+			player.sendMessage(ChatColor.RED + "Only the group leader can friend other groups.");
 			return;
 		}
 
@@ -1882,12 +1835,12 @@ public class GroupManager extends BaseManager {
 		}
 
 		if (group == otherGroup) {
-			player.sendMessage("You can't unfriend your own group.");
+			player.sendMessage(ChatColor.YELLOW + "You can't unfriend your own group.");
 			return;
 		}
 
 		if (!group.isGroupFriended(otherGroup)) {
-			player.sendMessage("Your group isn't friends with the group " + otherGroup.getName());
+			player.sendMessage(ChatColor.YELLOW + "Your group isn't friends with the group " + otherGroup.getName());
 			return;
 		}
 
@@ -1914,6 +1867,50 @@ public class GroupManager extends BaseManager {
 			otherGroup.sendGroupMessage(ChatColor.YELLOW + player.getDisplayName() +
 					ChatColor.YELLOW + " from the group " + ChatColor.GOLD + group.getName() +
 					ChatColor.YELLOW + " no longer wants to be friends with your group.");
+		}
+	}
+	
+	// Methods for command macro protection
+	// Player performs protected command, block further commands for 5 seconds
+	public void enableCommandCooldown(String uuid) {
+		lastPlayerCommandMap.put(uuid, new Date().getTime());
+	}
+	
+	// Check if player's commands are blocked at the moment
+	public boolean hasCommandCooldown(String uuid, boolean displayMessage) {
+		if (!lastPlayerCommandMap.containsKey(uuid)) {
+			return false;
+		}
+		if (new Date().getTime() - lastPlayerCommandMap.get(uuid) <= 5000) {
+			if (displayMessage) {
+				StandardPlugin.getPlugin().getStandardPlayerByUUID(uuid).sendMessage(ChatColor.AQUA +
+						"Please wait 5 seconds before performing your next command");
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	// Remove entries older than 5 minutes. Called by own task
+	public void purgePlayerCommandCooldowns() {
+		if (lastPlayerCommandMap.isEmpty()) {
+			return;
+		}
+		
+		long time = new Date().getTime();
+		
+		List<String> entriesToRemove = new ArrayList<String>();
+		
+		for (String uuid : lastPlayerCommandMap.keySet()) {
+			if (time - lastPlayerCommandMap.get(uuid) > 300000) {
+				entriesToRemove.add(uuid);
+			}
+		}
+		
+		if (!entriesToRemove.isEmpty()) {
+			for (String uuid : entriesToRemove) {
+				lastPlayerCommandMap.remove(uuid);
+			}
 		}
 	}
 
