@@ -19,7 +19,19 @@ public class RenameCommand extends SubCommand {
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
+		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
 
 		String groupName = null;
 
@@ -36,6 +48,8 @@ public class RenameCommand extends SubCommand {
 		}
 
 		groupManager.rename(sender, args[0], groupName);
+
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 		
 		return true;
 	}
