@@ -5,11 +5,12 @@ import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.tasks.BaseTask;
-import org.bukkit.ChatColor;
 
 public class PowerRestorationTask extends BaseTask {
 	private StandardGroups subPlugin;
 
+	// Takes care of naturally regenerating all groups' power. Also purges old records of power losses through PVP
+	
 	public PowerRestorationTask(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin);
 
@@ -19,16 +20,19 @@ public class PowerRestorationTask extends BaseTask {
 	@Override
 	public void run() {
 		GroupManager groupManager = subPlugin.getGroupManager();
-		
-		double restoreAmount = StandardGroups.getPlugin().getGroupPowerGrowth();
 
 		for (Group group : groupManager.getGroups()) {
-			double numMembers = group.getPlayerCount();
-			double numNonAltMembers = group.getNonAltPlayerCount();
-			double onlineModifier = (double)(group.getNonAltOnlineCount()) / numMembers;
-			double memberModifier = 3.0 - 6.0/(numNonAltMembers+2.0);
-			double altPenalty = 1.333333 * Math.max((numMembers-numNonAltMembers)/numMembers - 0.25, 0.0);
-			group.addPower(restoreAmount * (memberModifier * onlineModifier - altPenalty));
+			if (!group.hasPvpPowerLoss()) {
+				double powerAmplitude = subPlugin.getGroupPowerMaxValue() - subPlugin.getGroupPowerMinValue();
+				double restoreAmount = subPlugin.getGroupPowerGrowth() * (group.getMaxPower() / powerAmplitude);
+				double numMembers = group.getPlayerCount();
+				double onlineRatio = (double)(group.getOnlineCount()) / numMembers;
+				double onlineModifier = ((1.0 - (1.0-onlineRatio)*(1.0-onlineRatio)) + onlineRatio) / 2.0;
+				double memberModifier = 3.0 - 6.0/(numMembers+2.0);
+				group.addPower(restoreAmount * memberModifier * onlineModifier);
+			}
+			
+			group.purgePvpPowerLosses();
 		}
 	}
 
