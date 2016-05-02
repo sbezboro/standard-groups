@@ -5,23 +5,19 @@ import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
-import com.sbezboro.standardplugin.listeners.EventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import com.sbezboro.standardplugin.util.MiscUtil;
-import org.bukkit.Bukkit;
+
+import java.util.List;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World.Environment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-
-import com.sbezboro.standardplugin.StandardPlugin;
-import com.sbezboro.standardplugin.events.DeathEvent;
-import com.sbezboro.standardplugin.events.KillEvent;
 
 public class DeathListener extends SubPluginEventListener<StandardGroups> implements Listener {
 
@@ -29,6 +25,8 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 		super(plugin, subPlugin);
 	}
 
+	// Handle group power loss upon player death
+	
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		GroupManager groupManager = subPlugin.getGroupManager();
@@ -39,87 +37,163 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 		if (victimGroup == null) {
 			return;
 		}
+		
+		// Friends of the victim suffer power loss as well
+		List<Group> victimFriends = victimGroup.getMutuallyFriendlyGroups();
 
 		EntityDamageEvent damageEvent = victimPlayer.getLastDamageCause();
 		LivingEntity entity = MiscUtil.getLivingEntityFromDamageEvent(damageEvent);
 		StandardPlayer killerPlayer = plugin.getStandardPlayer(entity);
 		
-		double powerLoss = 0.0;
-		double locationModifier = 1.0;
+		double powerLoss = 0.0; // Base value
+		double locationModifier = 1.0; // Depends on who owns the land the death happens on
+		double manualModifier = 1.0; // From /g adjustmaxpower
+		double configModifier = subPlugin.getPowerDamageModifier();
 		Location location = victimPlayer.getLocation();
 		Group locationGroup = groupManager.getGroupByLocation(location);
 
-		if (killerPlayer != null) {			
+		// Death through direct PVP
+		if (killerPlayer != null) {
 			Group killerGroup = groupManager.getPlayerGroup(killerPlayer);
 			
+			// Base value
 			if (killerGroup != null) {
-				double killerNonAltPlayerCount = (double)(killerGroup.getNonAltPlayerCount());
-				if (killerNonAltPlayerCount == 0.0) {
-					powerLoss = 0.0;
-				} else {
-					powerLoss = 3.5 - (1.0 / killerNonAltPlayerCount - (1.0 * (killerGroup.getMaxPower() / 20.0)));
-				}
+				powerLoss = 2.0;
+				manualModifier = killerGroup.getPowerDamageModifier();
 			} else {
-				powerLoss = 1.5;
+				powerLoss = 1.0;
 			}
 			
+			// Consider location
 			if (locationGroup == null) {
 				locationModifier = 1.0;
 			} else if (groupManager.playerInGroup(victimPlayer, locationGroup)) {
-				locationModifier = 0.6666667;
+				locationModifier = 0.75;
+				victimPlayer.sendMessage("You lost less power because you were killed on your own land");
 			} else if (groupManager.playerInGroup(killerPlayer, locationGroup)) {
-				powerLoss = 3.5 - (1.0 / (double)(victimGroup.getPlayerCount())) - (1.0 * (victimGroup.getMaxPower() / 20.0));
-				locationModifier = 2.0;
+				manualModifier = victimGroup.getPowerDamageModifier();
+				locationModifier = 1.5;
+				victimPlayer.sendMessage("You lost more power because you were killed on your enemy's land");
 			}
 		
-			if (killerPlayer.hasTitle("Alt")) {
-				powerLoss = 0.0;
+			// Spawnkill protection
+			if (victimPlayer.lastDeathBySpawnkill()) {
+				if (victimGroup.getPower() > -8.0) {
+					locationModifier = 0.25;
+					victimPlayer.sendMessage("You lost very little power because you appear to be spawncamped");
+				} else {
+					locationModifier = 0.0;
+					victimPlayer.sendMessage("You did not lose any more power because you appear to be spawncamped");
+				}
+			}
+			
+			// Take care of friend groups
+			if (!victimFriends.isEmpty()) {
+				for (Group friend : victimFriends) {
+					if (friend.getPower() >= -7.5) {
+						friend.addPower(-powerLoss * manualModifier * configModifier * 0.6);
+						double power = friend.getPower();
+						ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+						friend.sendGroupMessage("Your power is now " + powerColor + friend.getPowerRounded() +
+								ChatColor.RESET + " / " + friend.getMaxPowerRounded());
+						
+						if (killerGroup != null && powerLoss * locationModifier > 0.0) {
+							friend.addPvpPowerLoss(killerGroup.getUid(), powerLoss * manualModifier * configModifier * 0.6);
+						}
+					}
+				}
+			}
+			
+			if (killerGroup != null && powerLoss * locationModifier > 0.0) {
+				victimGroup.addPvpPowerLoss(killerGroup.getUid(), powerLoss * locationModifier * manualModifier * configModifier);
 			}
 		} else {
-			if (victimPlayer.isInPvp()) {
-				killerPlayer = victimPlayer.getLastAttacker();
+			// Death through indirect PVP
+			if (victimPlayer.lastDeathInPvp()) {
+				killerPlayer = plugin.getStandardPlayerByUUID(victimPlayer.getLastAttackerUuid());
 				Group killerGroup = groupManager.getPlayerGroup(killerPlayer);
 			
+				// Base value
 				if (killerGroup != null) {
-					double killerNonAltPlayerCount = (double)(killerGroup.getNonAltPlayerCount());
-					if (killerNonAltPlayerCount == 0) {
-						powerLoss = 0.0;
-					} else {
-						powerLoss = 3.5 - (1.0 / killerNonAltPlayerCount) - (1.0 * (killerGroup.getMaxPower() / 20.0));
-					}
+					powerLoss = 2.0;
+					manualModifier = killerGroup.getPowerDamageModifier();
 				} else {
-					powerLoss = 1.5;
+					powerLoss = 1.0;
 				}
 				
+				// Consider location
 				if (locationGroup == null) {
 					locationModifier = 1.0;
 				} else if (groupManager.playerInGroup(victimPlayer, locationGroup)) {
-					locationModifier = 0.6666667;
+					locationModifier = 0.75;
+					victimPlayer.sendMessage("You lost less power because you were killed on your own land");
 				} else if (groupManager.playerInGroup(killerPlayer, locationGroup)) {
-					powerLoss = 3.5 - (1.0 / (double)(victimGroup.getPlayerCount())) - (1.0 * (victimGroup.getMaxPower() / 20.0));
-					locationModifier = 2.0;
+					manualModifier = victimGroup.getPowerDamageModifier();
+					locationModifier = 1.5;
+					victimPlayer.sendMessage("You lost more power because you were killed on your enemy's land");
 				}
 		
-				if (killerPlayer.hasTitle("Alt")) {
-					powerLoss = 0.0;
+				// Spawnkill protection
+				if (victimPlayer.lastDeathBySpawnkill()) {
+					if (victimGroup.getPower() > -8.0) {
+						locationModifier = 0.25;
+						victimPlayer.sendMessage("You lost very little power because you appear to be spawncamped");
+					} else {
+						locationModifier = 0.0;
+						victimPlayer.sendMessage("You did not lose any more power because you appear to be spawncamped");
+					}
 				}
-			} else {
-				powerLoss = 1.5;
+				
+				// Take care of friend groups
+				if (!victimFriends.isEmpty()) {
+					for (Group friend : victimFriends) {
+						if (friend.getPower() >= -7.5) {
+							friend.addPower(-powerLoss * manualModifier * configModifier * 0.6);
+							double power = friend.getPower();
+							ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+							friend.sendGroupMessage("Your power is now " + powerColor + friend.getPowerRounded() +
+									ChatColor.RESET + " / " + friend.getMaxPowerRounded());
+							
+							if (killerGroup != null && powerLoss * locationModifier > 0.0) {
+								friend.addPvpPowerLoss(killerGroup.getUid(), powerLoss * manualModifier * configModifier * 0.6);
+							}
+						}
+					}
+				}
+				
+				if (killerGroup != null && powerLoss * locationModifier > 0.0) {
+					victimGroup.addPvpPowerLoss(killerGroup.getUid(), powerLoss * locationModifier * manualModifier * configModifier);
+				}
+			} 
+			
+			// Death through PVE
+			else {
+				powerLoss = 1.0;
+				double currentPower = victimGroup.getPower();
+				if (currentPower <= 0.0) {
+					victimPlayer.sendMessage("You did not lose any more power because it already is negative");
+					return;
+				}
+				
 				if (locationGroup == null || groupManager.playerInGroup(victimPlayer, locationGroup)) {
 					locationModifier = 1.0;
 				} else {
 					locationModifier = 3.0;
+					victimPlayer.sendMessage("You lost more power because you died on someone else's land");
 				}
-				double currentPower = victimGroup.getPower();
-				if (currentPower >= 0.0 && currentPower - powerLoss * locationModifier < 0.0) {
+				if (currentPower > 0.0 && currentPower - powerLoss * locationModifier * configModifier < 0.0) {
 					victimGroup.addPower(-currentPower);
-					return;
-				} else if (currentPower < 0.0) {
-					return;
+					locationModifier = 0.0;
+					victimPlayer.sendMessage("Your power loss was capped so your power would not fall below zero");
 				}
 			}
 		}
 		
-		victimGroup.addPower(-powerLoss * locationModifier);
+		// Apply power loss to victim
+		victimGroup.addPower(-powerLoss * locationModifier * manualModifier * configModifier);
+		double power = victimGroup.getPower();
+		ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+		victimGroup.sendGroupMessage("Your power is now " + powerColor + victimGroup.getPowerRounded() +
+				ChatColor.RESET + " / " + victimGroup.getMaxPowerRounded());
 	}
 }
