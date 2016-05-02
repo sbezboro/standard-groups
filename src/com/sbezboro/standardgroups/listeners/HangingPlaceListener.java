@@ -44,7 +44,7 @@ public class HangingPlaceListener extends SubPluginEventListener<StandardGroups>
 				}
 				String attackerGroupUid = attackerGroup.getUid();
 				
-				double powerRestoration = -subPlugin.getGroupPowerMinValue() / 300.0;
+				double powerRestoration = 0.25;
 				if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
 					event.setCancelled(true);
 					player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + victimGroup.getName());
