@@ -1,8 +1,12 @@
 group-name-min-length: 3
 group-name-max-length: 12
-group-land-growth: 2
+group-land-growth: 1
 group-land-growth-days: 7
 group-land-growth-limit: 80
-group-starting-land: 5
+group-starting-land: 10
 group-auto-kick-days: 14
 max-locks-per-chunk: 50
+group-power-growth: 0.06667
+group-power-min-value: -15.0
+group-power-max-value: 20.0
+power-damage-modifier: 1.0
