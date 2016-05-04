@@ -18,14 +18,21 @@ public class PlayerTeleportListener extends SubPluginEventListener<StandardGroup
 
 	@EventHandler(ignoreCancelled = true)
 	public void onPlayerTeleport(PlayerTeleportEvent event) {
-		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
-		TeleportCause cause = event.getCause();
-		Location to = event.getTo();
-
-		Group group = subPlugin.getGroupManager().getGroupByLocation(to);
-
-		if (cause == TeleportCause.CHORUS_FRUIT && group != null && !group.isMember(player)) {
-			event.setCancelled(true);
+		if (event.getCause() == TeleportCause.CHORUS_FRUIT) {
+			StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
+			Location from = event.getFrom();
+			Location to = event.getTo();
+			
+			Group group = subPlugin.getGroupManager().getGroupByLocation(to);
+			if (group != null && !group.isMember(player)) {
+				event.setCancelled(true);
+				return;
+			}
+			group = subPlugin.getGroupManager().getGroupByLocation(from);
+			if (group != null && !group.isMember(player)) {
+				event.setCancelled(true);
+				return;
+			}
 		}
 	}
 }
