@@ -176,6 +176,7 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new PlayerJoinListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
 		//pluginManager.registerEvents(new PlayerPortalListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerTeleportListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PotionSplashListener(basePlugin, this), this);
 	}
 	
