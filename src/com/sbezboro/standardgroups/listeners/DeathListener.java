@@ -71,7 +71,7 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 				locationModifier = 0.75;
 				victimPlayer.sendMessage("You lost less power because you were killed on your own land");
 			} else if (groupManager.playerInGroup(killerPlayer, locationGroup)) {
-				manualModifier = victimGroup.getPowerDamageModifier();
+				manualModifier = Math.max(victimGroup.getPowerDamageModifier(), manualModifier);
 				locationModifier = 1.5;
 				victimPlayer.sendMessage("You lost more power because you were killed on your enemy's land");
 			}
@@ -128,7 +128,7 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 					locationModifier = 0.75;
 					victimPlayer.sendMessage("You lost less power because you were killed on your own land");
 				} else if (groupManager.playerInGroup(killerPlayer, locationGroup)) {
-					manualModifier = victimGroup.getPowerDamageModifier();
+					manualModifier = Math.max(victimGroup.getPowerDamageModifier(), manualModifier);
 					locationModifier = 1.5;
 					victimPlayer.sendMessage("You lost more power because you were killed on your enemy's land");
 				}
