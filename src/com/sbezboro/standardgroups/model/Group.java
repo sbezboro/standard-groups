@@ -539,7 +539,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	
 	// Called when a TNT block is broken or explodes
 	public void decrementAllowedTnt() {
-		allowedTntExplosions.setValue(allowedTntExplosions.getValue() - 1);
+		if (allowedTntExplosions.getValue() > 0) {
+			allowedTntExplosions.setValue(allowedTntExplosions.getValue() - 1);
+		}
 	}
 	
 	public int getAllowedTnt() {
