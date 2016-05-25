@@ -102,7 +102,7 @@ public class GroupManager extends BaseManager {
 	
 	public static final double ENTITY_POWER_THRESHOLD = 0.0;
 	
-	public static final double BLOCK_POWER_THRESHOLD = -5.0;
+	public static final double BLOCK_POWER_THRESHOLD = -3.0;
 	
 	public static final double LOCK_POWER_THRESHOLD = -10.0;
 
