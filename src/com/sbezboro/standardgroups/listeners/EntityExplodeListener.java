@@ -23,6 +23,11 @@ public class EntityExplodeListener extends SubPluginEventListener<StandardGroups
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onEntityExplode(final EntityExplodeEvent event) {
+		if (event.getEntity().getType() == EntityType.CREEPER) {
+			event.setCancelled(true);
+			return;
+		}
+		
 		GroupManager groupManager = subPlugin.getGroupManager();
 		
 		List<Group> affectedGroups = new ArrayList<Group>();
