@@ -35,10 +35,6 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 		Group attackerGroup = groupManager.getPlayerGroup(player);
 
 		if (victimGroup != null) {
-			if (event.getBlock().getType() == Material.TNT) {
-				victimGroup.incrementAllowedTnt();
-			}
-			
 			// Player in group
 			if (groupManager.playerInGroup(player, victimGroup)) {
 				// Sanity check
