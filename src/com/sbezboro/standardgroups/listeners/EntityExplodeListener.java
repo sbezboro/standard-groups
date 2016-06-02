@@ -23,14 +23,7 @@ public class EntityExplodeListener extends SubPluginEventListener<StandardGroups
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onEntityExplode(final EntityExplodeEvent event) {
-		if (event.getEntity().getType() == EntityType.CREEPER) {
-			event.setCancelled(true);
-			return;
-		}
-		
 		GroupManager groupManager = subPlugin.getGroupManager();
-		
-		List<Group> affectedGroups = new ArrayList<Group>();
 
 		for (Block block : new ArrayList<Block>(event.blockList())) {
 			Group group = groupManager.getGroupByLocation(block.getLocation());
@@ -50,23 +43,6 @@ public class EntityExplodeListener extends SubPluginEventListener<StandardGroups
 				if (!groupManager.getLocksAffectedByBlock(block.getLocation()).isEmpty()) {
 					event.blockList().remove(block);
 				}
-				
-				if (!affectedGroups.contains(group)) {
-					affectedGroups.add(group);
-				}
-			}
-		}
-
-		// Only allow as many TNT explosions to happen as TNT blocks have been placed inside groups' land
-		if (event.getEntity().getType() == EntityType.PRIMED_TNT && !affectedGroups.isEmpty()) {
-			for (Group group : affectedGroups) {
-				if (group.getAllowedTnt() <= 0) {
-					event.setCancelled(true);
-					return;
-				}
-			}
-			for (Group group : affectedGroups) {
-				group.decrementAllowedTnt();
 			}
 		}
 		
