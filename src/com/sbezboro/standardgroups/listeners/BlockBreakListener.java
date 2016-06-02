@@ -39,10 +39,6 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 		Group attackerGroup = groupManager.getPlayerGroup(player);
 		
 		if (victimGroup != null) {
-			if (event.getBlock().getType() == Material.TNT) {
-				victimGroup.decrementAllowedTnt();
-			}
-			
 			Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
 
 			// Allow players to break one block in front of portals to get out of portal traps
