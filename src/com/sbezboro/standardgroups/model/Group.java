@@ -37,7 +37,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedProperty<Integer> maxClaims;
 	private PersistedProperty<Double> power; // Current power
 	private PersistedProperty<Double> maxPower; // Maximum power
-	private PersistedProperty<Integer> allowedTntExplosions;
 	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
@@ -62,7 +61,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		this.maxClaims.setValue(StandardGroups.getPlugin().getGroupStartingLand());
 		this.power.setValue(0.0);
 		this.maxPower.setValue(10.0);
-		this.allowedTntExplosions.setValue(0);
 		this.leaderUuid.setValue(leader.getUuidString());
 		this.memberUuids.add(leader.getUuidString());
 		this.powerDamageModifier = 1.0;
@@ -530,22 +528,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		} else {
 			powerDamageModifier = 1.0 - maxPowerAdj / 20.0;
 		}
-	}
-	
-	// Called when a TNT block is placed
-	public void incrementAllowedTnt() {
-		allowedTntExplosions.setValue(allowedTntExplosions.getValue() + 1);
-	}
-	
-	// Called when a TNT block is broken or explodes
-	public void decrementAllowedTnt() {
-		if (allowedTntExplosions.getValue() > 0) {
-			allowedTntExplosions.setValue(allowedTntExplosions.getValue() - 1);
-		}
-	}
-	
-	public int getAllowedTnt() {
-		return allowedTntExplosions.getValue();
 	}
 	
 	// Remove old logs about kills by other groups. Called by PowerRestorationTask
