@@ -94,7 +94,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		maxClaims = createProperty(Integer.class, "max-claims");
 		power = createProperty(Double.class, "power");
 		maxPower = createProperty(Double.class, "max-power");
-		allowedTntExplosions = createProperty(Integer.class, "allowed-tnt-explosions");
 		leaderUuid = createProperty(String.class, "leader-uuid");
 	}
 
@@ -150,9 +149,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 		if (maxPower.getValue() == null) {
 			maxPower.setValue(10.0);
-		}
-		if (allowedTntExplosions.getValue() == null) {
-			allowedTntExplosions.setValue(0);
 		}
 		recalculatePowerDamageModifier();
 	}
