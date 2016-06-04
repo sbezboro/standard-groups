@@ -854,7 +854,7 @@ public class GroupManager extends BaseManager {
 		if (group.getWeightedClaimCount() >= group.getMaxClaims()) {
 			player.sendMessage(ChatColor.RED + "Your group cannot claim any more land at the moment.");
 			return;
-		} else if (nextToSpawn && group.getWeightedClaimCount() + 10 > group.getMaxClaims()) {
+		} else if (nextToSpawn && group.getWeightedClaimCount() + 5 > group.getMaxClaims()) {
 			player.sendMessage(ChatColor.GOLD + "Your group cannot claim any more land next to spawn at the moment.");
 			return;
 		}
