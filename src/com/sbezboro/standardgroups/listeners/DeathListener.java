@@ -91,14 +91,14 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 			if (!victimFriends.isEmpty()) {
 				for (Group friend : victimFriends) {
 					if (friend.getPower() >= -7.5) {
-						friend.addPower(-powerLoss * manualModifier * configModifier * 0.6);
+						friend.addPower(-powerLoss * locationModifier * manualModifier * configModifier * 0.3);
 						double power = friend.getPower();
 						ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 						friend.sendGroupMessage("Your power is now " + powerColor + friend.getPowerRounded() +
 								ChatColor.RESET + " / " + friend.getMaxPowerRounded());
 						
 						if (killerGroup != null && powerLoss * locationModifier > 0.0) {
-							friend.addPvpPowerLoss(killerGroup.getUid(), powerLoss * manualModifier * configModifier * 0.6);
+							friend.addPvpPowerLoss(killerGroup.getUid(), powerLoss * locationModifier * manualModifier * configModifier * 0.3);
 						}
 					}
 				}
@@ -148,14 +148,14 @@ public class DeathListener extends SubPluginEventListener<StandardGroups> implem
 				if (!victimFriends.isEmpty()) {
 					for (Group friend : victimFriends) {
 						if (friend.getPower() >= -7.5) {
-							friend.addPower(-powerLoss * manualModifier * configModifier * 0.6);
+							friend.addPower(-powerLoss * locationModifier * manualModifier * configModifier * 0.3);
 							double power = friend.getPower();
 							ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 							friend.sendGroupMessage("Your power is now " + powerColor + friend.getPowerRounded() +
 									ChatColor.RESET + " / " + friend.getMaxPowerRounded());
 							
 							if (killerGroup != null && powerLoss * locationModifier > 0.0) {
-								friend.addPvpPowerLoss(killerGroup.getUid(), powerLoss * manualModifier * configModifier * 0.6);
+								friend.addPvpPowerLoss(killerGroup.getUid(), powerLoss * locationModifier * manualModifier * configModifier * 0.3);
 							}
 						}
 					}
