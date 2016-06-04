@@ -14,7 +14,7 @@
 
 	<path id="classpath.base">
 		<pathelement location="${main.build.dir}"/>
-		<pathelement location="lib/craftbukkit-1.9.2-R0.1-SNAPSHOT.jar" />
+		<pathelement location="lib/craftbukkit-1.9.4-R0.1-SNAPSHOT.jar" />
 		<pathelement location="lib/StandardPlugin.jar" />
 	</path>
 
