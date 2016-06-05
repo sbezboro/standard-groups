@@ -23,15 +23,28 @@ public class CreateCommand extends SubCommand {
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
+		
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
+		
 		if (args.length != 1) {
 			sender.sendMessage("You must provide a name for your group.");
 			return false;
 		}
 		
-		StandardPlayer player = plugin.getStandardPlayer(sender);
-		
-		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		groupManager.createGroup(player, args[0]);
+		
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 		
 		return true;
 	}

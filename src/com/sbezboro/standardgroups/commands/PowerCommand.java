@@ -13,33 +13,35 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LeaveCommand extends SubCommand {
+public class PowerCommand extends SubCommand {
 
-	public LeaveCommand(StandardPlugin plugin, BaseCommand command) {
-		super(plugin, command, "leave");
+	public PowerCommand(StandardPlugin plugin, BaseCommand command) {
+		super(plugin, command, "power");
 
-		addHelp(ChatColor.YELLOW + "/g leave" + ChatColor.RESET + " - leave a group you are in");
+		addHelp(ChatColor.YELLOW + "/g power [name]" + ChatColor.RESET + " - show a group's current power");
 	}
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
-		if (sender == null) {
-			command.showPlayerOnlyMessage(sender);
-			return false;
-		}
-		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+
+		String name = null;
 		
-		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
-			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+		if (args.length == 0) {
+			if (player == null) {
+				command.showPlayerOnlyMessage(sender);
+				return false;
+			}
+		} else if (args.length == 1) {
+			name = args[0];
+		} else {
+			command.showUsageInfo(sender);
 			return false;
 		}
 		
-		groupManager.leaveGroup(player);
-		
-		groupManager.enableCommandCooldown(new String(player.getUuidString()));
+		groupManager.groupPower(sender, name);
 		
 		return true;
 	}

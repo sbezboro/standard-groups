@@ -23,15 +23,28 @@ public class JoinCommand extends SubCommand {
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
+		
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
+		
 		if (args.length != 1) {
 			sender.sendMessage("You must specify which group name you would like to join.");
 			return false;
 		}
 		
-		StandardPlayer player = plugin.getStandardPlayer(sender);
-		
-		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		groupManager.joinGroup(player, args[0]);
+		
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 		
 		return true;
 	}

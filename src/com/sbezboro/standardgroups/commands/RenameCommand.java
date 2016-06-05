@@ -5,6 +5,7 @@ import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
+import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -19,7 +20,19 @@ public class RenameCommand extends SubCommand {
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
+		
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
+		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
 
 		String groupName = null;
 
@@ -36,6 +49,8 @@ public class RenameCommand extends SubCommand {
 		}
 
 		groupManager.rename(sender, args[0], groupName);
+
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 		
 		return true;
 	}

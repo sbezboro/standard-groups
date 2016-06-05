@@ -12,8 +12,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
-import org.bukkit.event.hanging.HangingBreakEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 
 public class HangingBreakListener extends SubPluginEventListener<StandardGroups> implements Listener {
 
@@ -33,12 +31,31 @@ public class HangingBreakListener extends SubPluginEventListener<StandardGroups>
 
 		GroupManager groupManager = subPlugin.getGroupManager();
 
-		Group group = groupManager.getGroupByLocation(location);
+		Group victimGroup = groupManager.getGroupByLocation(location);
+		Group attackerGroup = groupManager.getPlayerGroup(player);
 
-		if (group != null) {
-			if (!groupManager.playerInGroup(player, group) && !groupManager.isGroupsAdmin(player)) {
-				event.setCancelled(true);
-				player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + group.getName());
+		if (victimGroup != null) {
+			if (!groupManager.playerInGroup(player, victimGroup) && !groupManager.isGroupsAdmin(player)) {
+				if (victimGroup.getPower() >= GroupManager.ENTITY_POWER_THRESHOLD) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + victimGroup.getName());
+					return;
+				}
+				if (attackerGroup == null) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.RED + "Cannot break blocks in the territory of " + victimGroup.getName());
+					return;
+				}
+				String attackerGroupUid = attackerGroup.getUid();
+				
+				double powerRestoration = 0.25;
+				if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + victimGroup.getName());
+					return;
+				}
+				victimGroup.addPower(powerRestoration);
+				victimGroup.reducePvpPowerLoss(attackerGroupUid, powerRestoration);
 			}
 		}
 	}

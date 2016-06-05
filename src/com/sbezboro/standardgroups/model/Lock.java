@@ -110,12 +110,14 @@ public class Lock extends PersistableImpl implements Persistable {
 		return StandardPlugin.getPlugin().getStandardPlayerByUUID(ownerUuid);
 	}
 
+	// Group leaders always are co-owners
 	public boolean isOwner(StandardPlayer player) {
-		return ownerUuid.equals(player.getUuidString());
+		return ownerUuid.equals(player.getUuidString()) || group.isLeader(player);
 	}
 
+	// Groups moderators always have access
 	public boolean hasAccess(StandardPlayer player) {
-		return memberUuids.contains(player.getUuidString());
+		return memberUuids.contains(player.getUuidString()) || group.isModerator(player) || group.isLeader(player);
 	}
 
 	public void addMember(StandardPlayer player) {

@@ -154,10 +154,12 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	private void registerEvents() {
 		PluginManager pluginManager = getServer().getPluginManager();
 		pluginManager.registerEvents(new BlockBreakListener(basePlugin, this), this);
+		pluginManager.registerEvents(new BlockFadeListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPistonExtendListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPistonRetractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new BlockPlaceListener(basePlugin, this), this);
 		pluginManager.registerEvents(new CreatureSpawnListener(basePlugin, this), this);
+		pluginManager.registerEvents(new DeathListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityBlockFormListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityBreakDoorListener(basePlugin, this), this);
 		pluginManager.registerEvents(new EntityChangeBlockListener(basePlugin, this), this);
@@ -171,8 +173,10 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		pluginManager.registerEvents(new PlayerBucketFillListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerInteractListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerDamageListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerJoinListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PlayerMoveListener(basePlugin, this), this);
 		//pluginManager.registerEvents(new PlayerPortalListener(basePlugin, this), this);
+		pluginManager.registerEvents(new PlayerTeleportListener(basePlugin, this), this);
 		pluginManager.registerEvents(new PotionSplashListener(basePlugin, this), this);
 	}
 	
@@ -206,6 +210,22 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 
 	public int getMaxLocksPerChunk() {
 		return config.getMaxLocksPerChunk();
+	}
+	
+	public double getGroupPowerGrowth() {
+		return config.getGroupPowerGrowth();
+	}
+	
+	public double getGroupPowerMinValue() {
+		return config.getGroupPowerMinValue();
+	}
+	
+	public double getGroupPowerMaxValue() {
+		return config.getGroupPowerMaxValue();
+	}
+
+	public double getPowerDamageModifier() {
+		return config.getPowerDamageModifier();
 	}
 	
 	public GroupManager getGroupManager() {

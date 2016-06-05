@@ -2,6 +2,7 @@ package com.sbezboro.standardgroups.listeners;
 
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
+import com.sbezboro.standardgroups.model.Group;
 import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
@@ -23,10 +24,17 @@ public class EntityBreakDoorListener extends SubPluginEventListener<StandardGrou
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		Location location = event.getBlock().getLocation();
-		List<Lock> locks = groupManager.getLocksAffectedByBlock(location);
 
-		if (!locks.isEmpty()) {
-			event.setCancelled(true);
+		Group group = groupManager.getGroupByLocation(location);
+		
+		if (group != null) {
+			List<Lock> locks = groupManager.getLocksAffectedByBlock(location);
+	
+			if (!locks.isEmpty()) {
+				if (group.getPower() >= groupManager.LOCK_POWER_THRESHOLD) {
+					event.setCancelled(true);
+				}
+			}
 		}
 	}
 }

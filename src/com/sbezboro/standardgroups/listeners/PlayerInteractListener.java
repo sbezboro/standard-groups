@@ -7,7 +7,6 @@ import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,22 +34,83 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 	public void onPlayerInteract(final PlayerInteractEvent event) {
 		Block clickedBlock = event.getClickedBlock();
 		ItemStack itemStack = event.getItem();
+		GroupManager groupManager = subPlugin.getGroupManager();
+		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 		
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK ||
 				(event.getAction() == Action.LEFT_CLICK_BLOCK && clickedBlock.getType().equals(Material.DRAGON_EGG))) {
 			if (GroupManager.isBlockTypeProtected(clickedBlock) ||
 					(itemStack != null && itemStack.getType() == Material.INK_SACK)) {
-				StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
-
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
 		} else if (event.getAction() == Action.PHYSICAL) {
 			Block block = event.getClickedBlock();
 
 			if (block != null && block.getType() == Material.SOIL) {
-				StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
-
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
+			}
+		} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if (itemStack != null && (itemStack.getType() == Material.EXPLOSIVE_MINECART || itemStack.getType() == Material.HOPPER_MINECART)) {
+				checkPlayerAccess(player, clickedBlock.getLocation(), event);
+			}
+		}
+		
+		Group group = groupManager.getPlayerGroup(player);
+		
+		if (group == null) {
+			return;
+		}
+		
+		String uuid = new String(player.getUuidString());
+		
+		// Autocommands (/g autolock)
+		if (event.getAction() == Action.LEFT_CLICK_BLOCK && group.hasAutoCommand(uuid)) {
+			String[] autoCommandArgs = group.getAutoCommandArgs(uuid);
+			
+			if (autoCommandArgs == null) {
+				return;
+			}
+			
+			if (autoCommandArgs[0].equalsIgnoreCase("lock")) {
+				if (clickedBlock.getType() == Material.DRAGON_EGG) {
+					return;
+				}
+				
+				if (autoCommandArgs.length == 1) {
+					groupManager.lock(player, clickedBlock);
+				}
+				else if (autoCommandArgs.length == 2) {
+					if (autoCommandArgs[1].equalsIgnoreCase("info")) {
+						groupManager.lockInfo(player, clickedBlock);
+					} else if (autoCommandArgs[1].equalsIgnoreCase("public")) {
+						groupManager.togglePublicLock(player, clickedBlock);
+					}
+				}
+				else if (autoCommandArgs.length == 3) {
+					if (autoCommandArgs[1].equalsIgnoreCase("add")) {
+						StandardPlayer otherPlayer = plugin.matchPlayer(autoCommandArgs[2]);
+
+						if (otherPlayer == null) {
+							player.sendMessage("That player doesn't exist");
+						} else {
+							groupManager.addLockMember(player, clickedBlock, otherPlayer);
+						}
+					} else if (autoCommandArgs[1].equalsIgnoreCase("remove")) {
+						StandardPlayer otherPlayer = plugin.matchPlayer(autoCommandArgs[2]);
+
+						if (otherPlayer == null) {
+							player.sendMessage("That player doesn't exist");
+						} else {
+							groupManager.removeLockMember(player, clickedBlock, otherPlayer);
+						}
+					}
+				}
+			} else if (autoCommandArgs[0].equalsIgnoreCase("unlock")) {
+				if (clickedBlock.getType() == Material.DRAGON_EGG) {
+					return;
+				}
+				
+				groupManager.unlock(player, clickedBlock);
 			}
 		}
 	}
@@ -111,9 +171,25 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 						player.sendMessage(ChatColor.RED + "This block is locked and you do not have access to it.");
 					}
 				}
-			} else if (!groupManager.isGroupsAdmin(player)) {
-				event.setCancelled(true);
-				player.sendMessage(ChatColor.RED + "Cannot use this in the territory of " + group.getName());
+			} else {
+				Group playerGroup = groupManager.getPlayerGroup(player);
+				if (lock != null) {
+					if (lock.hasAccess(player) && playerGroup != null) {
+						if (group.isMutualFriendship(playerGroup)) {
+							player.sendMessage(ChatColor.YELLOW + "Using locked block of a friended group that you have access to");
+						} else {
+							event.setCancelled(true);
+							player.sendMessage(ChatColor.RED + "Your group needs to be friends with " + group.getName() +
+									" in order to share locks.");
+						}
+					} else {
+						event.setCancelled(true);
+						player.sendMessage(ChatColor.RED + "This block is locked and you do not have access to it.");
+					}
+				} else if (!groupManager.isGroupsAdmin(player)) {
+					event.setCancelled(true);
+					player.sendMessage(ChatColor.RED + "Cannot use this in the territory of " + group.getName());
+				}
 			}
 		}
 	}
