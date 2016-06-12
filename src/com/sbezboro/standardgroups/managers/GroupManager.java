@@ -82,7 +82,7 @@ public class GroupManager extends BaseManager {
 		add(Material.BED_BLOCK);
 		add(Material.LEVER);
 		add(Material.STONE_BUTTON);
-                add(Material.SKULL);
+		add(Material.SKULL);
 	}};
 
 	@SuppressWarnings("serial")

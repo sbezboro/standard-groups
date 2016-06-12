@@ -1,6 +1,6 @@
 name: StandardGroups
 main: com.sbezboro.standardgroups.StandardGroups
-version: 1.4.0
+version: 1.4.1
 depend: [StandardPlugin]
 
 commands:
