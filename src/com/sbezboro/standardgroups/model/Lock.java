@@ -115,9 +115,15 @@ public class Lock extends PersistableImpl implements Persistable {
 		return ownerUuid.equals(player.getUuidString()) || group.isLeader(player);
 	}
 
-	// Groups moderators always have access
+	// Groups moderators always have access to chests from members
 	public boolean hasAccess(StandardPlayer player) {
-		return memberUuids.contains(player.getUuidString()) || group.isModerator(player) || group.isLeader(player);
+		if (memberUuids.contains(player.getUuidString()) || group.isLeader(player)) {
+			return true;
+		}
+		
+		StandardPlayer owner = getOwner();
+		
+		return group.isModerator(player) && !group.isLeader(owner) && !group.isModerator(owner);
 	}
 
 	public void addMember(StandardPlayer player) {
