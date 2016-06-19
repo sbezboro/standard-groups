@@ -35,10 +35,6 @@ public class AutolockCommand extends SubCommand {
 		}
 
 		String uuid = new String(player.getUuidString());
-		if (groupManager.hasCommandCooldown(uuid, true)) {
-			groupManager.enableCommandCooldown(uuid);
-			return false;
-		}
 
 		Group group = groupManager.getPlayerGroup(player);
 		
@@ -55,23 +51,19 @@ public class AutolockCommand extends SubCommand {
 
 		if (args.length == 0) {
 			group.enableAutoCommand(uuid, autoCommandArgs);
-			groupManager.enableCommandCooldown(uuid);
 			return true;
 		} else if (args.length == 1) {
 			if (args[0].equalsIgnoreCase("off")) {
 				group.disableAutoCommand(uuid);
-				groupManager.enableCommandCooldown(uuid);
 				return true;
 			}
 			
 			else if (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("public")) {
 				group.enableAutoCommand(uuid, autoCommandArgs);
-				groupManager.enableCommandCooldown(uuid);
 				return true;
 			} else if (args[0].equalsIgnoreCase("unlock")) {
 				autoCommandArgs = new String[] { "unlock" };
 				group.enableAutoCommand(uuid, autoCommandArgs);
-				groupManager.enableCommandCooldown(uuid);
 				return true;
 			}
 		} else if (args.length == 2) {
@@ -84,7 +76,6 @@ public class AutolockCommand extends SubCommand {
 				}
 
 				group.enableAutoCommand(uuid, autoCommandArgs);
-				groupManager.enableCommandCooldown(uuid);
 				return true;
 			}
 		}
