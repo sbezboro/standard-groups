@@ -120,6 +120,9 @@ public class GroupManager extends BaseManager {
 	public static class MaxPowerComparator implements Comparator<Group> {
 		@Override
 		public int compare(Group g1, Group g2) {
+			if (g1.getMaxPower() == g2.getMaxPower()) {
+				return Double.compare(g1.getPower(), g2.getPower());
+			}
 			return Double.compare(g1.getMaxPower(), g2.getMaxPower());
 		}
 	}
@@ -850,7 +853,7 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		// Spawn claims are "worth" 10 normal claims
+		// Spawn claims are "worth" 5 normal claims
 		boolean nextToSpawn = isNextToSpawn(location);
 		if (group.getWeightedClaimCount() >= group.getMaxClaims()) {
 			player.sendMessage(ChatColor.RED + "Your group cannot claim any more land at the moment.");
@@ -891,6 +894,8 @@ public class GroupManager extends BaseManager {
 		if (isGroupsAdmin(player)) {
 			player.sendMessage(ChatColor.YELLOW + "Land claimed for " + group.getName());
 		}
+		
+		group.recalculateSpawnClaims();
 	}
 
 	public void claim(StandardPlayer player, String groupName, int width) {
@@ -1026,6 +1031,8 @@ public class GroupManager extends BaseManager {
 		if (isGroupsAdmin(player)) {
 			player.sendMessage(ChatColor.YELLOW + "Land unclaimed from " + group.getName());
 		}
+		
+		group.recalculateSpawnClaims();
 	}
 
 	public void unclaim(StandardPlayer player) {
@@ -1067,6 +1074,8 @@ public class GroupManager extends BaseManager {
 				}
 			}
 		}
+
+		group.recalculateSpawnClaims();
 	}
 	
 	// Checks whether loc is in a chunk directly next to safe / neutral area. Cornering does not count
@@ -1078,7 +1087,7 @@ public class GroupManager extends BaseManager {
 		
 		int dx = -16;
 		int dz = -16;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i <= 3; i++) {
 			locationGroup = getGroupByLocation(location);
 			
 			if (locationGroup != null && (locationGroup.isSafeArea() || locationGroup.isNeutralArea())) {
@@ -1719,10 +1728,31 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		boolean groupChat = group.toggleChat(player);
+		char chat = group.toggleChat(player);
 
-		if (groupChat) {
+		if (chat == 'g') {
 			player.sendMessage(ChatColor.YELLOW + "You are now in group chat.");
+		} else if (chat == 'f') {
+			player.sendMessage(ChatColor.YELLOW + "You are now in friend chat.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "You are now in public chat.");
+		}
+	}
+
+	public void setChat(StandardPlayer player, char chat) {
+		Group group = getPlayerGroup(player);
+
+		if (group == null) {
+			player.sendMessage(ChatColor.RED + "You can't change chat modes if you aren't in a group.");
+			return;
+		}
+
+		group.setChat(player, chat);
+
+		if (chat == 'g') {
+			player.sendMessage(ChatColor.YELLOW + "You are now in group chat.");
+		} else if (chat == 'f') {
+			player.sendMessage(ChatColor.YELLOW + "You are now in friend chat.");
 		} else {
 			player.sendMessage(ChatColor.YELLOW + "You are now in public chat.");
 		}
@@ -1761,6 +1791,45 @@ public class GroupManager extends BaseManager {
 				player.sendMessage(ChatColor.YELLOW + "([" + claim.getWorldDisplayName() + "] " + claim.getX() + ", " + claim.getZ() + ")");
 			}
 		}
+	}
+	
+	public void setGroupMessage(StandardPlayer player, String message) {
+		Group group = getPlayerGroup(player);
+		
+		if (group == null) {
+			player.sendMessage(ChatColor.RED + "You must be in a group to set a group message.");
+			return;
+		}
+
+		if (!group.isLeader(player) && !group.isModerator(player)) {
+			player.sendMessage(ChatColor.RED + "Only group moderators can set group messages.");
+			return;
+		}
+		
+		if (message.equals("off")) {
+			group.disableGroupMessage();
+			player.sendMessage(ChatColor.YELLOW + "Group message disabled.");
+		} else {
+			group.setGroupMessage(message);
+			player.sendMessage(ChatColor.YELLOW + "Group message set.");
+		}
+	}
+	
+	public void disableGroupMessage(StandardPlayer player) {
+		Group group = getPlayerGroup(player);
+		
+		if (group == null) {
+			player.sendMessage(ChatColor.RED + "You must be in a group to set a group message.");
+			return;
+		}
+
+		if (!group.isLeader(player) && !group.isModerator(player)) {
+			player.sendMessage(ChatColor.RED + "Only group moderators can set group messages.");
+			return;
+		}
+
+		group.disableGroupMessage();
+		player.sendMessage(ChatColor.YELLOW + "Group message disabled.");
 	}
 
 	public void friendGroup(StandardPlayer player, String usernameOrGroupName) {
