@@ -3,21 +3,16 @@ package com.sbezboro.standardgroups.listeners;
 import com.sbezboro.standardgroups.StandardGroups;
 import com.sbezboro.standardgroups.managers.GroupManager;
 import com.sbezboro.standardgroups.model.Group;
-import com.sbezboro.standardgroups.model.Lock;
 import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-
-import java.util.List;
 
 public class PlayerChatListener extends SubPluginEventListener<StandardGroups> implements Listener {
 
@@ -47,8 +42,26 @@ public class PlayerChatListener extends SubPluginEventListener<StandardGroups> i
 
 			for (StandardPlayer otherPlayer : chatPlayerGroup.getPlayers()) {
 				if (otherPlayer.isOnline()) {
-
 					otherPlayer.sendMessage(String.format(format, player.getDisplayName(), message));
+				}
+			}
+		} else if (chatPlayerGroup != null && chatPlayerGroup.isFriendChat(player)) {
+			format = ChatColor.DARK_AQUA + "(To friends) " + ChatColor.AQUA + "%s" + ChatColor.RESET + ": %s";
+
+			Bukkit.getConsoleSender().sendMessage(String.format(
+					format.replace("(To friends)", "(To friends of " + chatPlayerGroup.getName() + ")"),
+					player.getDisplayName(), message));
+	
+			for (StandardPlayer otherPlayer : chatPlayerGroup.getPlayers()) {
+				if (otherPlayer.isOnline()) {
+					otherPlayer.sendMessage(String.format(format, player.getDisplayName(), message));
+				}
+			}
+			for (Group friend : chatPlayerGroup.getMutuallyFriendlyGroups()) {
+				for (StandardPlayer otherPlayer : friend.getPlayers()) {
+					if (otherPlayer.isOnline()) {
+						otherPlayer.sendMessage(String.format(format, player.getDisplayName(), message));
+					}
 				}
 			}
 		} else {
