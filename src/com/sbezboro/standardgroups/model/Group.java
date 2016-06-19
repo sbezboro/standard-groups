@@ -37,6 +37,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedProperty<Integer> maxClaims;
 	private PersistedProperty<Double> power; // Current power
 	private PersistedProperty<Double> maxPower; // Maximum power
+	private PersistedProperty<String> groupMessage;
 	private PersistedProperty<String> leaderUuid;
 
 	private Map<String, Claim> locationToClaimMap;
@@ -61,6 +62,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		this.maxClaims.setValue(StandardGroups.getPlugin().getGroupStartingLand());
 		this.power.setValue(0.0);
 		this.maxPower.setValue(10.0);
+		this.groupMessage.setValue("null");
 		this.leaderUuid.setValue(leader.getUuidString());
 		this.memberUuids.add(leader.getUuidString());
 		this.powerDamageModifier = 1.0;
@@ -94,6 +96,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		maxClaims = createProperty(Integer.class, "max-claims");
 		power = createProperty(Double.class, "power");
 		maxPower = createProperty(Double.class, "max-power");
+		groupMessage = createProperty(String.class, "group-message");
 		leaderUuid = createProperty(String.class, "leader-uuid");
 	}
 
@@ -149,6 +152,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 		if (maxPower.getValue() == null) {
 			maxPower.setValue(10.0);
+		}
+		if (groupMessage.getValue() == null) {
+			groupMessage.setValue("null");
 		}
 		recalculatePowerDamageModifier();
 	}
@@ -306,6 +312,20 @@ public class Group extends PersistedObject implements Comparable<Group> {
 
 	public Claim getClaim(Location location) {
 		return locationToClaimMap.get(Claim.getLocationKey(location));
+	}
+	
+	public void recalculateSpawnClaims() {
+		int count = 0;
+		
+		for (Claim claim : new ArrayList<Claim>(getClaims())) {
+			if (StandardGroups.getPlugin().getGroupManager().isNextToSpawn(claim.getWorld(), claim.getX() << 4, claim.getZ() << 4)) {
+				count++;
+			}
+		}
+		
+		spawnClaims.setValue(count);
+		
+		this.save();
 	}
 
 	public List<Lock> getLocks() {
@@ -551,16 +571,18 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 	}
 	
-	// The amount of power damage a specific group has caused within the last hour
+	// The amount of power damage a specific group or their friends have caused within the last hour
 	public double getPvpPowerLoss(String groupUid) {
 		if (pvpPowerLosses.getList().isEmpty()) {
 			return 0.0;
 		}
 		
 		double powerLoss = 0.0;
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		
 		for (PvpPowerLoss loss : pvpPowerLosses) {
-			if (loss.getGroupUid().equals(groupUid)) {
+			if (loss.getGroupUid().equals(groupUid)
+					|| groupManager.getGroupByUid(groupUid).isMutualFriendship(groupManager.getGroupByUid(loss.getGroupUid()))) {
 				powerLoss += loss.getPowerLoss();
 			}
 		}
@@ -587,9 +609,15 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 		
 		ArrayList<PvpPowerLoss> lossesToRemove = new ArrayList<PvpPowerLoss>();
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		
 		for (PvpPowerLoss loss : pvpPowerLosses) {
 			if (reduction == 0.0) {
+				break;
+			}
+			
+			if (!(loss.getGroupUid().equals(groupUid)
+					|| groupManager.getGroupByUid(groupUid).isMutualFriendship(groupManager.getGroupByUid(loss.getGroupUid())))) {
 				break;
 			}
 			
@@ -606,6 +634,26 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		for (PvpPowerLoss loss : lossesToRemove) {
 			pvpPowerLosses.remove(loss);
 		}
+		
+		this.save();
+	}
+	
+	// This message is set by group leaders or mods and is displayed to all members upon login
+	public String getGroupMessage() {
+		if (groupMessage.getValue().equals("null")) {
+			return null;
+		}
+		return groupMessage.getValue();
+	}
+	
+	public void setGroupMessage(String message) {
+		groupMessage.setValue(message);
+		
+		this.save();
+	}
+	
+	public void disableGroupMessage() {
+		groupMessage.setValue("null");
 		
 		this.save();
 	}
@@ -663,20 +711,55 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return chatPlayerUuids.contains(player.getUuidString());
 	}
 
-	public boolean toggleChat(StandardPlayer player) {
-		boolean result;
+	public boolean isFriendChat(StandardPlayer player) {
+		return friendChatPlayerUuids.contains(player.getUuidString());
+	}
+
+	public char getChatMode(StandardPlayer player) {
+		if (isGroupChat(player)) {
+			return 'g';
+		}
+		if (isFriendChat(player)) {
+			return 'f';
+		}
+		return 'p';
+	}
+
+	public char toggleChat(StandardPlayer player) {
+		char result;
 
 		if (isGroupChat(player)) {
 			chatPlayerUuids.remove(player.getUuidString());
-			result = false;
+			friendChatPlayerUuids.add(player.getUuidString());
+			result = 'f';
+		} else if (isFriendChat(player)) {
+			friendChatPlayerUuids.remove(player.getUuidString());
+			result = 'p';
 		} else {
 			chatPlayerUuids.add(player.getUuidString());
-			result = true;
+			result = 'g';
 		}
 
 		this.save();
 
 		return result;
+	}
+
+	public void setChat(StandardPlayer player, char chat) {
+		if (isGroupChat(player)) {
+			chatPlayerUuids.remove(player.getUuidString());
+		}
+		if (isFriendChat(player)) {
+			friendChatPlayerUuids.remove(player.getUuidString());
+		}
+		
+		if (chat == 'g') {
+			chatPlayerUuids.add(player.getUuidString());
+		} else if (chat == 'f') {
+			friendChatPlayerUuids.add(player.getUuidString());
+		}
+
+		this.save();
 	}
 
 	public void removeFriendships() {
@@ -776,6 +859,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		info.put("lock_count", getLocks().size());
 		info.put("power", getPower());
 		info.put("max_power", getMaxPower());
+		info.put("group_message", groupMessage.getValue());
 
 		info.put("invites", invites.getList());
 
