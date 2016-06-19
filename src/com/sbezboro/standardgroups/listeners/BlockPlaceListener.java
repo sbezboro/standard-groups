@@ -24,7 +24,7 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	public void onBlockPlace(final org.bukkit.event.block.BlockPlaceEvent event) {
+	public void onBlockPlace(final BlockPlaceEvent event) {
 		StandardPlayer player = plugin.getStandardPlayer(event.getPlayer());
 		
 		Location location = event.getBlock().getLocation();
@@ -70,7 +70,7 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 					return;
 				}
 				if (victimGroup.getPower() >= GroupManager.BLOCK_POWER_THRESHOLD) {
-					player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + victimGroup.getName());
+					player.sendMessage(ChatColor.GOLD + "Cannot yet place blocks in the territory of " + victimGroup.getName());
 					event.setCancelled(true);
 					return;
 				}
@@ -83,7 +83,7 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 					powerRestoration = 0.25;
 				}
 				if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
-					player.sendMessage(ChatColor.GOLD + "Cannot yet place this type of block in the territory of " + victimGroup.getName());
+					player.sendMessage(ChatColor.GOLD + "Only recent killers can place blocks in the territory of " + victimGroup.getName());
 					event.setCancelled(true);
 					return;
 				}
