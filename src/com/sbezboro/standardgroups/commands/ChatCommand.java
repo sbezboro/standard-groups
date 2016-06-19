@@ -27,7 +27,14 @@ public class ChatCommand extends SubCommand {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		groupManager.toggleChat(player);
+		
+		if (args.length == 0) {
+			groupManager.toggleChat(player);
+		}
+		else {
+			char chat = args[0].charAt(0);
+			groupManager.setChat(player, chat);
+		}
 		
 		return true;
 	}
