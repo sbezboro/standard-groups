@@ -27,6 +27,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	private PersistedListProperty<Claim> claims;
 	private PersistedListProperty<Lock> locks;
 	private PersistedListProperty<String> chatPlayerUuids;
+	private PersistedListProperty<String> friendChatPlayerUuids;
 	private PersistedListProperty<String> friendGroupUids;
 	private PersistedListProperty<PvpPowerLoss> pvpPowerLosses; // Which groups have caused power loss within the last hour
 
@@ -86,6 +87,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		claims = createList(Claim.class, "claims");
 		locks = createList(Lock.class, "locks");
 		chatPlayerUuids = createList(String.class, "chat-player-uuids");
+		friendChatPlayerUuids = createList(String.class, "friend-chat-player-uuids");
 		friendGroupUids = createList(String.class, "friend-group-ids");
 		pvpPowerLosses = createList(PvpPowerLoss.class, "pvp-power-losses");
 
