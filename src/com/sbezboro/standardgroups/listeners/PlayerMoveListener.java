@@ -49,7 +49,7 @@ public class PlayerMoveListener extends SubPluginEventListener<StandardGroups> i
 					player.sendMessage(String.valueOf(ChatColor.YELLOW) + ChatColor.BOLD + "Entering the territory of your group " + ChatColor.GREEN + ChatColor.BOLD + toGroup.getName());
 				} else if (toGroup.isMutualFriendship(playerGroup)) {
 					player.sendMessage(String.valueOf(ChatColor.YELLOW) + ChatColor.BOLD + "Entering the territory of " + ChatColor.DARK_AQUA + ChatColor.BOLD + toGroup.getName());
-				}  else {
+				} else {
 					player.sendMessage(String.valueOf(ChatColor.YELLOW) + ChatColor.BOLD + "Entering the territory of " + toGroup.getName());
 				}
 			}
