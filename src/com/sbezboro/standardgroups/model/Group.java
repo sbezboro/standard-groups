@@ -642,9 +642,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	
 	// This message is set by group leaders or mods and is displayed to all members upon login
 	public String getGroupMessage() {
-		if (groupMessage.getValue().equals("null")) {
-			return null;
-		}
 		return groupMessage.getValue();
 	}
 	
@@ -655,9 +652,22 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	}
 	
 	public void disableGroupMessage() {
-		groupMessage.setValue("null");
+		groupMessage.setValue(null);
 		
 		this.save();
+	}
+	
+	// Whether a member was online within the last 24 hours
+	public boolean isActive() {
+		long currentTime = System.currentTimeMillis();
+		
+		for (StandardPlayer player : getPlayers()) {
+			if (player.isOnline() || currentTime - player.getLastPlayed() < 86400000) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	public void addLockMember(Lock lock, StandardPlayer otherPlayer) {
