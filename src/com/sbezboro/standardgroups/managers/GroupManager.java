@@ -113,6 +113,12 @@ public class GroupManager extends BaseManager {
 	public static class PowerComparator implements Comparator<Group> {
 		@Override
 		public int compare(Group g1, Group g2) {
+			boolean g1Active = g1.isActive();
+			boolean g2Active = g2.isActive();
+			
+			if (g1Active != g2Active) {
+				return (g1Active ? 1 : -1);
+			}
 			return Double.compare(g1.getPower(), g2.getPower());
 		}
 	}
@@ -120,6 +126,13 @@ public class GroupManager extends BaseManager {
 	public static class MaxPowerComparator implements Comparator<Group> {
 		@Override
 		public int compare(Group g1, Group g2) {
+			boolean g1Active = g1.isActive();
+			boolean g2Active = g2.isActive();
+			
+			if (g1Active != g2Active) {
+				return (g1Active ? 1 : -1);
+			}
+			
 			if (g1.getMaxPower() == g2.getMaxPower()) {
 				return Double.compare(g1.getPower(), g2.getPower());
 			}
@@ -1606,14 +1619,16 @@ public class GroupManager extends BaseManager {
 			double power = group.getPower();
 			ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 			ChatColor groupColor = (player != null && group.isMember(player) ? ChatColor.GREEN : ChatColor.YELLOW);
+			ChatColor onlineColor = (online > 0 ? ChatColor.DARK_GREEN : ChatColor.RESET);
+			ChatColor resetColor = ChatColor.RESET;
 			if (comparator != null) {
-				paginatedOutput.addLine((online < 10 ? " " : "") + online + " / " +  (members < 10 ? " " : "") + members + " online; " +
-						powerColor + StringUtils.leftPad(group.getPowerRounded(), 6) + ChatColor.RESET + " / " +
+				paginatedOutput.addLine((online < 10 ? " " : "") + onlineColor + online + resetColor + " / " +  (members < 10 ? " " : "") + members + " online; " +
+						powerColor + StringUtils.leftPad(group.getPowerRounded(), 6) + resetColor + " / " +
 						StringUtils.leftPad(group.getMaxPowerRounded(), 6) + " power - " + groupColor + group.getIdentifier());
 			} else {
 				paginatedOutput.addLine(groupColor + StringUtils.rightPad(group.getIdentifier(), subPlugin.getGroupNameMaxLength()) +
-						ChatColor.RESET + " - " + (online < 10 ? " " : "") + online + " / " +  (members < 10 ? " " : "") + members + " online; " +
-						powerColor + StringUtils.leftPad(group.getPowerRounded(), 6) + ChatColor.RESET + " / " +
+						resetColor + " - " + (online < 10 ? " " : "") + onlineColor + online + " / " +  (members < 10 ? " " : "") + members + " online; " +
+						powerColor + StringUtils.leftPad(group.getPowerRounded(), 6) + resetColor + " / " +
 						StringUtils.leftPad(group.getMaxPowerRounded(), 6) + " power");
 			}
 		}
