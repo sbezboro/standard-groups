@@ -154,9 +154,6 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		if (maxPower.getValue() == null) {
 			maxPower.setValue(10.0);
 		}
-		if (groupMessage.getValue() == null) {
-			groupMessage.setValue("null");
-		}
 		recalculatePowerDamageModifier();
 	}
 
