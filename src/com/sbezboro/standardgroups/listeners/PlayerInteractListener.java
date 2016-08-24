@@ -22,9 +22,20 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashSet;
 import java.util.List;
 
 public class PlayerInteractListener extends SubPluginEventListener<StandardGroups> implements Listener {
+
+	@SuppressWarnings("serial")
+	private static final HashSet<Material> WOODEN_BOATS = new HashSet<Material>() {{
+		add(Material.BOAT);
+		add(Material.BOAT_ACACIA);
+		add(Material.BOAT_BIRCH);
+		add(Material.BOAT_DARK_OAK);
+		add(Material.BOAT_JUNGLE);
+		add(Material.BOAT_SPRUCE);
+	}};
 	
 	public PlayerInteractListener(StandardPlugin plugin, StandardGroups subPlugin) {
 		super(plugin, subPlugin);
@@ -39,18 +50,19 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 		
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK ||
 				(event.getAction() == Action.LEFT_CLICK_BLOCK && clickedBlock.getType().equals(Material.DRAGON_EGG))) {
-			if (GroupManager.isBlockTypeProtected(clickedBlock) ||
-					(itemStack != null && itemStack.getType() == Material.INK_SACK)) {
+			if (GroupManager.isBlockTypeProtected(clickedBlock)) {
+				checkPlayerAccess(player, clickedBlock.getLocation(), event);
+			} else if (itemStack != null && (
+					itemStack.getType() == Material.EXPLOSIVE_MINECART ||
+					itemStack.getType() == Material.HOPPER_MINECART ||
+					itemStack.getType() == Material.INK_SACK ||
+					WOODEN_BOATS.contains(itemStack.getType()))) {
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
 		} else if (event.getAction() == Action.PHYSICAL) {
 			Block block = event.getClickedBlock();
 
 			if (block != null && block.getType() == Material.SOIL) {
-				checkPlayerAccess(player, clickedBlock.getLocation(), event);
-			}
-		} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			if (itemStack != null && (itemStack.getType() == Material.EXPLOSIVE_MINECART || itemStack.getType() == Material.HOPPER_MINECART)) {
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
 		}
