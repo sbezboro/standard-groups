@@ -11,6 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -65,6 +66,10 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 			if (block != null && block.getType() == Material.SOIL) {
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
+		} else if (event.getAction() == Action.LEFT_CLICK_BLOCK &&
+				event.getBlockFace() == BlockFace.UP &&
+				clickedBlock.getRelative(BlockFace.UP).getType() == Material.FIRE) {
+			checkPlayerAccess(player, clickedBlock.getLocation(), event);
 		}
 		
 		Group group = groupManager.getPlayerGroup(player);
