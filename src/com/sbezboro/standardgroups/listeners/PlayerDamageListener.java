@@ -32,7 +32,7 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 		}
 
 		// Player attacking
-		if (damager != null) {
+		if (damager != null && damager.isOnline()) {
 			if (damager == victim) {
 				return;
 			}
@@ -90,7 +90,7 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 		}
 		
 		// Player attacking
-		if (damager != null) {
+		if (damager != null && damager.isOnline()) {
 			// Player victim
 			if (victim != null) {
 				GroupManager groupManager = subPlugin.getGroupManager();
