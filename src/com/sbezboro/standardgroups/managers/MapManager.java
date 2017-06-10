@@ -65,11 +65,6 @@ public class MapManager extends BaseManager {
 		}
 
 		@Override
-		public void setBanned(boolean b) {
-
-		}
-
-		@Override
 		public boolean isWhitelisted() {
 			return false;
 		}
