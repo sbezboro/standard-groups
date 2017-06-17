@@ -16,7 +16,9 @@ import java.util.List;
 public class PowerCommand extends SubCommand {
 
 	public PowerCommand(StandardPlugin plugin, BaseCommand command) {
-		super(plugin, command, "power");
+		super(plugin, command, "power", new ArrayList<String>() {{
+			add("p");
+		}});
 
 		addHelp(ChatColor.YELLOW + "/g power [name]" + ChatColor.RESET + " - show a group's current power");
 	}

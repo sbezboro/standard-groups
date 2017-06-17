@@ -11,6 +11,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.List;
 
 public class PlayerJoinListener extends SubPluginEventListener<StandardGroups> implements Listener {
 	
@@ -26,6 +29,18 @@ public class PlayerJoinListener extends SubPluginEventListener<StandardGroups> i
 		
 		Group group = groupManager.getPlayerGroup(player);
 		
+		if (player.hasPvpLogged() && group != null) {
+			group.addPower(-2.0);
+			
+			List<Group> friends = group.getMutuallyFriendlyGroups();
+			
+			if (!friends.isEmpty()) {
+				for (Group friend : friends) {
+					friend.addPower(-2.0 * 0.3);
+				}
+			}
+		}
+		
 		if (group != null) {
 			double power = group.getPower();
 			if (power < GroupManager.LOCK_POWER_THRESHOLD) {
@@ -38,5 +53,16 @@ public class PlayerJoinListener extends SubPluginEventListener<StandardGroups> i
 		}
 		
 		groupManager.enableCommandCooldown(new String(player.getUuidString()));
+		
+		new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				if (group != null && player.isOnline() && group.getGroupMessage() != null) {
+					player.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.ITALIC + "Current group message: " + ChatColor.RESET
+							+ group.getGroupMessage());
+				}
+			}
+		}.runTaskLater(plugin, 100);
 	}	
 }

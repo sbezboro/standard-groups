@@ -255,6 +255,8 @@ public class MapManager extends BaseManager {
 				} else {
 					if (group == playerGroup) {
 						chars[x] = ChatColor.GREEN + chars[x];
+					} else if (group.isMutualFriendship(playerGroup)) {
+						chars[x] = ChatColor.DARK_AQUA + chars[x];
 					} else if (group.isSafeArea()) {
 						chars[x] = ChatColor.DARK_GREEN + chars[x];
 					} else if (group.isNeutralArea()) {

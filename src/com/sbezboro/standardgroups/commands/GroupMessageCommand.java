@@ -9,34 +9,31 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
-import java.util.List;
+public class GroupMessageCommand extends SubCommand {
 
-public class ChatCommand extends SubCommand {
+	public GroupMessageCommand(StandardPlugin plugin, BaseCommand command) {
+		super(plugin, command, "gm");
 
-	public ChatCommand(StandardPlugin plugin, BaseCommand command) {
-		super(plugin, command, "chat", new ArrayList<String>() {{
-			add("c");
-		}});
-
-		addHelp(ChatColor.YELLOW + "/g chat" + ChatColor.RESET + " - switch chat modes");
+		addHelp(ChatColor.YELLOW + "/g gm <message>/off" + ChatColor.RESET + " - set a message for your group members to see upon login");
 	}
 
 	@Override
 	public boolean handle(CommandSender sender, String[] args) {
 		StandardPlayer player = plugin.getStandardPlayer(sender);
 		
-		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		
-		if (args.length == 0) {
-			groupManager.toggleChat(player);
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
 		}
-		else {
-			char chat = args[0].charAt(0);
-			groupManager.setChat(player, chat);
+		
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		if (args.length == 0) {
+			groupManager.disableGroupMessage(player);
+		} else {
+			groupManager.setGroupMessage(player, String.join(" ", args));
 		}
 		
 		return true;
 	}
-
+	
 }

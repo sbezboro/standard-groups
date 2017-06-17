@@ -117,6 +117,10 @@ public class PlayerDamageListener extends SubPluginEventListener<StandardGroups>
 						event.setCancelled(true);
 					}
 				}
+				
+				if (victim.isPvpProtected()) {
+					event.setCancelled(true);
+				}
 			}
 		} else if (victim != null) {
 			GroupManager groupManager = subPlugin.getGroupManager();

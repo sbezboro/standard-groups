@@ -36,15 +36,8 @@ public class LockCommand extends SubCommand {
 		}
 		
 		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		
-		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
-			sender.sendMessage("Tip: Check out " + ChatColor.GOLD + "/g autolock");
-			groupManager.enableCommandCooldown(new String(player.getUuidString()));
-			return false;
-		}
 
 		Block block = player.getTargetBlock(3);
-		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 
 		if (args.length == 0) {
 			if (block == null) {

@@ -124,7 +124,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				if (!locks.isEmpty()) {
 					if (power < GroupManager.LOCK_POWER_THRESHOLD) {
 						if (victimGroup.getPvpPowerLoss(attackerGroupUid) < 2.0) {
-							player.sendMessage(ChatColor.GOLD + "Cannot yet break locks in the territory of " + victimGroup.getName());
+							player.sendMessage(ChatColor.GOLD + "Only recent killers can break locks in the territory of " + victimGroup.getName());
 							event.setCancelled(true);
 							return;
 						}
@@ -149,7 +149,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				// No locks
 				else {
 					if (power >= GroupManager.BLOCK_POWER_THRESHOLD) {
-						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + victimGroup.getName());
+						player.sendMessage(ChatColor.GOLD + "Cannot yet break blocks in the territory of " + victimGroup.getName());
 						event.setCancelled(true);
 						return;
 					}
@@ -157,7 +157,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 					// Restore some of victim's power
 					double powerRestoration = 0.25;
 					if (victimGroup.getPvpPowerLoss(attackerGroupUid) < powerRestoration) {
-						player.sendMessage(ChatColor.GOLD + "Cannot yet break this type of block in the territory of " + victimGroup.getName());
+						player.sendMessage(ChatColor.GOLD + "Only recent killers can break blocks in the territory of " + victimGroup.getName());
 						event.setCancelled(true);
 						return;
 					}
