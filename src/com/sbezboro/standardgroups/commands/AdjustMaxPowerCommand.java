@@ -17,7 +17,7 @@ public class AdjustMaxPowerCommand extends SubCommand {
 	public AdjustMaxPowerCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "adjustmaxpower");
 
-		addHelp(ChatColor.YELLOW + "/g adjustmaxpower" + ChatColor.RESET + " - lets you control your group's max power and power damage");
+		addHelp(ChatColor.YELLOW + "/g adjustmaxpower <value>" + ChatColor.RESET + " - lets you control your group's max power and power damage");
 	}
 
 	@Override

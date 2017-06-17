@@ -14,7 +14,8 @@ public class GroupMessageCommand extends SubCommand {
 	public GroupMessageCommand(StandardPlugin plugin, BaseCommand command) {
 		super(plugin, command, "gm");
 
-		addHelp(ChatColor.YELLOW + "/g gm <message>/off" + ChatColor.RESET + " - set a message for your group members to see upon login");
+		addHelp(ChatColor.YELLOW + "/g gm <message>" + ChatColor.RESET + " - set a message for your group members to see upon login");
+		addHelp(ChatColor.YELLOW + "/g gm off" + ChatColor.RESET + " - clear message shown to group members upon login");
 	}
 
 	@Override

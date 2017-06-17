@@ -315,8 +315,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 	public void recalculateSpawnClaims() {
 		int count = 0;
 		
-		for (Claim claim : new ArrayList<Claim>(getClaims())) {
-			if (StandardGroups.getPlugin().getGroupManager().isNextToSpawn(claim.getWorld(), claim.getX() << 4, claim.getZ() << 4)) {
+		for (Claim claim : getClaims()) {
+			if (StandardGroups.getPlugin().getGroupManager().isNextToSpawn(
+					claim.getWorld(), claim.getX() << 4, claim.getZ() << 4)) {
 				count++;
 			}
 		}
@@ -568,23 +569,21 @@ public class Group extends PersistedObject implements Comparable<Group> {
 			this.save();
 		}
 	}
-	
-	// The amount of power damage a specific group or their friends have caused within the last hour
+
+	// The amount of power damage a specific group has caused within the last hour
 	public double getPvpPowerLoss(String groupUid) {
 		if (pvpPowerLosses.getList().isEmpty()) {
 			return 0.0;
 		}
-		
+
 		double powerLoss = 0.0;
-		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
-		
+
 		for (PvpPowerLoss loss : pvpPowerLosses) {
-			if (loss.getGroupUid().equals(groupUid)
-					|| groupManager.getGroupByUid(groupUid).isMutualFriendship(groupManager.getGroupByUid(loss.getGroupUid()))) {
+			if (loss.getGroupUid().equals(groupUid)) {
 				powerLoss += loss.getPowerLoss();
 			}
 		}
-		
+
 		return powerLoss;
 	}
 	
@@ -607,15 +606,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		}
 		
 		ArrayList<PvpPowerLoss> lossesToRemove = new ArrayList<PvpPowerLoss>();
-		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 		
 		for (PvpPowerLoss loss : pvpPowerLosses) {
 			if (reduction == 0.0) {
-				break;
-			}
-			
-			if (!(loss.getGroupUid().equals(groupUid)
-					|| groupManager.getGroupByUid(groupUid).isMutualFriendship(groupManager.getGroupByUid(loss.getGroupUid())))) {
 				break;
 			}
 			
