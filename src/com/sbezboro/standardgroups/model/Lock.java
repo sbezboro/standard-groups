@@ -117,7 +117,7 @@ public class Lock extends PersistableImpl implements Persistable {
 
 	// Groups moderators always have access
 	public boolean hasAccess(StandardPlayer player) {
-		return memberUuids.contains(player.getUuidString()) || group.isModerator(player) || group.isLeader(player);
+		return memberUuids.contains(player.getUuidString()) || group.isLeader(player);
 	}
 
 	public void addMember(StandardPlayer player) {
