@@ -21,7 +21,8 @@ public class StandardConfig {
 	private double groupPowerMinValue;
 	private double groupPowerMaxValue;
 	private double powerDamageModifier;
-
+  private int spawnClaimCost;
+  
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
 	}
@@ -41,6 +42,8 @@ public class StandardConfig {
 		groupPowerMinValue = config.getDouble("group-power-min-value");
 		groupPowerMaxValue = config.getDouble("group-power-max-value");
 		powerDamageModifier = config.getDouble("power-damage-modifier");
+
+                spawnClaimCost = config.getInt("spawn-claim-cost");
 	}
 
 	public boolean isDebug() {
@@ -94,4 +97,9 @@ public class StandardConfig {
 	public double getPowerDamageModifier() {
 		return powerDamageModifier;
 	}
+
+  public int getSpawnClaimCost() {
+    return spawnClaimCost;
+  }
+  
 }

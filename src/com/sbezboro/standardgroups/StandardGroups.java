@@ -228,7 +228,11 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 	public double getPowerDamageModifier() {
 		return config.getPowerDamageModifier();
 	}
-	
+
+  public int getSpawnClaimCost() {
+    return config.getSpawnClaimCost();
+  }
+  
 	public GroupManager getGroupManager() {
 		return groupManager;
 	}
