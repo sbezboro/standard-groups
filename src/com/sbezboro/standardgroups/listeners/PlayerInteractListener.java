@@ -30,12 +30,12 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 
 	@SuppressWarnings("serial")
 	private static final HashSet<Material> WOODEN_BOATS = new HashSet<Material>() {{
-		add(Material.BOAT);
-		add(Material.BOAT_ACACIA);
-		add(Material.BOAT_BIRCH);
-		add(Material.BOAT_DARK_OAK);
-		add(Material.BOAT_JUNGLE);
-		add(Material.BOAT_SPRUCE);
+		add(Material.BIRCH_BOAT);
+		add(Material.ACACIA_BOAT);
+		add(Material.DARK_OAK_BOAT);
+		add(Material.JUNGLE_BOAT);
+		add(Material.OAK_BOAT);
+		add(Material.SPRUCE_BOAT);
 	}};
 	
 	public PlayerInteractListener(StandardPlugin plugin, StandardGroups subPlugin) {
@@ -54,16 +54,16 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 			if (GroupManager.isBlockTypeProtected(clickedBlock)) {
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			} else if (itemStack != null && (
-					itemStack.getType() == Material.EXPLOSIVE_MINECART ||
+					itemStack.getType() == Material.TNT_MINECART ||
 					itemStack.getType() == Material.HOPPER_MINECART ||
-					itemStack.getType() == Material.INK_SACK ||
+					itemStack.getType() == Material.INK_SAC ||
 					WOODEN_BOATS.contains(itemStack.getType()))) {
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
 		} else if (event.getAction() == Action.PHYSICAL) {
 			Block block = event.getClickedBlock();
 
-			if (block != null && block.getType() == Material.SOIL) {
+			if (block != null && block.getType() == Material.FARMLAND) {
 				checkPlayerAccess(player, clickedBlock.getLocation(), event);
 			}
 		} else if (event.getAction() == Action.LEFT_CLICK_BLOCK &&

@@ -35,7 +35,7 @@ public class GroupManager extends BaseManager {
 
 	@SuppressWarnings("serial")
 	private static final HashSet<Material> WOODEN_DOOR_BLOCKS = new HashSet<Material>() {{
-		add(Material.WOODEN_DOOR);
+		add(Material.OAK_DOOR);
 		add(Material.SPRUCE_DOOR);
 		add(Material.ACACIA_DOOR);
 		add(Material.BIRCH_DOOR);
@@ -45,7 +45,7 @@ public class GroupManager extends BaseManager {
 
 	@SuppressWarnings("serial")
 	private static final HashSet<Material> FENCE_GATE_BLOCKS = new HashSet<Material>() {{
-		add(Material.FENCE_GATE);
+		add(Material.OAK_FENCE_GATE);
 		add(Material.SPRUCE_FENCE_GATE);
 		add(Material.ACACIA_FENCE_GATE);
 		add(Material.BIRCH_FENCE_GATE);
@@ -54,35 +54,42 @@ public class GroupManager extends BaseManager {
 	}};
 
 	@SuppressWarnings("serial")
+	private static final HashSet<Material> WOODEN_TRAPDOOR_BLOCKS = new HashSet<Material>() {{
+		add(Material.OAK_TRAPDOOR);
+		add(Material.ACACIA_TRAPDOOR);
+		add(Material.BIRCH_TRAPDOOR);
+		add(Material.DARK_OAK_TRAPDOOR);
+		add(Material.JUNGLE_TRAPDOOR);
+		add(Material.SPRUCE_TRAPDOOR);
+	}};
+
+	@SuppressWarnings("serial")
 	private static final HashSet<Material> PROTECTED_BLOCKS = new HashSet<Material>() {{
 		addAll(WOODEN_DOOR_BLOCKS);
 		addAll(FENCE_GATE_BLOCKS);
+		addAll(WOODEN_TRAPDOOR_BLOCKS);
+		addAll(StandardPlugin.BED_BLOCKS);
 		add(Material.CHEST);
-		add(Material.TRAP_DOOR);
+		add(Material.OAK_TRAPDOOR);
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
 		add(Material.FURNACE);
-		add(Material.BURNING_FURNACE);
 		add(Material.DISPENSER);
 		add(Material.DROPPER);
-		add(Material.ENCHANTMENT_TABLE);
+		add(Material.ENCHANTING_TABLE);
 		add(Material.TRAPPED_CHEST);
 		add(Material.JUKEBOX);
 		add(Material.BREWING_STAND);
 		add(Material.DRAGON_EGG);
 		add(Material.NOTE_BLOCK);
 		add(Material.CAULDRON);
-		add(Material.REDSTONE_COMPARATOR);
-		add(Material.REDSTONE_COMPARATOR_OFF);
-		add(Material.REDSTONE_COMPARATOR_ON);
-		add(Material.DIODE);
-		add(Material.DIODE_BLOCK_OFF);
-		add(Material.DIODE_BLOCK_ON);
+		add(Material.COMPARATOR);
+		add(Material.REPEATER);
 		add(Material.BEACON);
-		add(Material.BED_BLOCK);
 		add(Material.LEVER);
 		add(Material.STONE_BUTTON);
-		add(Material.SKULL);
+		add(Material.SKELETON_SKULL);
+		add(Material.WITHER_SKELETON_SKULL);
 	}};
 
 	@SuppressWarnings("serial")
@@ -95,10 +102,10 @@ public class GroupManager extends BaseManager {
 	private static final HashSet<Material> WHITELISTED_SAFEAREA_BLOCKS = new HashSet<Material>() {{
 		addAll(WOODEN_DOOR_BLOCKS);
 		addAll(FENCE_GATE_BLOCKS);
+		addAll(WOODEN_TRAPDOOR_BLOCKS);
 		add(Material.NOTE_BLOCK);
 		add(Material.STONE_BUTTON);
 		add(Material.LEVER);
-		add(Material.TRAP_DOOR);
 	}};
 	
 	public static final double ENTITY_POWER_THRESHOLD = 0.0;
@@ -454,7 +461,7 @@ public class GroupManager extends BaseManager {
 						affectedBlocks.add(block);
 					}
 				}
-			} else if (targetBlock.getType() == Material.BED_BLOCK) {
+			} else if (StandardPlugin.BED_BLOCKS.contains(targetBlock.getType())) {
 				Bed bed = (Bed) targetBlock.getState().getData();
 
 				if (bed.isHeadOfBed()) {
@@ -464,7 +471,7 @@ public class GroupManager extends BaseManager {
 				}
 			} else if (!PROTECTED_BLOCKS.contains(targetBlock.getType())) {
 				for (Block block : MiscUtil.getAdjacentBlocks(targetBlock)) {
-					if (block.getType() == Material.TRAP_DOOR) {
+					if (WOODEN_TRAPDOOR_BLOCKS.contains(block.getType())) {
 						TrapDoor trapDoor = (TrapDoor) block.getState().getData();
 
 						if (trapDoor.getAttachedFace() == block.getFace(targetBlock)) {
@@ -474,7 +481,7 @@ public class GroupManager extends BaseManager {
 				}
 
 				Block aboveBlock = targetBlock.getRelative(BlockFace.UP);
-				if (aboveBlock.getType() == Material.WOODEN_DOOR) {
+				if (WOODEN_DOOR_BLOCKS.contains(aboveBlock.getType())) {
 					affectedBlocks.add(aboveBlock);
 					affectedBlocks.add(aboveBlock.getRelative(BlockFace.UP));
 				} else if (aboveBlock.getType() == Material.DRAGON_EGG) {
@@ -1383,7 +1390,7 @@ public class GroupManager extends BaseManager {
 		}
 		
 		// Prevent surrounding chests with locked beds by limiting their number
-		if (location.getBlock().getType() == Material.BED_BLOCK) {
+		if (StandardPlugin.BED_BLOCKS.contains(location.getBlock().getType())) {
 			if (group.getLockedBedsCount() >= 5) {
 				player.sendMessage(ChatColor.RED + "Your group cannot lock any more beds.");
 				return;

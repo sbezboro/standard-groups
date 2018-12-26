@@ -8,7 +8,7 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
-import net.minecraft.server.v1_12_R1.Enchantments;
+import net.minecraft.server.v1_13_R2.Enchantments;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,7 +41,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 			Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
 
 			// Allow players to break one block in front of portals to get out of portal traps
-			if (playerBlock.getType() == Material.PORTAL) {
+			if (StandardPlugin.BED_BLOCKS.contains(playerBlock.getType())) {
 				Block targetBlock = event.getBlock();
 
 				byte direction = playerBlock.getData();
@@ -104,7 +104,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				if (groupManager.isGroupsAdmin(player)) {
 					return;
 				}
-				if (event.getBlock().getType() == Material.BED_BLOCK) {
+				if (StandardPlugin.BED_BLOCKS.contains(event.getBlock().getType())) {
 					player.sendMessage(ChatColor.RED + "Cannot break beds in the territory of " + victimGroup.getName());
 					event.setCancelled(true);
 					return;

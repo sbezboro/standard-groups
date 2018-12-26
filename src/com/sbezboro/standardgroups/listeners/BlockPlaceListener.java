@@ -50,7 +50,8 @@ public class BlockPlaceListener extends SubPluginEventListener<StandardGroups> i
 				if (groupManager.isGroupsAdmin(player)) {
 					return;
 				}
-				if (event.getBlock().getType() == Material.BED_BLOCK) {
+
+				if (StandardPlugin.BED_BLOCKS.contains(event.getBlock().getType())) {
 					player.sendMessage(ChatColor.RED + "Cannot place beds in the territory of " + victimGroup.getName());
 					event.setCancelled(true);
 					return;

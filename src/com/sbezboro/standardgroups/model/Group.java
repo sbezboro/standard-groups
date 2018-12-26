@@ -688,7 +688,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		int count = 0;
 		
 		for (Lock lock : locks) {
-			if (lock.getLocation().getBlock().getType() == Material.BED_BLOCK) {
+			if (StandardPlugin.BED_BLOCKS.contains(lock.getLocation().getBlock().getType())) {
 				count++;
 			}
 		}
