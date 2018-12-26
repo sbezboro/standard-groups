@@ -22,10 +22,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.material.Bed;
 import org.bukkit.material.TrapDoor;
 
 import java.util.*;
@@ -462,9 +462,9 @@ public class GroupManager extends BaseManager {
 					}
 				}
 			} else if (StandardPlugin.BED_BLOCKS.contains(targetBlock.getType())) {
-				Bed bed = (Bed) targetBlock.getState().getData();
+				Bed bed = (Bed) targetBlock.getState().getBlockData();
 
-				if (bed.isHeadOfBed()) {
+				if (bed.getPart() == Bed.Part.HEAD) {
 					affectedBlocks.add(targetBlock.getRelative(bed.getFacing().getOppositeFace()));
 				} else {
 					affectedBlocks.add(targetBlock.getRelative(bed.getFacing()));
