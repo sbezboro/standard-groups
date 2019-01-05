@@ -8,33 +8,38 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
 public class MapManager extends BaseManager {
-	private static final int MAP_WIDTH = 7;
+	private static final int MAP_WIDTH = 9;
+	
 
 	private static final byte[][] MAP_PATTERN = {
-			new byte[] {0, 1, 0, 2, 0, 2, 0},
-			new byte[] {1, 0, 1, 0, 2, 0, 2},
-			new byte[] {0, 1, 0, 1, 0, 2, 0},
-			new byte[] {2, 0, 1, 3, 1, 0, 2},
-			new byte[] {0, 2, 0, 1, 0, 1, 0},
-			new byte[] {2, 0, 2, 0, 1, 0, 1},
-			new byte[] {0, 2, 0, 2, 0, 1, 0}
+			new byte[] {0, 1, 0, 2, 0, 2, 0, 2, 0},
+			new byte[] {1, 0, 1, 0, 2, 0, 2, 0, 2},
+			new byte[] {0, 1, 0, 1, 0, 2, 0, 2, 0},
+			new byte[] {2, 0, 1, 0, 1, 0, 2, 0, 2},
+			new byte[] {0, 2, 0, 1, 3, 1, 0, 1, 0},
+			new byte[] {2, 0, 2, 0, 1, 0, 1, 0, 1},
+			new byte[] {0, 2, 0, 2, 0, 1, 0, 1, 0},
+			new byte[] {2, 0, 2, 0, 2, 0, 1, 0, 1},
+			new byte[] {0, 2, 0, 2, 0, 2, 0, 1, 0}
 	};
 
 	private StandardGroups subPlugin;
-
+	private StandardPlugin plugin;
 	private HashSet<StandardPlayer> mapPlayers;
-
 	private int updateTaskId;
+	private Map<StandardPlayer, Location> playerLocations;
 
 	private class MapLine implements OfflinePlayer {
 
@@ -119,8 +124,9 @@ public class MapManager extends BaseManager {
 		super(plugin);
 
 		this.subPlugin = subPlugin;
-
+		this.plugin = plugin;
 		mapPlayers = new HashSet<StandardPlayer>();
+		playerLocations = new HashMap<StandardPlayer, Location>();
 
 		updateTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(subPlugin, new Runnable() {
 			@Override
@@ -128,7 +134,24 @@ public class MapManager extends BaseManager {
 				for (StandardPlayer player : mapPlayers) {
 					try {
 						if (player.isOnline()) {
-							renderMap(player);
+							Location location = player.getLocation();
+							if (playerLocations.containsKey(player)) {
+								Location lastLocation = playerLocations.get(player);
+								if (!location.getChunk().equals(lastLocation.getChunk())) {
+									playerLocations.replace(player, location);
+									renderMap(player);
+								}
+								else {
+									double direction = (location.getYaw() / 360) * 2 * Math.PI;
+									double lastDirection = (lastLocation.getYaw() / 360) * 2 * Math.PI;
+									if (direction != lastDirection) {									
+										playerLocations.replace(player, location);
+										renderMap(player);
+									}
+								}
+							}
+
+							
 						}
 					} catch (NullPointerException e) {
 						// Do nothing
@@ -149,13 +172,20 @@ public class MapManager extends BaseManager {
 			return false;
 		} else {
 			mapPlayers.add(player);
+			playerLocations.put(player, player.getLocation());
 			return true;
 		}
 	}
 
 	public void updateMap(StandardPlayer player) {
 		if (mapPlayers.contains(player)) {
-			renderMap(player);
+			if (playerLocations.containsKey(player)) {
+				if (!player.getLocation().getChunk().equals(playerLocations.get(player).getChunk())) {
+					playerLocations.replace(player, player.getLocation());
+					renderMap(player);
+				}
+			}
+			
 		}
 	}
 
@@ -163,24 +193,28 @@ public class MapManager extends BaseManager {
 		ScoreboardManager manager = Bukkit.getScoreboardManager();
 		Scoreboard board = manager.getNewScoreboard();
 		Team team = board.registerNewTeam("team");
-		team.addPlayer(player);
+		
+		team.addEntry(player.getName());
 
-		Objective objective = board.registerNewObjective("Map", "dummy");
+		Objective objective = board.registerNewObjective("Map", "dummy", "Something");
 
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 		objective.setDisplayName("Map");
 
 		String[] mapRows = buildMap(player);
-
+		
 		for (int i = 0; i < mapRows.length; ++i) {
 			String data = mapRows[i];
 
-			OfflinePlayer rowData = new MapLine(data.substring(5, 17));
-			Score score = objective.getScore(rowData);
+			OfflinePlayer rowData = new MapLine(data.substring(3, 19));
+			
+			Score score = objective.getScore(rowData.getName());			
+			
 			score.setScore(MAP_WIDTH - i);
 
-			Team mapRow = board.registerNewTeam(String.valueOf(i));
-			mapRow.addPlayer(rowData);
+			Team mapRow = board.registerNewTeam(String.valueOf(i));			
+			
+			mapRow.addEntry(rowData.getName());
 
 			mapRow.setPrefix(data.substring(0, 5));
 			mapRow.setSuffix(data.substring(17));
@@ -216,7 +250,7 @@ public class MapManager extends BaseManager {
 						playerLocation.getBlockX() + ((x - offset) << 4),
 						playerLocation.getBlockY(),
 						playerLocation.getBlockZ() + ((z - offset) << 4));
-
+				
 				Group group = groupManager.getGroupByLocation(location);
 				if (group != null) {
 					surroundingGroups[x][z] = group;
@@ -228,6 +262,7 @@ public class MapManager extends BaseManager {
 			String[] chars = new String[MAP_WIDTH];
 
 			for (int x = 0; x < MAP_WIDTH; ++x) {
+				
 				switch (MAP_PATTERN[i][x]) {
 					case 0:
 						chars[x] = "▒";
@@ -242,34 +277,31 @@ public class MapManager extends BaseManager {
 						chars[x] = "\u2062";
 						break;
 				}
-
+				
 				// Direction indicator
 				if (i == offset + dirZ && x == offset + dirX) {
 					chars[x] = "ᚎ";
 				}
-
-				Group group = surroundingGroups[x][i];
+				
+				Group group = surroundingGroups[x][i];				
 
 				if (group == null) {
 					chars[x] = ChatColor.GRAY + chars[x];
-				} else {
-					if (group == playerGroup) {
-						chars[x] = ChatColor.GREEN + chars[x];
-					} else if (playerGroup != null && group.isMutualFriendship(playerGroup)) {
-						chars[x] = ChatColor.DARK_AQUA + chars[x];
-					} else if (group.isSafeArea()) {
-						chars[x] = ChatColor.DARK_GREEN + chars[x];
-					} else if (group.isNeutralArea()) {
-						chars[x] = ChatColor.GOLD + chars[x];
-					} else {
-						chars[x] = ChatColor.YELLOW + chars[x];
-					}
+				}
+				else if (group == playerGroup) {
+					chars[x] = ChatColor.GREEN + chars[x];
+				}
+				else if (playerGroup != null && group.isMutualFriendship(playerGroup)) {
+					chars[x] = ChatColor.DARK_AQUA + chars[x];
+				}
+				else {
+					chars[x] = ChatColor.YELLOW + chars[x];
 				}
 			}
 
 			result[i] = StringUtils.join(chars);
 		}
-
+		
 		return result;
 	}
 }
