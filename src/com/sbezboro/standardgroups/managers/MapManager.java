@@ -123,7 +123,6 @@ public class MapManager extends BaseManager {
 		super(plugin);
 
 		this.subPlugin = subPlugin;
-		this.plugin = plugin;
 		mapPlayers = new HashSet<StandardPlayer>();
 		playerLocations = new HashMap<StandardPlayer, Location>();
 
