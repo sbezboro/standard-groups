@@ -36,7 +36,6 @@ public class MapManager extends BaseManager {
 	};
 
 	private StandardGroups subPlugin;
-	private StandardPlugin plugin;
 	private HashSet<StandardPlayer> mapPlayers;
 	private int updateTaskId;
 	private Map<StandardPlayer, Location> playerLocations;
