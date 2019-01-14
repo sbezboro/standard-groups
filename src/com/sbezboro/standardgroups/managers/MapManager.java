@@ -20,271 +20,268 @@ import java.util.Map;
 import java.util.UUID;
 
 public class MapManager extends BaseManager {
-	private static final int MAP_WIDTH = 9;
-	
+    private static final int MAP_WIDTH = 9;
 
-	private static final byte[][] MAP_PATTERN = {
-			new byte[] {0, 1, 0, 2, 0, 2, 0, 2, 0},
-			new byte[] {1, 0, 1, 0, 2, 0, 2, 0, 2},
-			new byte[] {0, 1, 0, 1, 0, 2, 0, 2, 0},
-			new byte[] {2, 0, 1, 0, 1, 0, 2, 0, 2},
-			new byte[] {0, 2, 0, 1, 3, 1, 0, 1, 0},
-			new byte[] {2, 0, 2, 0, 1, 0, 1, 0, 1},
-			new byte[] {0, 2, 0, 2, 0, 1, 0, 1, 0},
-			new byte[] {2, 0, 2, 0, 2, 0, 1, 0, 1},
-			new byte[] {0, 2, 0, 2, 0, 2, 0, 1, 0}
-	};
 
-	private StandardGroups subPlugin;
-	private HashSet<StandardPlayer> mapPlayers;
-	private int updateTaskId;
-	private Map<StandardPlayer, Location> playerLocations;
+    private static final byte[][] MAP_PATTERN = {
+            new byte[] {0, 1, 0, 2, 0, 2, 0, 2, 0},
+            new byte[] {1, 0, 1, 0, 2, 0, 2, 0, 2},
+            new byte[] {0, 1, 0, 1, 0, 2, 0, 2, 0},
+            new byte[] {2, 0, 1, 0, 1, 0, 2, 0, 2},
+            new byte[] {0, 2, 0, 1, 3, 1, 0, 1, 0},
+            new byte[] {2, 0, 2, 0, 1, 0, 1, 0, 1},
+            new byte[] {0, 2, 0, 2, 0, 1, 0, 1, 0},
+            new byte[] {2, 0, 2, 0, 2, 0, 1, 0, 1},
+            new byte[] {0, 2, 0, 2, 0, 2, 0, 1, 0}
+    };
 
-	private class MapLine implements OfflinePlayer {
+    private StandardGroups subPlugin;
+    private HashSet<StandardPlayer> mapPlayers;
+    private int updateTaskId;
 
-		private final String contents;
+    private class MapLine implements OfflinePlayer {
 
-		public MapLine(String contents) {
-			this.contents = contents;
-		}
+        private final String contents;
 
-		@Override
-		public boolean isOnline() {
-			return false;
-		}
+        public MapLine(String contents) {
+            this.contents = contents;
+        }
 
-		@Override
-		public String getName() {
-			return contents;
-		}
+        @Override
+        public boolean isOnline() {
+            return false;
+        }
 
-		@Override
-		public UUID getUniqueId() {
-			return null;
-		}
+        @Override
+        public String getName() {
+            return contents;
+        }
 
-		@Override
-		public boolean isBanned() {
-			return false;
-		}
+        @Override
+        public UUID getUniqueId() {
+            return null;
+        }
 
-		@Override
-		public boolean isWhitelisted() {
-			return false;
-		}
+        @Override
+        public boolean isBanned() {
+            return false;
+        }
 
-		@Override
-		public void setWhitelisted(boolean b) {
+        @Override
+        public boolean isWhitelisted() {
+            return false;
+        }
 
-		}
+        @Override
+        public void setWhitelisted(boolean b) {
 
-		@Override
-		public Player getPlayer() {
-			return null;
-		}
+        }
 
-		@Override
-		public long getFirstPlayed() {
-			return 0;
-		}
+        @Override
+        public Player getPlayer() {
+            return null;
+        }
 
-		@Override
-		public long getLastPlayed() {
-			return 0;
-		}
+        @Override
+        public long getFirstPlayed() {
+            return 0;
+        }
 
-		@Override
-		public boolean hasPlayedBefore() {
-			return false;
-		}
+        @Override
+        public long getLastPlayed() {
+            return 0;
+        }
 
-		@Override
-		public Location getBedSpawnLocation() {
-			return null;
-		}
+        @Override
+        public boolean hasPlayedBefore() {
+            return false;
+        }
 
-		@Override
-		public Map<String, Object> serialize() {
-			return null;
-		}
+        @Override
+        public Location getBedSpawnLocation() {
+            return null;
+        }
 
-		@Override
-		public boolean isOp() {
-			return false;
-		}
+        @Override
+        public Map<String, Object> serialize() {
+            return null;
+        }
 
-		@Override
-		public void setOp(boolean b) {
+        @Override
+        public boolean isOp() {
+            return false;
+        }
 
-		}
-	}
+        @Override
+        public void setOp(boolean b) {
 
-	public MapManager(StandardPlugin plugin, StandardGroups subPlugin) {
-		super(plugin);
+        }
+    }
 
-		this.subPlugin = subPlugin;
-		mapPlayers = new HashSet<StandardPlayer>();
-		playerLocations = new HashMap<StandardPlayer, Location>();
+    public MapManager(StandardPlugin plugin, StandardGroups subPlugin) {
+        super(plugin);
 
-		updateTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(subPlugin, new Runnable() {
-			@Override
-			public void run() {
-				for (StandardPlayer player : mapPlayers) {
-					try {
-						if (player.isOnline()) {
-							renderMap(player);
-						}
-					}
-					catch (NullPointerException e) {
-						// Do nothing.
-					}
-					
-				}
-			}
-		}, 20, 20);
-	}
+        this.subPlugin = subPlugin;
+        mapPlayers = new HashSet<StandardPlayer>();
 
-	public void unload() {
-		Bukkit.getScheduler().cancelTask(updateTaskId);
-	}
+        updateTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(subPlugin, new Runnable() {
+            @Override
+            public void run() {
+                for (StandardPlayer player : mapPlayers) {
+                    try {
+                        if (player.isOnline()) {
+                            renderMap(player);
+                        }
+                    }
+                    catch (NullPointerException e) {
+                        // Do nothing.
+                    }
 
-	public boolean toggleMap(final StandardPlayer player) {
-		if (mapPlayers.contains(player)) {
-			mapPlayers.remove(player);
-			removeMap(player);
-			return false;
-		} else {
-			mapPlayers.add(player);
-			playerLocations.put(player, player.getLocation());
-			return true;
-		}
-	}
+                }
+            }
+        }, 20, 20);
+    }
 
-	public void updateMap(StandardPlayer player) {
-		if (mapPlayers.contains(player)) {
-			renderMap(player);		
-		}
-	}
+    public void unload() {
+        Bukkit.getScheduler().cancelTask(updateTaskId);
+    }
 
-	private void renderMap(StandardPlayer player) {
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard board = manager.getNewScoreboard();
-		Team team = board.registerNewTeam("team");
-		
-		team.addEntry(player.getName());
+    public boolean toggleMap(final StandardPlayer player) {
+        if (mapPlayers.contains(player)) {
+            mapPlayers.remove(player);
+            removeMap(player);
+            return false;
+        } else {
+            mapPlayers.add(player);
+            return true;
+        }
+    }
 
-		Objective objective = board.registerNewObjective("Map", "dummy", "Something");
+    public void updateMap(StandardPlayer player) {
+        if (mapPlayers.contains(player)) {
+            renderMap(player);
+        }
+    }
 
-		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-		objective.setDisplayName("Map");
+    private void renderMap(StandardPlayer player) {
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        Scoreboard board = manager.getNewScoreboard();
+        Team team = board.registerNewTeam("team");
 
-		String[] mapRows = buildMap(player);
-		
-		for (int i = 0; i < mapRows.length; ++i) {
-			String data = mapRows[i];
+        team.addEntry(player.getName());
 
-			OfflinePlayer rowData = new MapLine(data.substring(3, 19));
-			
-			Score score = objective.getScore(rowData.getName());			
-			
-			score.setScore(MAP_WIDTH - i);
+        Objective objective = board.registerNewObjective("Map", "dummy", "Something");
 
-			Team mapRow = board.registerNewTeam(String.valueOf(i));			
-			
-			mapRow.addEntry(rowData.getName());
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        objective.setDisplayName("Map");
 
-			mapRow.setPrefix(data.substring(0, 5));
-			mapRow.setSuffix(data.substring(17));
-		}
+        String[] mapRows = buildMap(player);
 
-		player.setScoreboard(board);
-	}
+        for (int i = 0; i < mapRows.length; ++i) {
+            String data = mapRows[i];
 
-	private void removeMap(StandardPlayer player) {
-		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-	}
+            OfflinePlayer rowData = new MapLine(data.substring(3, 19));
 
-	private String[] buildMap(StandardPlayer player) {
-		GroupManager groupManager = subPlugin.getGroupManager();
+            Score score = objective.getScore(rowData.getName());
 
-		Group playerGroup = groupManager.getPlayerGroup(player);
+            score.setScore(MAP_WIDTH - i);
 
-		String[] result = new String[MAP_WIDTH];
-		Group[][] surroundingGroups = new Group[MAP_WIDTH][MAP_WIDTH];
+            Team mapRow = board.registerNewTeam(String.valueOf(i));
 
-		double dir = (player.getLocation().getYaw() / 360) * 2 * Math.PI;
+            mapRow.addEntry(rowData.getName());
 
-		int dirX = (int) -Math.round(Math.sin(dir));
-		int dirZ = (int) Math.round(Math.cos(dir));
+            mapRow.setPrefix(data.substring(0, 5));
+            mapRow.setSuffix(data.substring(17));
+        }
 
-		int offset = MAP_WIDTH / 2;
+        player.setScoreboard(board);
+    }
 
-		for (int x = 0; x < MAP_WIDTH; ++x) {
-			for (int z = 0; z < MAP_WIDTH; ++z) {
-				Location playerLocation = player.getLocation();
+    private void removeMap(StandardPlayer player) {
+        player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+    }
 
-				Location location = new Location(player.getWorld(),
-						playerLocation.getBlockX() + ((x - offset) << 4),
-						playerLocation.getBlockY(),
-						playerLocation.getBlockZ() + ((z - offset) << 4));
-				
-				Group group = groupManager.getGroupByLocation(location);
-				if (group != null) {
-					surroundingGroups[x][z] = group;
-				}
-			}
-		}
+    private String[] buildMap(StandardPlayer player) {
+        GroupManager groupManager = subPlugin.getGroupManager();
 
-		for (int i = 0; i < MAP_WIDTH; ++i) {
-			String[] chars = new String[MAP_WIDTH];
+        Group playerGroup = groupManager.getPlayerGroup(player);
 
-			for (int x = 0; x < MAP_WIDTH; ++x) {
-				
-				switch (MAP_PATTERN[i][x]) {
-					case 0:
-						chars[x] = "▒";
-						break;
-					case 1:
-						chars[x] = "▓";
-						break;
-					case 2:
-						chars[x] = "█";
-						break;
-					case 3:
-						chars[x] = "\u2062";
-						break;
-				}
-				
-				// Direction indicator
-				if (i == offset + dirZ && x == offset + dirX) {
-					chars[x] = "ᚎ";
-				}
-				
-				Group group = surroundingGroups[x][i];				
+        String[] result = new String[MAP_WIDTH];
+        Group[][] surroundingGroups = new Group[MAP_WIDTH][MAP_WIDTH];
 
-				if (group == null) {
-					chars[x] = ChatColor.GRAY + chars[x];
-				}
-				else if (group == playerGroup) {
-					chars[x] = ChatColor.GREEN + chars[x];
-				}
-				else if (playerGroup != null && group.isMutualFriendship(playerGroup)) {
-					chars[x] = ChatColor.DARK_AQUA + chars[x];
-				}
-				else if (group.isSafeArea()) {
-					chars[x] = ChatColor.DARK_GREEN + chars[x];
-				}
-				else if (group.isNeutralArea()) {
-					chars[x] = ChatColor.GOLD + chars[x];
-				} 
-				else {
-					chars[x] = ChatColor.YELLOW + chars[x];
-				}
-			}
+        double dir = (player.getLocation().getYaw() / 360) * 2 * Math.PI;
 
-			result[i] = StringUtils.join(chars);
-		}
-		
-		return result;
-	}
+        int dirX = (int) -Math.round(Math.sin(dir));
+        int dirZ = (int) Math.round(Math.cos(dir));
+
+        int offset = MAP_WIDTH / 2;
+
+        for (int x = 0; x < MAP_WIDTH; ++x) {
+            for (int z = 0; z < MAP_WIDTH; ++z) {
+                Location playerLocation = player.getLocation();
+
+                Location location = new Location(player.getWorld(),
+                        playerLocation.getBlockX() + ((x - offset) << 4),
+                        playerLocation.getBlockY(),
+                        playerLocation.getBlockZ() + ((z - offset) << 4));
+
+                Group group = groupManager.getGroupByLocation(location);
+                if (group != null) {
+                    surroundingGroups[x][z] = group;
+                }
+            }
+        }
+
+        for (int i = 0; i < MAP_WIDTH; ++i) {
+            String[] chars = new String[MAP_WIDTH];
+
+            for (int x = 0; x < MAP_WIDTH; ++x) {
+
+                switch (MAP_PATTERN[i][x]) {
+                    case 0:
+                        chars[x] = "▒";
+                        break;
+                    case 1:
+                        chars[x] = "▓";
+                        break;
+                    case 2:
+                        chars[x] = "█";
+                        break;
+                    case 3:
+                        chars[x] = "\u2062";
+                        break;
+                }
+
+                // Direction indicator
+                if (i == offset + dirZ && x == offset + dirX) {
+                    chars[x] = "ᚎ";
+                }
+
+                Group group = surroundingGroups[x][i];
+
+                if (group == null) {
+                    chars[x] = ChatColor.GRAY + chars[x];
+                }
+                else if (group == playerGroup) {
+                    chars[x] = ChatColor.GREEN + chars[x];
+                }
+                else if (playerGroup != null && group.isMutualFriendship(playerGroup)) {
+                    chars[x] = ChatColor.DARK_AQUA + chars[x];
+                }
+                else if (group.isSafeArea()) {
+                    chars[x] = ChatColor.DARK_GREEN + chars[x];
+                }
+                else if (group.isNeutralArea()) {
+                    chars[x] = ChatColor.GOLD + chars[x];
+                }
+                else {
+                    chars[x] = ChatColor.YELLOW + chars[x];
+                }
+            }
+
+            result[i] = StringUtils.join(chars);
+        }
+
+        return result;
+    }
 }
