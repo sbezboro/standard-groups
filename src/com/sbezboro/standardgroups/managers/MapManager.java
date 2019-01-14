@@ -130,7 +130,15 @@ public class MapManager extends BaseManager {
 			@Override
 			public void run() {
 				for (StandardPlayer player : mapPlayers) {
-					renderMap(player);
+					try {
+						if (player.isOnline()) {
+							renderMap(player);
+						}
+					}
+					catch (NullPointerException e) {
+						// Do nothing.
+					}
+					
 				}
 			}
 		}, 20, 20);
@@ -154,13 +162,7 @@ public class MapManager extends BaseManager {
 
 	public void updateMap(StandardPlayer player) {
 		if (mapPlayers.contains(player)) {
-			if (playerLocations.containsKey(player)) {
-				if (!player.getLocation().getChunk().equals(playerLocations.get(player).getChunk())) {
-					playerLocations.replace(player, player.getLocation());
-					renderMap(player);
-				}
-			}
-			
+			renderMap(player);		
 		}
 	}
 
