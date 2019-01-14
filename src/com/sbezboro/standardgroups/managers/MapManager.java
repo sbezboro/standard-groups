@@ -130,30 +130,7 @@ public class MapManager extends BaseManager {
 			@Override
 			public void run() {
 				for (StandardPlayer player : mapPlayers) {
-					try {
-						if (player.isOnline()) {
-							Location location = player.getLocation();
-							if (playerLocations.containsKey(player)) {
-								Location lastLocation = playerLocations.get(player);
-								if (!location.getChunk().equals(lastLocation.getChunk())) {
-									playerLocations.replace(player, location);
-									renderMap(player);
-								}
-								else {
-									double direction = (location.getYaw() / 360) * 2 * Math.PI;
-									double lastDirection = (lastLocation.getYaw() / 360) * 2 * Math.PI;
-									if (direction != lastDirection) {									
-										playerLocations.replace(player, location);
-										renderMap(player);
-									}
-								}
-							}
-
-							
-						}
-					} catch (NullPointerException e) {
-						// Do nothing
-					}
+					renderMap(player);
 				}
 			}
 		}, 20, 20);
