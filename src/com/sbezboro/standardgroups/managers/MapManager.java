@@ -8,13 +8,11 @@ import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
@@ -132,11 +130,9 @@ public class MapManager extends BaseManager {
                         if (player.isOnline()) {
                             renderMap(player);
                         }
-                    }
-                    catch (NullPointerException e) {
+                    } catch (NullPointerException e) {
                         // Do nothing.
                     }
-
                 }
             }
         }, 20, 20);
@@ -261,20 +257,15 @@ public class MapManager extends BaseManager {
 
                 if (group == null) {
                     chars[x] = ChatColor.GRAY + chars[x];
-                }
-                else if (group == playerGroup) {
+                } else if (group == playerGroup) {
                     chars[x] = ChatColor.GREEN + chars[x];
-                }
-                else if (playerGroup != null && group.isMutualFriendship(playerGroup)) {
+                } else if (playerGroup != null && group.isMutualFriendship(playerGroup)) {
                     chars[x] = ChatColor.DARK_AQUA + chars[x];
-                }
-                else if (group.isSafeArea()) {
+                } else if (group.isSafeArea()) {
                     chars[x] = ChatColor.DARK_GREEN + chars[x];
-                }
-                else if (group.isNeutralArea()) {
+                } else if (group.isNeutralArea()) {
                     chars[x] = ChatColor.GOLD + chars[x];
-                }
-                else {
+                } else {
                     chars[x] = ChatColor.YELLOW + chars[x];
                 }
             }
