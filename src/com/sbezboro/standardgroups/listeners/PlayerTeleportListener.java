@@ -31,7 +31,6 @@ public class PlayerTeleportListener extends SubPluginEventListener<StandardGroup
 			group = subPlugin.getGroupManager().getGroupByLocation(from);
 			if (group != null && !group.isMember(player)) {
 				event.setCancelled(true);
-				return;
 			}
 		}
 	}

@@ -24,9 +24,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_13_R2.block.impl.CraftTrapdoor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.material.TrapDoor;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -472,9 +472,10 @@ public class GroupManager extends BaseManager {
 			} else if (!PROTECTED_BLOCKS.contains(targetBlock.getType())) {
 				for (Block block : MiscUtil.getAdjacentBlocks(targetBlock)) {
 					if (WOODEN_TRAPDOOR_BLOCKS.contains(block.getType())) {
-						TrapDoor trapDoor = (TrapDoor) block.getState().getData();
+						// getData() returns LEGACY_AIR for non-oak trapdoors, will need to fix this craftbukkit usage eventually
+						CraftTrapdoor trapDoor = (CraftTrapdoor) block.getState().getBlockData();
 
-						if (trapDoor.getAttachedFace() == block.getFace(targetBlock)) {
+						if (trapDoor.getFacing().getOppositeFace() == block.getFace(targetBlock)) {
 							affectedBlocks.add(block);
 						}
 					}
