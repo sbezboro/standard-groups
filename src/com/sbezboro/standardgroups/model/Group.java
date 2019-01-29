@@ -248,9 +248,9 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		return claims.getList();
 	}
 	
-	// Considers that spawn claims should be worth 5
+	// Considers that spawn claims should be worth extra
 	public int getWeightedClaimCount() {
-		return claims.getList().size() + 4 * spawnClaims.getValue();
+		return claims.getList().size() + (StandardGroups.getPlugin().getSpawnClaimCost() - 1) * spawnClaims.getValue();
 	}
 	
 	// Autocommands (currently only used for /g autolock)

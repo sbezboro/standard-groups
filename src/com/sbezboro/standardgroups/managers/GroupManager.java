@@ -874,12 +874,12 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		// Spawn claims are "worth" 5 normal claims
+		// Spawn claims are "worth" extra claims
 		boolean nextToSpawn = isNextToSpawn(location);
 		if (group.getWeightedClaimCount() >= group.getMaxClaims()) {
 			player.sendMessage(ChatColor.RED + "Your group cannot claim any more land at the moment.");
 			return;
-		} else if (nextToSpawn && group.getWeightedClaimCount() + 5 > group.getMaxClaims()) {
+                } else if (nextToSpawn && ((group.getWeightedClaimCount() + subPlugin.getSpawnClaimCost()) > group.getMaxClaims())) {
 			player.sendMessage(ChatColor.GOLD + "Your group cannot claim any more land next to spawn at the moment.");
 			return;
 		}
@@ -1388,14 +1388,6 @@ public class GroupManager extends BaseManager {
 		if (group.getPower() < LOCK_POWER_THRESHOLD) {
 			player.sendMessage(ChatColor.RED + "Your group's power is too low to lock more blocks.");
 			return;
-		}
-		
-		// Prevent surrounding chests with locked beds by limiting their number
-		if (StandardPlugin.BED_BLOCKS.contains(location.getBlock().getType())) {
-			if (group.getLockedBedsCount() >= 5) {
-				player.sendMessage(ChatColor.RED + "Your group cannot lock any more beds.");
-				return;
-			}
 		}
 
 		group.lock(player, location);

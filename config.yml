@@ -10,3 +10,4 @@ group-power-growth: 0.03333
 group-power-min-value: -15.0
 group-power-max-value: 20.0
 power-damage-modifier: 1.0
+spawn-claim-cost: 5
