@@ -90,6 +90,16 @@ public class GroupManager extends BaseManager {
 		add(Material.STONE_BUTTON);
 		add(Material.SKELETON_SKULL);
 		add(Material.WITHER_SKELETON_SKULL);
+		add(Material.DRAGON_HEAD);
+		add(Material.DRAGON_WALL_HEAD);
+		add(Material.CREEPER_HEAD);
+		add(Material.CREEPER_WALL_HEAD);
+		add(Material.ZOMBIE_HEAD);
+		add(Material.ZOMBIE_WALL_HEAD);
+		add(Material.SKELETON_SKULL);
+		add(Material.SKELETON_WALL_SKULL);
+		add(Material.WITHER_SKELETON_SKULL);
+		add(Material.WITHER_SKELETON_WALL_SKULL);
 	}};
 
 	@SuppressWarnings("serial")
