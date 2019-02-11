@@ -37,8 +37,9 @@ public class CreateCommand extends SubCommand {
             sender.sendMessage("You must provide a name for your group.");
             return false;
         }
-        for (String str : plugin.getConfig().getStringList("disabled-group-names")) {
-            if (args[0].contains(str) || (args[0].equalsIgnoreCase(str))) {
+
+        for (String str : plugin.getConfig().getStringList("muted-words")) {
+            if (args[0].toLowerCase().equalsIgnoreCase(str)) {
                 player.sendMessage("You cannot name your Group that!");
                 return false;
             }
