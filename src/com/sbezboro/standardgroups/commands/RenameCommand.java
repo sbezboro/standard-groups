@@ -48,13 +48,6 @@ public class RenameCommand extends SubCommand {
             return false;
         }
 
-        for (String str : plugin.getConfig().getStringList("muted-words")) {
-            if (args[0].toLowerCase().equalsIgnoreCase(str)) {
-                player.sendMessage("You cannot name your Group that!");
-                return false;
-            }
-        }
-
         groupManager.rename(sender, args[0], groupName);
 
         groupManager.enableCommandCooldown(new String(player.getUuidString()));

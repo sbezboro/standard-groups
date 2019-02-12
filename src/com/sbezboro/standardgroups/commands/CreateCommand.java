@@ -38,13 +38,6 @@ public class CreateCommand extends SubCommand {
             return false;
         }
 
-        for (String str : plugin.getConfig().getStringList("muted-words")) {
-            if (args[0].toLowerCase().equalsIgnoreCase(str)) {
-                player.sendMessage("You cannot name your Group that!");
-                return false;
-            }
-        }
-
         groupManager.createGroup(player, args[0]);
 
         groupManager.enableCommandCooldown(new String(player.getUuidString()));
