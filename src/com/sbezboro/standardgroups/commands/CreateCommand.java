@@ -11,38 +11,38 @@ import org.bukkit.command.CommandSender;
 
 public class CreateCommand extends SubCommand {
 
-    public CreateCommand(StandardPlugin plugin, BaseCommand command) {
-        super(plugin, command, "create");
+	public CreateCommand(StandardPlugin plugin, BaseCommand command) {
+		super(plugin, command, "create");
 
-        addHelp(ChatColor.YELLOW + "/g create <name>" + ChatColor.RESET + " - create a group");
-    }
+		addHelp(ChatColor.YELLOW + "/g create <name>" + ChatColor.RESET + " - create a group");
+	}
 
-    @Override
-    public boolean handle(CommandSender sender, String[] args) {
-        StandardPlayer player = plugin.getStandardPlayer(sender);
+	@Override
+	public boolean handle(CommandSender sender, String[] args) {
+		StandardPlayer player = plugin.getStandardPlayer(sender);
 
-        if (player == null) {
-            command.showPlayerOnlyMessage(sender);
-            return false;
-        }
+		if (player == null) {
+			command.showPlayerOnlyMessage(sender);
+			return false;
+		}
 
-        GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
+		GroupManager groupManager = StandardGroups.getPlugin().getGroupManager();
 
-        if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
-            groupManager.enableCommandCooldown(new String(player.getUuidString()));
-            return false;
-        }
+		if (groupManager.hasCommandCooldown(new String(player.getUuidString()), true)) {
+			groupManager.enableCommandCooldown(new String(player.getUuidString()));
+			return false;
+		}
 
-        if (args.length != 1) {
-            sender.sendMessage("You must provide a name for your group.");
-            return false;
-        }
+		if (args.length != 1) {
+			sender.sendMessage("You must provide a name for your group.");
+			return false;
+		}
 
-        groupManager.createGroup(player, args[0]);
+		groupManager.createGroup(player, args[0]);
 
-        groupManager.enableCommandCooldown(new String(player.getUuidString()));
+		groupManager.enableCommandCooldown(new String(player.getUuidString()));
 
-        return true;
-    }
+		return true;
+	}
 
 }
