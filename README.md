@@ -1,5 +1,4 @@
-#standard-groups
-[![Build Status](https://travis-ci.org/sbezboro/standard-groups.svg?branch=master)](https://travis-ci.org/sbezboro/standard-groups)
+# standard-groups
 
 Bukkit plugin that provides grief preventing Groups for the [Standard Survival Minecraft server](http://standardsurvival.com).
 
