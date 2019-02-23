@@ -22,6 +22,7 @@ public class StandardConfig {
 	private double groupPowerMaxValue;
 	private double powerDamageModifier;
 	private int spawnClaimCost;
+	private boolean disableTNTCartsInClaimedLand;
   
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
@@ -43,6 +44,7 @@ public class StandardConfig {
 		groupPowerMaxValue = config.getDouble("group-power-max-value");
 		powerDamageModifier = config.getDouble("power-damage-modifier");
 		spawnClaimCost = config.getInt("spawn-claim-cost");
+		disableTNTCartsInClaimedLand = config.getBoolean("disable-tnt-carts-in-claimed-land");
 	}
 
 	public boolean isDebug() {
@@ -100,5 +102,7 @@ public class StandardConfig {
 	public int getSpawnClaimCost() {
 		return spawnClaimCost;
 	}
+
+	public boolean disableTNTCartsInClaimedLand() { return disableTNTCartsInClaimedLand; }
 
 }
