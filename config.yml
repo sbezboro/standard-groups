@@ -11,5 +11,6 @@ group-power-min-value: -15.0
 group-power-max-value: 20.0
 power-damage-modifier: 1.0
 spawn-claim-cost: 5
+disable-tnt-carts-in-claimed-land: false
 
 

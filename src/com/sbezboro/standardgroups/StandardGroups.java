@@ -231,6 +231,8 @@ public class StandardGroups extends JavaPlugin implements SubPlugin {
 		return config.getSpawnClaimCost();
 	}
 
+	public boolean disableTNTCartsInClaimedLand() { return config.disableTNTCartsInClaimedLand(); }
+
 	public GroupManager getGroupManager() {
 		return groupManager;
 	}
