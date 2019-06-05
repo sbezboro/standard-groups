@@ -34,12 +34,6 @@ public class EntityExplodeListener extends SubPluginEventListener<StandardGroups
 					return;
 				}
 				
-				// Since TNT can now be placed in raids, disable TNT minecarts on claimed land
-				if (event.getEntity().getType() == EntityType.MINECART_TNT) {
-					event.setCancelled(true);
-					return;
-				}
-				
 				if (!groupManager.getLocksAffectedByBlock(block.getLocation()).isEmpty()) {
 					event.blockList().remove(block);
 				}
