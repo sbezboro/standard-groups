@@ -2,7 +2,7 @@ name: StandardGroups
 main: com.sbezboro.standardgroups.StandardGroups
 version: 1.6.7
 depend: [StandardPlugin]
-api-version: 1.14
+api-version: 1.15
 
 commands:
     groups:

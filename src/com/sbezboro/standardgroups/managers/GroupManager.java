@@ -70,6 +70,7 @@ public class GroupManager extends BaseManager {
 		addAll(WOODEN_TRAPDOOR_BLOCKS);
 		addAll(StandardPlugin.BED_BLOCKS);
 		add(Material.CHEST);
+		add(Material.BARREL);
 		add(Material.OAK_TRAPDOOR);
 		add(Material.ENDER_CHEST);
 		add(Material.HOPPER);
