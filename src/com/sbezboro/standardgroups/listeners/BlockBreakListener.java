@@ -41,7 +41,7 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 			Block playerBlock = event.getBlock().getWorld().getBlockAt(player.getLocation());
 
 			// Allow players to break one block in front of portals to get out of portal traps
-			if (StandardPlugin.BED_BLOCKS.contains(playerBlock.getType())) {
+			if (playerBlock.getType() == Material.NETHER_PORTAL) {
 				Block targetBlock = event.getBlock();
 
 				byte direction = playerBlock.getData();
