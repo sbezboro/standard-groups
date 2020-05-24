@@ -62,6 +62,10 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				);
 
 				if (canBreakNearPortal) {
+					subPlugin.getLogger().info("Player " + player.getDisplayName(false) + "breaking near portal of group " + victimGroup.getName() +
+						" at (" + playerBlock.getX() + ", " + playerBlock.getY() + ", " + playerBlock.getZ() +
+						") direction " + direction + ", target at ("  + targetBlock.getX() + ", " + targetBlock.getY() + ", " +	targetBlock.getZ() + ")");
+
 					List<Lock> locks = groupManager.getLocksAffectedByBlock(victimGroup, location);
 					for (Lock lock : locks) {
 						victimGroup.unlock(lock);
