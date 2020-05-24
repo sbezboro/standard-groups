@@ -8,6 +8,7 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
+import com.sbezboro.standardplugin.util.MiscUtil;
 import net.minecraft.server.v1_15_R1.Enchantments;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -62,9 +63,9 @@ public class BlockBreakListener extends SubPluginEventListener<StandardGroups> i
 				);
 
 				if (canBreakNearPortal) {
-					subPlugin.getLogger().info("Player " + player.getDisplayName(false) + "breaking near portal of group " + victimGroup.getName() +
-						" at (" + playerBlock.getX() + ", " + playerBlock.getY() + ", " + playerBlock.getZ() +
-						") direction " + direction + ", target at ("  + targetBlock.getX() + ", " + targetBlock.getY() + ", " +	targetBlock.getZ() + ")");
+					subPlugin.getLogger().info("Player " + player.getDisplayName(false) + " breaking near portal of group " + victimGroup.getName() +
+						" at " + MiscUtil.locationFormat(playerBlock.getLocation()) +
+						" direction " + direction + ", target at " + MiscUtil.locationFormat(targetBlock.getLocation()));
 
 					List<Lock> locks = groupManager.getLocksAffectedByBlock(victimGroup, location);
 					for (Lock lock : locks) {
