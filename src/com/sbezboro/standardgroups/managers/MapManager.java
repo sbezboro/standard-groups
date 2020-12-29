@@ -264,7 +264,7 @@ public class MapManager extends BaseManager {
         for (int i = 0; i < mapRows.length; ++i) {
             String data = mapRows[i];
 
-            OfflinePlayer rowData = new MapLine(data.substring(3, 19));
+            OfflinePlayer rowData = new MapLine(data.substring(3, 18));
 
             Score score = objective.getScore(rowData.getName());
 
@@ -274,8 +274,8 @@ public class MapManager extends BaseManager {
 
             mapRow.addEntry(rowData.getName());
 
-            mapRow.setPrefix(data.substring(0, 5));
-            mapRow.setSuffix(data.substring(17));
+            mapRow.setPrefix(data.substring(0, 3));
+            mapRow.setSuffix(data.substring(18));
         }
 
         player.setScoreboard(board);
