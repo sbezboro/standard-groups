@@ -9,7 +9,7 @@ import com.sbezboro.standardplugin.SubPluginEventListener;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 
 import com.sbezboro.standardplugin.util.MiscUtil;
-import net.minecraft.server.v1_15_R1.Enchantments;
+import net.minecraft.server.v1_16_R3.Enchantments;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;

@@ -24,7 +24,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_15_R1.block.impl.CraftTrapdoor;
+import org.bukkit.craftbukkit.v1_16_R3.block.impl.CraftTrapdoor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 

@@ -6,10 +6,8 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.managers.BaseManager;
 import com.sbezboro.standardplugin.model.StandardPlayer;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
@@ -98,6 +96,96 @@ public class MapManager extends BaseManager {
         @Override
         public Location getBedSpawnLocation() {
             return null;
+        }
+
+        @Override
+        public void incrementStatistic(Statistic statistic) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void decrementStatistic(Statistic statistic) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void incrementStatistic(Statistic statistic, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void decrementStatistic(Statistic statistic, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void setStatistic(Statistic statistic, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public int getStatistic(Statistic statistic) throws IllegalArgumentException {
+            return 0;
+        }
+
+        @Override
+        public void incrementStatistic(Statistic statistic, Material material) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void decrementStatistic(Statistic statistic, Material material) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public int getStatistic(Statistic statistic, Material material) throws IllegalArgumentException {
+            return 0;
+        }
+
+        @Override
+        public void incrementStatistic(Statistic statistic, Material material, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void decrementStatistic(Statistic statistic, Material material, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void setStatistic(Statistic statistic, Material material, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void incrementStatistic(Statistic statistic, EntityType entityType) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void decrementStatistic(Statistic statistic, EntityType entityType) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public int getStatistic(Statistic statistic, EntityType entityType) throws IllegalArgumentException {
+            return 0;
+        }
+
+        @Override
+        public void incrementStatistic(Statistic statistic, EntityType entityType, int i) throws IllegalArgumentException {
+
+        }
+
+        @Override
+        public void decrementStatistic(Statistic statistic, EntityType entityType, int i) {
+
+        }
+
+        @Override
+        public void setStatistic(Statistic statistic, EntityType entityType, int i) {
+
         }
 
         @Override
