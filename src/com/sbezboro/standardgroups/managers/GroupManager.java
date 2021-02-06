@@ -41,6 +41,8 @@ public class GroupManager extends BaseManager {
 		add(Material.BIRCH_DOOR);
 		add(Material.DARK_OAK_DOOR);
 		add(Material.JUNGLE_DOOR);
+		add(Material.CRIMSON_DOOR);
+		add(Material.WARPED_DOOR);
 	}};
 
 	@SuppressWarnings("serial")
@@ -51,6 +53,8 @@ public class GroupManager extends BaseManager {
 		add(Material.BIRCH_FENCE_GATE);
 		add(Material.DARK_OAK_FENCE_GATE);
 		add(Material.JUNGLE_FENCE_GATE);
+		add(Material.CRIMSON_FENCE_GATE);
+		add(Material.WARPED_FENCE_GATE);
 	}};
 
 	@SuppressWarnings("serial")
@@ -61,6 +65,8 @@ public class GroupManager extends BaseManager {
 		add(Material.DARK_OAK_TRAPDOOR);
 		add(Material.JUNGLE_TRAPDOOR);
 		add(Material.SPRUCE_TRAPDOOR);
+		add(Material.CRIMSON_TRAPDOOR);
+		add(Material.WARPED_TRAPDOOR);
 	}};
 
 	@SuppressWarnings("serial")
