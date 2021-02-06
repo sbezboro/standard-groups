@@ -36,7 +36,7 @@ public class BlockPistonRetractListener extends SubPluginEventListener<StandardG
 		Location fromLocation = event.getRetractLocation();
 		Location toLocation = fromLocation.getBlock().getRelative(direction).getLocation();
 
-		if (fromLocation.getBlock().getType() == Material.SLIME_BLOCK) {
+		if (fromLocation.getBlock().getType() == Material.SLIME_BLOCK || fromLocation.getBlock().getType() == Material.HONEY_BLOCK) {
 			event.setCancelled(true);
 			return;
 		}

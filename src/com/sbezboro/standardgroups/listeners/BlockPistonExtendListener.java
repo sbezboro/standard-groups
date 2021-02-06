@@ -26,7 +26,7 @@ public class BlockPistonExtendListener extends SubPluginEventListener<StandardGr
 		GroupManager groupManager = subPlugin.getGroupManager();
 
 		for (Block block : event.getBlocks()) {
-			if (block.getType() == Material.SLIME_BLOCK || StandardPlugin.BED_BLOCKS.contains(block.getType())) {
+			if (block.getType() == Material.SLIME_BLOCK || block.getType() == Material.HONEY_BLOCK || StandardPlugin.BED_BLOCKS.contains(block.getType())) {
 				event.setCancelled(true);
 				return;
 			}
