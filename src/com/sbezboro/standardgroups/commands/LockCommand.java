@@ -6,7 +6,6 @@ import com.sbezboro.standardplugin.StandardPlugin;
 import com.sbezboro.standardplugin.commands.BaseCommand;
 import com.sbezboro.standardplugin.commands.SubCommand;
 import com.sbezboro.standardplugin.model.StandardPlayer;
-import com.sbezboro.standardplugin.util.PaginatedOutput;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -20,8 +19,8 @@ public class LockCommand extends SubCommand {
 		super(plugin, command, "lock");
 
 		addHelp(ChatColor.YELLOW + "/g lock" + ChatColor.RESET + " - lock the block being looked at");
-		addHelp(ChatColor.YELLOW + "/g lock add <player>" + ChatColor.RESET + " - give a player access to an existing lock");
-		addHelp(ChatColor.YELLOW + "/g lock remove <player>" + ChatColor.RESET + " - revoke a player's access to an existing lock");
+		addHelp(ChatColor.YELLOW + "/g lock add <player1> <player2>..." + ChatColor.RESET + " - give one or more players access to an existing lock");
+		addHelp(ChatColor.YELLOW + "/g lock remove <player1> <player2>..." + ChatColor.RESET + " - revoke one or more players' access to an existing lock");
 		addHelp(ChatColor.YELLOW + "/g lock public" + ChatColor.RESET + " - toggle public access to a lock");
 		addHelp(ChatColor.YELLOW + "/g lock info" + ChatColor.RESET + " - show info about the lock being looked at");
 	}
@@ -68,37 +67,31 @@ public class LockCommand extends SubCommand {
 
 				return true;
 			}
-		} else if (args.length == 2) {
-			if (args[0].equalsIgnoreCase("add")) {
-				if (block == null) {
-					sender.sendMessage("No block in range");
-					return true;
-				}
+		} else {
+			if (block == null) {
+				sender.sendMessage("No block in range");
+				return true;
+			}
 
-				StandardPlayer otherPlayer = plugin.matchPlayer(args[1]);
+			List<StandardPlayer> players = new ArrayList<>();
+
+			for (int i = 1; i < args.length; ++i) {
+				StandardPlayer otherPlayer = plugin.matchPlayer(args[i]);
 
 				if (otherPlayer == null) {
-					sender.sendMessage("That player doesn't exist");
+					sender.sendMessage("Player " + args[i] + " doesn't exist");
 					return true;
 				}
 
-				groupManager.addLockMember(player, block, otherPlayer);
+				players.add(otherPlayer);
+			}
+
+			if (args[0].equalsIgnoreCase("add")) {
+				groupManager.addLockMembers(player, block, players);
 
 				return true;
 			} else if (args[0].equalsIgnoreCase("remove")) {
-				if (block == null) {
-					sender.sendMessage("No block in range");
-					return true;
-				}
-
-				StandardPlayer otherPlayer = plugin.matchPlayer(args[1]);
-
-				if (otherPlayer == null) {
-					sender.sendMessage("That player doesn't exist");
-					return true;
-				}
-
-				groupManager.removeLockMember(player, block, otherPlayer);
+				groupManager.removeLockMembers(player, block, players);
 
 				return true;
 			}

@@ -1463,7 +1463,7 @@ public class GroupManager extends BaseManager {
 		player.sendMessage(ChatColor.YELLOW + "You have released the lock on this block.");
 	}
 
-	public void addLockMember(StandardPlayer player, Block block, StandardPlayer otherPlayer) {
+	public void addLockMembers(StandardPlayer player, Block block, List<StandardPlayer> otherPlayers) {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
@@ -1487,27 +1487,35 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		if (lock.hasAccess(otherPlayer)) {
-			player.sendMessage(ChatColor.YELLOW + "That player already has access.");
-			return;
-		}
+		List<String> usernamesAdded = new ArrayList<>();
 
-		Group otherGroup = getPlayerGroup(otherPlayer);
-
-		if (group != otherGroup) {
-			if (otherGroup == null) {
-				player.sendMessage(ChatColor.GOLD + otherPlayer.getName() + " won't have access until they join a friendly group!");
-			} else if (!group.isMutualFriendship(otherGroup)) {
-				player.sendMessage(ChatColor.GOLD + "Your group will additionally need to friend " + otherGroup.getName() + "!");
+		for (StandardPlayer otherPlayer : otherPlayers) {
+			if (lock.hasAccess(otherPlayer)) {
+				continue;
 			}
+
+			Group otherGroup = getPlayerGroup(otherPlayer);
+
+			if (group != otherGroup) {
+				if (otherGroup == null) {
+					player.sendMessage(ChatColor.GOLD + otherPlayer.getName() + " won't have access until they join a friendly group!");
+				} else if (!group.isMutualFriendship(otherGroup)) {
+					player.sendMessage(ChatColor.GOLD + "Your group will additionally need to friend " + otherGroup.getName() + "!");
+				}
+			}
+
+			usernamesAdded.add(otherPlayer.getDisplayName(false));
+			group.addLockMember(lock, otherPlayer);
 		}
 
-		group.addLockMember(lock, otherPlayer);
-
-		player.sendMessage(ChatColor.YELLOW + "You have given " + otherPlayer.getDisplayName(false) + " access to this lock.");
+		if (usernamesAdded.isEmpty()) {
+			player.sendMessage(ChatColor.YELLOW + "Requested players already have access to this lock.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "You have given " + StringUtils.join(usernamesAdded.toArray(), ", ") + " access to this lock.");
+		}
 	}
 
-	public void removeLockMember(StandardPlayer player, Block block, StandardPlayer otherPlayer) {
+	public void removeLockMembers(StandardPlayer player, Block block, List<StandardPlayer> otherPlayers) {
 		Group group = getPlayerGroup(player);
 
 		if (group == null) {
@@ -1531,19 +1539,27 @@ public class GroupManager extends BaseManager {
 			return;
 		}
 
-		if (!lock.hasAccess(otherPlayer)) {
-			player.sendMessage(ChatColor.YELLOW + "That player already doesn't have access.");
-			return;
+		List<String> usernamesRemoved = new ArrayList<>();
+
+		for (StandardPlayer otherPlayer : otherPlayers) {
+			if (!lock.hasAccess(otherPlayer)) {
+				continue;
+			}
+
+			if (lock.isOwner(otherPlayer)) {
+				unlock(player, block);
+				return;
+			}
+
+			usernamesRemoved.add(otherPlayer.getDisplayName(false));
+			group.removeLockMember(lock, otherPlayer);
 		}
 
-		if (lock.isOwner(otherPlayer)) {
-			unlock(player, block);
-			return;
+		if (usernamesRemoved.isEmpty()) {
+			player.sendMessage(ChatColor.YELLOW + "No one had access revoked from this lock.");
+		} else {
+			player.sendMessage(ChatColor.YELLOW + "You have revoked access to this lock from " + StringUtils.join(usernamesRemoved.toArray(), ", ") + ".");
 		}
-
-		group.removeLockMember(lock, otherPlayer);
-
-		player.sendMessage(ChatColor.YELLOW + "You have revoked access to this lock from " + otherPlayer.getDisplayName(false) + ".");
 	}
 
 	public void lockInfo(StandardPlayer player, Block block) {

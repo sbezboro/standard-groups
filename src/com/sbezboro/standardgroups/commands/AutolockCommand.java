@@ -34,7 +34,7 @@ public class AutolockCommand extends SubCommand {
 			return false;
 		}
 
-		String uuid = new String(player.getUuidString());
+		String uuid = player.getUuidString();
 
 		Group group = groupManager.getPlayerGroup(player);
 		
@@ -66,18 +66,18 @@ public class AutolockCommand extends SubCommand {
 				group.enableAutoCommand(uuid, autoCommandArgs);
 				return true;
 			}
-		} else if (args.length == 2) {
-			if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove")) {
-				StandardPlayer otherPlayer = plugin.matchPlayer(args[1]);
+		} else if (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("remove")) {
+			for (int i = 1; i < args.length; ++i) {
+				StandardPlayer otherPlayer = plugin.matchPlayer(args[i]);
 
 				if (otherPlayer == null) {
-					sender.sendMessage("That player doesn't exist");
+					sender.sendMessage("Player " + args[i] + " doesn't exist");
 					return true;
 				}
-
-				group.enableAutoCommand(uuid, autoCommandArgs);
-				return true;
 			}
+
+			group.enableAutoCommand(uuid, autoCommandArgs);
+			return true;
 		}
 
 		command.showUsageInfo(sender);

@@ -23,6 +23,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -95,31 +96,30 @@ public class PlayerInteractListener extends SubPluginEventListener<StandardGroup
 				
 				if (autoCommandArgs.length == 1) {
 					groupManager.lock(player, clickedBlock);
-				}
-				else if (autoCommandArgs.length == 2) {
+				} else if (autoCommandArgs.length == 2) {
 					if (autoCommandArgs[1].equalsIgnoreCase("info")) {
 						groupManager.lockInfo(player, clickedBlock);
 					} else if (autoCommandArgs[1].equalsIgnoreCase("public")) {
 						groupManager.togglePublicLock(player, clickedBlock);
 					}
-				}
-				else if (autoCommandArgs.length == 3) {
+				} else {
+					List<StandardPlayer> players = new ArrayList<>();
+
+					for (int i = 2; i < autoCommandArgs.length; ++i) {
+						StandardPlayer otherPlayer = plugin.matchPlayer(autoCommandArgs[i]);
+
+						if (otherPlayer == null) {
+							player.sendMessage("Player " + autoCommandArgs[i] + " doesn't exist");
+							continue;
+						}
+
+						players.add(otherPlayer);
+					}
+
 					if (autoCommandArgs[1].equalsIgnoreCase("add")) {
-						StandardPlayer otherPlayer = plugin.matchPlayer(autoCommandArgs[2]);
-
-						if (otherPlayer == null) {
-							player.sendMessage("That player doesn't exist");
-						} else {
-							groupManager.addLockMember(player, clickedBlock, otherPlayer);
-						}
+						groupManager.addLockMembers(player, clickedBlock, players);
 					} else if (autoCommandArgs[1].equalsIgnoreCase("remove")) {
-						StandardPlayer otherPlayer = plugin.matchPlayer(autoCommandArgs[2]);
-
-						if (otherPlayer == null) {
-							player.sendMessage("That player doesn't exist");
-						} else {
-							groupManager.removeLockMember(player, clickedBlock, otherPlayer);
-						}
+						groupManager.removeLockMembers(player, clickedBlock, players);
 					}
 				}
 			} else if (autoCommandArgs[0].equalsIgnoreCase("unlock")) {
