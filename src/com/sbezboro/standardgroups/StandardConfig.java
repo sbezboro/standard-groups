@@ -22,7 +22,9 @@ public class StandardConfig {
 	private double groupPowerMaxValue;
 	private double powerDamageModifier;
 	private int spawnClaimCost;
-  
+	private boolean preventLavaGriefing;
+	private boolean preventWaterGriefing;
+
 	public StandardConfig(StandardPlugin plugin) {
 		this.plugin = plugin;
 	}
@@ -43,6 +45,8 @@ public class StandardConfig {
 		groupPowerMaxValue = config.getDouble("group-power-max-value");
 		powerDamageModifier = config.getDouble("power-damage-modifier");
 		spawnClaimCost = config.getInt("spawn-claim-cost");
+		preventLavaGriefing = config.getBoolean("prevent-lava-griefing");
+		preventWaterGriefing = config.getBoolean("prevent-water-griefing");
 	}
 
 	public boolean isDebug() {
@@ -99,6 +103,14 @@ public class StandardConfig {
 
 	public int getSpawnClaimCost() {
 		return spawnClaimCost;
+	}
+
+	public boolean getPreventLavaGriefing() {
+		return preventLavaGriefing;
+	}
+
+	public boolean getPreventWaterGriefing() {
+		return preventWaterGriefing;
 	}
 
 }
