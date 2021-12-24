@@ -61,7 +61,7 @@ public class Group extends PersistedObject implements Comparable<Group> {
 		this.established.setValue(established);
 		this.spawnClaims.setValue(0);
 		this.maxClaims.setValue(StandardGroups.getPlugin().getGroupStartingLand());
-		this.power.setValue(0.0);
+		this.power.setValue(5.0);  // make it a bit easier for new groups
 		this.maxPower.setValue(10.0);
 		this.leaderUuid.setValue(leader.getUuidString());
 		this.memberUuids.add(leader.getUuidString());
