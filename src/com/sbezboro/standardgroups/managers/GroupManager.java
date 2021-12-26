@@ -1321,64 +1321,6 @@ public class GroupManager extends BaseManager {
 		}
 	}
 
-	// /g adjustmaxpower <adj> - shows what would happen with that amount but does not do anything yet
-	public void adjustMaxPowerInfo(StandardPlayer player, double adjustment) {
-		if (adjustment < -10.0 || adjustment > 10.0) {
-			player.sendMessage(ChatColor.RED + "The adjustment must be between -10 and 10.");
-			return;
-		}
-
-		Group group = getPlayerGroup(player);
-		if (group == null) {
-			player.sendMessage(ChatColor.RED + "You must be in a group before you can use this command.");
-			return;
-		}
-
-		double powerDamagePercent;
-
-		if (adjustment >= 0.0) {
-			powerDamagePercent = adjustment * 10.0;
-			player.sendMessage(ChatColor.AQUA + "Your group will receive a permanent " + ChatColor.YELLOW +
-					String.format("%.2f", adjustment) + ChatColor.AQUA + " bonus to its maximum power.");
-			player.sendMessage(ChatColor.AQUA + "Its power damage will be reduced by " + ChatColor.YELLOW +
-					Math.round(powerDamagePercent) + "%" + ChatColor.AQUA + ".");
-		} else {
-			powerDamagePercent = -adjustment * 5.0;
-			player.sendMessage(ChatColor.AQUA + "Your group will suffer a permanent " + ChatColor.YELLOW +
-					String.format("%.2f", -adjustment) + ChatColor.AQUA + " malus to its maximum power.");
-			player.sendMessage(ChatColor.AQUA + "Its power damage will be increased by " + ChatColor.YELLOW +
-					Math.round(powerDamagePercent) + "%" + ChatColor.AQUA + ".");
-		}
-
-		if (!group.isLeader(player)) {
-			player.sendMessage(ChatColor.AQUA + "Only the group leader is able to actually set the adjustment.");
-		} else {
-			player.sendMessage(ChatColor.AQUA + "Use " + ChatColor.GOLD + "/g adjustmaxpower " + String.format("%.2f", adjustment) + " confirm" +
-					ChatColor.AQUA + " to set this adjustment.");
-		}
-	}
-
-	// /g adjustmaxpower <adj> confirm - apply the adjustment
-	public void adjustMaxPower(StandardPlayer player, double adjustment) {
-		if (adjustment < -10.0 || adjustment > 10.0) {
-			player.sendMessage(ChatColor.RED + "The adjustment must be between -10 and 10");
-			return;
-		}
-
-		Group group = getPlayerGroup(player);
-		if (group == null) {
-			player.sendMessage(ChatColor.RED + "You must be in a group before you can use this command.");
-			return;
-		}
-		if (!group.isLeader(player)) {
-			player.sendMessage(ChatColor.RED + "Only the group leader is able to set the max power adjustment.");
-			return;
-		}
-
-		group.setMaxPowerAdjustment(adjustment);
-		player.sendMessage(ChatColor.YELLOW + "You have successfully adjusted your group's max power.");
-	}
-
 	public void lock(StandardPlayer player, Block block) {
 		Group group = getPlayerGroup(player);
 
