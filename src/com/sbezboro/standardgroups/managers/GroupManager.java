@@ -125,9 +125,11 @@ public class GroupManager extends BaseManager {
 
 	public static final double ENTITY_POWER_THRESHOLD = 0.0;
 
-	public static final double BLOCK_POWER_THRESHOLD = -3.0;
+	public static final double BLOCK_POWER_THRESHOLD = -2.0;  // was -3.0
 
-	public static final double LOCK_POWER_THRESHOLD = -10.0;
+	public static final double LOCK_POWER_THRESHOLD = -5.0;  // was -10.0
+
+	private static final int CLAIM_COMMAND_WAIT_SECONDS = 2;  // in seconds, may also apply to other commands
 
 	public static final int GROUP_REMOVAL_TASK_PERIOD = 1200; //seconds
 
@@ -1265,7 +1267,7 @@ public class GroupManager extends BaseManager {
 
 		boolean maxLandLimitReached = group.getMaxClaims() >= subPlugin.getGroupLandGrowthLimit();
 		double power = group.getPower();
-		ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+		ChatColor powerColor = (power < LOCK_POWER_THRESHOLD ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 
 		sender.sendMessage(ChatColor.GOLD + "============== " + ChatColor.YELLOW + "Group: " + group.getNameWithRelation(player) + ChatColor.GOLD + " ==============");
 		sender.sendMessage(ChatColor.YELLOW + "Established: " + ChatColor.RESET + MiscUtil.friendlyTimestamp(group.getEstablished()));
@@ -1304,7 +1306,7 @@ public class GroupManager extends BaseManager {
 		}
 
 		double power = group.getPower();
-		ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+		ChatColor powerColor = (power < LOCK_POWER_THRESHOLD ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 		if (player != null) {
 			if (getPlayerGroup(player) == group) {
 				sender.sendMessage(ChatColor.YELLOW + "Your group's current power is " +
@@ -1603,7 +1605,7 @@ public class GroupManager extends BaseManager {
 			int members = group.getPlayerCount();
 
 			double power = group.getPower();
-			ChatColor powerColor = (power < -10.0 ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
+			ChatColor powerColor = (power < LOCK_POWER_THRESHOLD ? ChatColor.DARK_RED : (power < 0.0 ? ChatColor.RED : ChatColor.RESET));
 			ChatColor groupColor = (player != null && group.isMember(player) ? ChatColor.GREEN : ChatColor.YELLOW);
 			ChatColor onlineColor = (online > 0 ? ChatColor.DARK_GREEN : ChatColor.RESET);
 			ChatColor resetColor = ChatColor.RESET;
@@ -1952,10 +1954,10 @@ public class GroupManager extends BaseManager {
 		if (!lastPlayerCommandMap.containsKey(uuid)) {
 			return false;
 		}
-		if (new Date().getTime() - lastPlayerCommandMap.get(uuid) <= 5000) {
+		if (new Date().getTime() - lastPlayerCommandMap.get(uuid) <= (CLAIM_COMMAND_WAIT_SECONDS * 1000)) {
 			if (displayMessage) {
 				StandardPlugin.getPlugin().getStandardPlayerByUUID(uuid).sendMessage(ChatColor.AQUA +
-						"Please wait 5 seconds before performing your next command");
+						"Please wait " + CLAIM_COMMAND_WAIT_SECONDS + " seconds before performing your next command");
 			}
 			return true;
 		}
