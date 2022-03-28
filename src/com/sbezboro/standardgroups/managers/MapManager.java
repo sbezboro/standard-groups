@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scoreboard.*;
 
 import java.util.HashSet;
@@ -55,6 +56,11 @@ public class MapManager extends BaseManager {
 
         @Override
         public UUID getUniqueId() {
+            return null;
+        }
+
+        @Override
+        public PlayerProfile getPlayerProfile() {
             return null;
         }
 
